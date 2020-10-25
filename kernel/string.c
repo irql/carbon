@@ -12,6 +12,7 @@ Todo:
 
 	Rename the UNICODE_STRING MaximumLength member to Size.
 	Make UNICODE_STRING Length and Size members ULONG
+	Fix init and allocating unicode string functions
 
 --*/
 
