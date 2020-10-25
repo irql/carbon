@@ -7,10 +7,11 @@
 *.exe
 *.pdb
 *.log
+*.lck
+
+*.log.*
 
 *.vhd
 
 x64/
 old/
-vm/
-assets/
