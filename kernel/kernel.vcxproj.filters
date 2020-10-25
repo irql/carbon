@@ -1,0 +1,308 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Ex">
+      <UniqueIdentifier>{ee15b5d5-c60e-41df-8e38-bbf446b3c0ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ke">
+      <UniqueIdentifier>{fa6226d5-fc23-4c7a-8418-cc2faf62f245}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rtl">
+      <UniqueIdentifier>{79732a88-0e0c-4f1b-b6fb-1d9b58198a5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ob">
+      <UniqueIdentifier>{2657b51a-ff03-420d-83c0-db809673e978}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ldr">
+      <UniqueIdentifier>{d1839e65-383f-4f7c-b218-69ff293fb282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Io">
+      <UniqueIdentifier>{919450ef-f1a6-4620-bcce-e818863d81c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hal">
+      <UniqueIdentifier>{1fa396e1-31bf-49ef-81f5-220c18d6e51c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mm">
+      <UniqueIdentifier>{7d61be54-adfc-43aa-be16-a7d811c90d6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ob\OldOb">
+      <UniqueIdentifier>{c60a4435-2a9e-4503-b859-77b3a5608b43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mm\OldMm">
+      <UniqueIdentifier>{17c9687a-fd47-48c1-826f-3a7ba1f30d31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dbg">
+      <UniqueIdentifier>{d26a63d1-655a-4a2e-95d4-9953313d403d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shared">
+      <UniqueIdentifier>{cfd2cc05-362f-44c0-b16a-26d72f6ec8a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mm\OldNewMm">
+      <UniqueIdentifier>{563133d0-6531-487c-8543-4692bfddac41}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\shared\carbsup.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ntstatus.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\rtl.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="hal.h">
+      <Filter>Hal</Filter>
+    </ClInclude>
+    <ClInclude Include="acpi.h">
+      <Filter>Hal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\hal.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="pesup.h">
+      <Filter>Ldr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ke.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="ex.h">
+      <Filter>Ex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ex.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="ob.h">
+      <Filter>Ob</Filter>
+    </ClInclude>
+    <ClInclude Include="ldrsup.h">
+      <Filter>Ldr</Filter>
+    </ClInclude>
+    <ClInclude Include="ke.h">
+      <Filter>Ke</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ldrsup.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ob.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="io.h">
+      <Filter>Io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\io.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\dbg.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="OldNewMm\mm.h">
+      <Filter>Mm\OldNewMm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\mm.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="mm.h">
+      <Filter>Mm</Filter>
+    </ClInclude>
+    <ClInclude Include="ke_struct.h">
+      <Filter>Ke</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="string.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="mem.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="pci.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="acpi.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="pesup.c">
+      <Filter>Ldr</Filter>
+    </ClCompile>
+    <ClCompile Include="obcreate.c">
+      <Filter>Ob</Filter>
+    </ClCompile>
+    <ClCompile Include="list.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="pool.c">
+      <Filter>Ex</Filter>
+    </ClCompile>
+    <ClCompile Include="obquery.c">
+      <Filter>Ob</Filter>
+    </ClCompile>
+    <ClCompile Include="obinit.c">
+      <Filter>Ob</Filter>
+    </ClCompile>
+    <ClCompile Include="ldrsup.c">
+      <Filter>Ldr</Filter>
+    </ClCompile>
+    <ClCompile Include="apic.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="idt.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="pic.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="bugcheck.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="smp.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="processor.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="gdt.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="thread.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="spinlock.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="process.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="id.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="pit.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="hpet.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="irp.c">
+      <Filter>Io</Filter>
+    </ClCompile>
+    <ClCompile Include="iocom.c">
+      <Filter>Io</Filter>
+    </ClCompile>
+    <ClCompile Include="probe.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="device.c">
+      <Filter>Io</Filter>
+    </ClCompile>
+    <ClCompile Include="file.c">
+      <Filter>Io</Filter>
+    </ClCompile>
+    <ClCompile Include="driver.c">
+      <Filter>Io</Filter>
+    </ClCompile>
+    <ClCompile Include="vbe.c">
+      <Filter>Hal</Filter>
+    </ClCompile>
+    <ClCompile Include="bmath.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="dbg.c">
+      <Filter>Dbg</Filter>
+    </ClCompile>
+    <ClCompile Include="initos.c" />
+    <ClCompile Include="OldNewMm\mm.c">
+      <Filter>Mm\OldNewMm</Filter>
+    </ClCompile>
+    <ClCompile Include="OldNewMm\page_fault.c">
+      <Filter>Mm\OldNewMm</Filter>
+    </ClCompile>
+    <ClCompile Include="OldNewMm\page_table.c">
+      <Filter>Mm\OldNewMm</Filter>
+    </ClCompile>
+    <ClCompile Include="OldNewMm\physical.c">
+      <Filter>Mm\OldNewMm</Filter>
+    </ClCompile>
+    <ClCompile Include="OldNewMm\virtual.c">
+      <Filter>Mm\OldNewMm</Filter>
+    </ClCompile>
+    <ClCompile Include="virt.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="phys.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="table.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="initmm.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="tlb.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="dma.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="mm.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="obdestroy.c">
+      <Filter>Ob</Filter>
+    </ClCompile>
+    <ClCompile Include="dllsup.c">
+      <Filter>Ldr</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <NASM Include="arch.asm">
+      <Filter>Hal</Filter>
+    </NASM>
+    <NASM Include="idt_transition.asm">
+      <Filter>Hal</Filter>
+    </NASM>
+    <NASM Include="smp_trampoline.asm">
+      <Filter>Hal</Filter>
+    </NASM>
+    <NASM Include="idle.asm">
+      <Filter>Ke</Filter>
+    </NASM>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="debug.bat" />
+    <None Include="OldOb\ob.h">
+      <Filter>Ob\OldOb</Filter>
+    </None>
+    <None Include="OldOb\obcreate.c">
+      <Filter>Ob\OldOb</Filter>
+    </None>
+    <None Include="OldOb\obdir.c">
+      <Filter>Ob\OldOb</Filter>
+    </None>
+    <None Include="OldOb\obinit.c">
+      <Filter>Ob\OldOb</Filter>
+    </None>
+    <None Include="OldOb\obquery.c">
+      <Filter>Ob\OldOb</Filter>
+    </None>
+    <None Include="OldMm\virtual.c">
+      <Filter>Mm\OldMm</Filter>
+    </None>
+    <None Include="OldMm\mm.c">
+      <Filter>Mm\OldMm</Filter>
+    </None>
+    <None Include="OldMm\mm.h">
+      <Filter>Mm\OldMm</Filter>
+    </None>
+    <None Include="OldMm\page_fault.c">
+      <Filter>Mm\OldMm</Filter>
+    </None>
+    <None Include="OldMm\page_table.c">
+      <Filter>Mm\OldMm</Filter>
+    </None>
+    <None Include="OldMm\physical.c">
+      <Filter>Mm\OldMm</Filter>
+    </None>
+    <None Include="..\bochs\bochsrc.bxrc" />
+    <None Include="finalize.bat" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+
+*.map
+*.exp
+*.lib
+*.dll
+*.sys
+*.exe
+*.pdb
+*.log
+
+*.vhd
+
+x64/
+old/
+vm/
+assets/

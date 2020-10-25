@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="driver.c" />
+    <ClCompile Include="obj.c">
+      <Filter>Disk</Filter>
+    </ClCompile>
+    <ClCompile Include="ahci.c">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="nvme.c">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="disk.c">
+      <Filter>Disk</Filter>
+    </ClCompile>
+    <ClCompile Include="path.c">
+      <Filter>Fs</Filter>
+    </ClCompile>
+    <ClCompile Include="fs.c">
+      <Filter>Fs</Filter>
+    </ClCompile>
+    <ClCompile Include="partition.c">
+      <Filter>Fs</Filter>
+    </ClCompile>
+    <ClCompile Include="fat32_fat.c">
+      <Filter>Fs\Fat32</Filter>
+    </ClCompile>
+    <ClCompile Include="fat32_query.c">
+      <Filter>Fs\Fat32</Filter>
+    </ClCompile>
+    <ClCompile Include="fat32_path.c">
+      <Filter>Fs\Fat32</Filter>
+    </ClCompile>
+    <ClCompile Include="fat32.c">
+      <Filter>Fs\Fat32</Filter>
+    </ClCompile>
+    <ClCompile Include="fat32_read.c">
+      <Filter>Fs\Fat32</Filter>
+    </ClCompile>
+    <ClCompile Include="fat32_write.c">
+      <Filter>Fs\Fat32</Filter>
+    </ClCompile>
+    <ClCompile Include="ide.c">
+      <Filter>Controller</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Disk">
+      <UniqueIdentifier>{5b56afe5-93ed-43be-8025-56fd1c99c754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controller">
+      <UniqueIdentifier>{4060e1ed-1257-415c-8c32-11b1412bf6ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fs">
+      <UniqueIdentifier>{8cd597ad-33c3-490d-93d7-79b222997f03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fs\Fat32">
+      <UniqueIdentifier>{4a44fab0-bf66-44c4-83ad-e2ef9a05faf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fs\Ntfs">
+      <UniqueIdentifier>{16f2a2f2-2a64-44ed-8b56-cb2080f86d3b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fat32.h">
+      <Filter>Fs\Fat32</Filter>
+    </ClInclude>
+    <ClInclude Include="ntfs.h">
+      <Filter>Fs\Ntfs</Filter>
+    </ClInclude>
+    <ClInclude Include="driver.h" />
+    <ClInclude Include="disk.h">
+      <Filter>Disk</Filter>
+    </ClInclude>
+    <ClInclude Include="controller.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="ahci.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="interface.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="partition.h">
+      <Filter>Fs</Filter>
+    </ClInclude>
+    <ClInclude Include="fs.h">
+      <Filter>Fs</Filter>
+    </ClInclude>
+    <ClInclude Include="ide.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

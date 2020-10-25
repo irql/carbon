@@ -1,0 +1,34 @@
+/*++
+
+Module ObjectName:
+
+	ntstatus.h
+
+Abstract:
+
+	Defines native exception codes and data types.
+
+--*/
+
+#pragma once
+
+typedef ULONG32 NTSTATUS;
+typedef NTSTATUS *PNTSTATUS;
+
+#define STATUS_SUCCESS							((NTSTATUS)(0x00000000L))
+#define STATUS_UNSUCCESSFUL						((NTSTATUS)(0x00000001L))
+
+#define NT_SUCCESS(status)						(((NTSTATUS)(status)) == STATUS_SUCCESS)
+
+#define STATUS_BUFFER_OVERFLOW					((NTSTATUS)(0x00000002L))
+#define STATUS_INVALID_PARAMETER				((NTSTATUS)(0x00000003L))
+#define STATUS_NOT_FOUND						((NTSTATUS)(0x00000004L))
+#define STATUS_INVALID_PE_FILE					((NTSTATUS)(0x00000005L))
+#define STATUS_INVALID_HANDLE					((NTSTATUS)(0x00000006L))
+#define STATUS_PARTIAL_COMPLETE					((NTSTATUS)(0x00000007L))
+#define STATUS_DEVICE_FAILED					((NTSTATUS)(0x00000008L))
+#define STATUS_INVALID_PATH						((NTSTATUS)(0x00000009L))
+#define STATUS_INVALID_REQUEST					((NTSTATUS)(0x0000000AL))
+#define STATUS_INVALID_BUFFER					((NTSTATUS)(0x0000000BL))
+#define STATUS_IN_USE        					((NTSTATUS)(0x0000000CL))
+

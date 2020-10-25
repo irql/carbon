@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="driver.c" />
+    <ClCompile Include="fmem.c" />
+    <ClCompile Include="wndcreate.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="wndcomposite.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="wndproc.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="renderloop.c" />
+    <ClCompile Include="mouse.c">
+      <Filter>i8042</Filter>
+    </ClCompile>
+    <ClCompile Include="cursor.c" />
+    <ClCompile Include="diwinbase.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="dibutton.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="di.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="diconbase.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="console.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="svga.c">
+      <Filter>SVGA</Filter>
+    </ClCompile>
+    <ClCompile Include="svga3d.c">
+      <Filter>SVGA</Filter>
+    </ClCompile>
+    <ClCompile Include="keyboard.c">
+      <Filter>i8042</Filter>
+    </ClCompile>
+    <ClCompile Include="focus.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="winlist.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="ttf.c">
+      <Filter>Font</Filter>
+    </ClCompile>
+    <ClCompile Include="ttf_render.c">
+      <Filter>Font</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="driver.h" />
+    <ClInclude Include="wnd.h">
+      <Filter>Wnd</Filter>
+    </ClInclude>
+    <ClInclude Include="i8042.h">
+      <Filter>i8042</Filter>
+    </ClInclude>
+    <ClInclude Include="bmp.h" />
+    <ClInclude Include="di.h">
+      <Filter>Wnd</Filter>
+    </ClInclude>
+    <ClInclude Include="svga.h">
+      <Filter>SVGA</Filter>
+    </ClInclude>
+    <ClInclude Include="svga_reg.h">
+      <Filter>SVGA</Filter>
+    </ClInclude>
+    <ClInclude Include="svga3d_reg.h">
+      <Filter>SVGA</Filter>
+    </ClInclude>
+    <ClInclude Include="svga3d.h">
+      <Filter>SVGA</Filter>
+    </ClInclude>
+    <ClInclude Include="ttf.h">
+      <Filter>Font</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Wnd">
+      <UniqueIdentifier>{eb06eed1-8131-4ef7-a39d-467bc2630a1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="i8042">
+      <UniqueIdentifier>{b0aecbd7-f2c8-47a6-aedc-55a615b17e21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGA">
+      <UniqueIdentifier>{112e0233-b762-4609-b759-16b5f044e4ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Font">
+      <UniqueIdentifier>{dbe22234-7f56-4cb4-ad2f-f85b97227482}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
