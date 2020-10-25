@@ -8,323 +8,187 @@ Abstract:
 
 	Defines run time library string routines for the system.
 
+Todo:
+
+	Rename the UNICODE_STRING MaximumLength member to Size.
+	Make UNICODE_STRING Length and Size members ULONG
+
 --*/
 
 #include <carbsup.h>
 
-USHORT
-RtlStringCompare(
-	__in PCWSTR String1,
-	__in PCWSTR String2
-)
-{
+/* Retrieves string length. */
+ULONG RtlStringLength(
+	__in PCWSTR String // String.
+) {
+	ULONG Length = 0;
 
-	while ( *String1 && *String2 && *String1 == *String2 )
-		String1++, String2++;
+	while (String[Length])
+		Length++;
 
-	return ( USHORT )( *String1 - *String2 );
+	return Length; // Return the length excluding a null terminator.
 }
 
-USHORT
-RtlStringCompareLength(
-	__in PCWSTR String1,
-	__in PCWSTR String2,
-	__in ULONG Characters
-)
-/*++
-
-Routine Description:
-
-	Abc.
-
-Arguments:
-
-	.
-
-Return Value:
-
-	None.
-
---*/
-
-{
-
-	while ( --Characters && ( *String1 == *String2 ) )
-		String1++, String2++;
-
-	return ( USHORT )( *String1 - *String2 );
-}
-
-
-VOID
-RtlStringCopy(
-	__out PWSTR DestinationString,
-	__in PWSTR SourceString
-)
-{
-
-	while ( *SourceString )
+/* Copies contents from one string to another. */
+VOID RtlStringCopy(
+	__inout PWSTR	DestinationString,	// Destination string.
+	__in	PWSTR	SourceString		// Source string.
+) {
+	while (*SourceString != 0)
 		*DestinationString++ = *SourceString++;
+
 	*DestinationString = 0;
 }
 
-VOID
-RtlStringCopyLength(
-	__out PWSTR DestinationString,
-	__in PWSTR SourceString,
-	__in ULONG Characters
-)
-{
-	DestinationString[ Characters ] = 0;
-	while ( Characters-- && ( *DestinationString++ = *SourceString++ ) != 0 )
-		;
+/* Copies a certain amount of characters from one string to another. */
+VOID RtlStringCopyLength(
+	__inout PWSTR DestinationString,	// Destination string.
+	__in	PWSTR SourceString,			// Source string.
+	__in	ULONG Characters			// Characters to copy.
+) {
+	while (Characters-- && *SourceString != 0)
+		*DestinationString++ = *SourceString++;
 
+	*DestinationString = 0;
 }
 
-ULONG
-RtlStringLength(
-	__in PCWSTR SourceString
-)
-/*++
-
-Routine Description:
-
-	Abc.
-
-Arguments:
-
-	.
-
-Return Value:
-
-	None.
-
---*/
-
-{
-	ULONG Length = 0;
-
-	while ( SourceString[ Length++ ] )
-		;
-
-	return Length;
+/* Compares 2 strings. */
+LONG RtlStringCompare(
+	__in PCWSTR String1,	// String 1.
+	__in PCWSTR String2		// String 2.
+) {
+	while ( *String1 != 0 && *String2 != 0 &&
+			*String1++ == *String2++ );
+	
+	return *String1 - *String2; // Return the difference between string lengths.
 }
 
-VOID
-RtlInitUnicodeString(
-	__out PUNICODE_STRING DestinationString,
-	__in PWSTR SourceString
-)
-/*++
+/* Compares 2 string by length. */
+LONG RtlStringCompareLength(
+	__in PCWSTR String1,	// String 1.
+	__in PCWSTR String2,	// String 2.
+	__in ULONG	Characters	// Characters to compare.
+) {
+	while ( --Characters &&
+			*String1++ == *String2++ );
 
-Routine Description:
-
-	Abc.
-
-Arguments:
-
-	.
-
-Return Value:
-
-	None.
-
---*/
-
-{
-
-	DestinationString->Length = ( USHORT )RtlStringLength( SourceString );
-	DestinationString->MaximumLength = ( DestinationString->Length + 1 ) * sizeof( WCHAR );
-	DestinationString->Buffer = SourceString;
-
-	return;
+	return *String1 - *String2; // Return the difference between string lengths.
 }
 
-VOID
-RtlAllocateAndInitUnicodeString(
-	__out PUNICODE_STRING AllocatedString,
-	__in PWSTR SourceString
-)
-{
-
-	AllocatedString->Length = ( USHORT )RtlStringLength( SourceString );
-	AllocatedString->MaximumLength =
-		( ( ( ( ( AllocatedString->Length + 1 ) * sizeof( WCHAR ) ) + 63 ) / 64 ) * 64 );
-
-	AllocatedString->Buffer = ExAllocatePoolWithTag( AllocatedString->MaximumLength, ' rtS' );
-	RtlStringCopy( AllocatedString->Buffer, SourceString );
-
-	return;
-}
-
-VOID
-RtlAllocateAndInitUnicodeStringEx(
-	__out PUNICODE_STRING* AllocatedString,
-	__in PWSTR SourceString
-)
-{
-	*AllocatedString = ( PUNICODE_STRING )ExAllocatePoolWithTag( sizeof( UNICODE_STRING ), ' rtS' );
-
-	( *AllocatedString )->Length = ( USHORT )RtlStringLength( SourceString );
-	( *AllocatedString )->MaximumLength = ( USHORT )( ( ( *AllocatedString )->Length + 1 ) * sizeof( WCHAR ) );
-	( *AllocatedString )->Buffer = ( PWCHAR )ExAllocatePoolWithTag( ( *AllocatedString )->MaximumLength, ' rtS' );
-
-	RtlStringCopy( ( *AllocatedString )->Buffer, SourceString );
-
-
-	return;
-}
-
-VOID
-RtlFreeUnicodeString(
-	__in PUNICODE_STRING AllocatedString
-)
-{
-	ExFreePoolWithTag( AllocatedString, ' rtS' );
-
-	return;
-}
-
-
-NTSTATUS
-RtlUnicodeStringValidate(
-	__in PCUNICODE_STRING SourceString
-)
-/*++
-
-Routine Description:
-
-	Abc.
-
-Arguments:
-
-	.
-
-Return Value:
-
-	None.
-
---*/
-
-{
-	if ( SourceString == NULL )
+/* Validates a unicode string. */
+NTSTATUS RtlUnicodeStringValidate(
+	__in PUNICODE_STRING UnicodeString // Unicode string.
+) {
+	if (UnicodeString == NULL || UnicodeString->Buffer == NULL)
 		return STATUS_UNSUCCESSFUL;
 
-	if ( SourceString->Buffer == NULL )
-		return STATUS_UNSUCCESSFUL;
+	return STATUS_SUCCESS; // Return success if the string is valid.
+}
 
-	//if (SourceString->MaximumLength < SourceString->Length)
-	//	return STATUS_UNSUCCESSFUL;
+/* Initializes a unicode string. */
+VOID RtlInitUnicodeString(
+	__inout PUNICODE_STRING	UnicodeString,	// Unicode string.
+	__in	PWSTR			String			// Source string.
+) {
+	UnicodeString->Length = RtlStringLength(String);
+	UnicodeString->MaximumLength = (UnicodeString->Length + 1) * sizeof(WCHAR);
+	UnicodeString->Buffer = String;
+}
 
-	return STATUS_SUCCESS;
+/* Initializes and allocates a unicode string. */
+VOID RtlAllocateAndInitUnicodeString(
+	__inout PUNICODE_STRING	AllocatedUnicodeString, // Allocated unicode string.
+	__in	PWSTR			SourceString			// Source string.
+) {
+	if (!NT_SUCCESS(RtlUnicodeStringValidate(AllocatedUnicodeString))) return; // pog 
+
+	AllocatedUnicodeString->Length = RtlStringLength(SourceString);
+	AllocatedUnicodeString->MaximumLength = (((((AllocatedUnicodeString->Length + 1) * sizeof(WCHAR)) + 63) / 64) * 64);
+	AllocatedUnicodeString->Buffer = ExAllocatePoolWithTag(AllocatedUnicodeString->MaximumLength, _byteswap_ulong('Str '));
+
+	RtlStringCopy(AllocatedUnicodeString->Buffer, SourceString);
+}
+
+/* Initializes and allocates a unicode string without a 64-byte alignment. */
+VOID RtlAllocateAndInitUnicodeStringEx(
+	__inout PUNICODE_STRING	*AllocatedUnicodeString,	// Allocated unicode string.
+	__in	PWSTR			SourceString				// Source string.
+) {
+	*AllocatedUnicodeString = (PUNICODE_STRING)ExAllocatePoolWithTag(sizeof(UNICODE_STRING), _byteswap_ulong('Str '));
+
+	(*AllocatedUnicodeString)->Length = RtlStringLength(SourceString);
+	(*AllocatedUnicodeString)->MaximumLength = ((*AllocatedUnicodeString)->Length + 1) * sizeof(WCHAR);
+	(*AllocatedUnicodeString)->Buffer = ExAllocatePoolWithTag((*AllocatedUnicodeString)->MaximumLength, _byteswap_ulong('Str '));
+
+	RtlStringCopy((*AllocatedUnicodeString)->Buffer, SourceString);
+}
+
+/* Frees an allocated unicode string. */
+VOID RtlFreeUnicodeString(
+	__in PUNICODE_STRING AllocatedUnicodeString // Allocated unicode string.
+) {
+	ExFreePoolWithTag(AllocatedUnicodeString, _byteswap_ulong('Str '));
+}
+
+/* Copies contents from one string to another. */
+NTSTATUS RtlUnicodeStringCopy(
+	__inout PUNICODE_STRING DestinationUnicodeString,	// Destination unicode string.
+	__in	PUNICODE_STRING SourceUnicodeString			// Source unicode string.
+) {
+	if (!NT_SUCCESS(RtlUnicodeStringValidate(DestinationUnicodeString)) ||
+		!NT_SUCCESS(RtlUnicodeStringValidate(SourceUnicodeString))) return STATUS_INVALID_PARAMETER;
+
+	RtlStringCopy(DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer);
+
+	DestinationUnicodeString->Length = RtlStringLength(DestinationUnicodeString->Buffer);
+	DestinationUnicodeString->MaximumLength = (DestinationUnicodeString->Length + 1) * sizeof(WCHAR);
+
+	return STATUS_SUCCESS; // Return success if the parameters are valid.
+}
+
+/* Copies contents from one string to another. */
+NTSTATUS RtlUnicodeStringCopyLength(
+	__inout PUNICODE_STRING DestinationUnicodeString,	// Destination unicode string.
+	__in	PUNICODE_STRING SourceUnicodeString,		// Source unicode string.
+	__in	ULONG			Characters					// Characters to copy.
+) {
+	if (!NT_SUCCESS(RtlUnicodeStringValidate(DestinationUnicodeString)) ||
+		!NT_SUCCESS(RtlUnicodeStringValidate(SourceUnicodeString))) return STATUS_INVALID_PARAMETER;
+
+	RtlStringCopyLength(DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer, Characters);
+
+	DestinationUnicodeString->Length = RtlStringLength(DestinationUnicodeString->Buffer);
+	DestinationUnicodeString->MaximumLength = (DestinationUnicodeString->Length + 1) * sizeof(WCHAR);
+
+	return STATUS_SUCCESS; // Return success if the parameters are valid.
+}
+
+/* Compares 2 unicode strings. */
+ULONG RtlUnicodeStringCompare(
+	__in PUNICODE_STRING UnicodeString1,	// Unicode string 1.
+	__in PUNICODE_STRING UnicodeString2		// Unicode string 2.
+) {
+	if (!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString1)) ||
+		!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString2))) return STATUS_INVALID_PARAMETER;
+
+	return RtlStringCompare(UnicodeString1->Buffer, UnicodeString2->Buffer); // Return the result.
+}
+
+/* Compares 2 unicode strings by length. */
+ULONG RtlUnicodeStringCompareLength(
+	__in PUNICODE_STRING	UnicodeString1,	// Unicode string 1.
+	__in PUNICODE_STRING	UnicodeString2,	// Unicode string 2.
+	__in ULONG				Characters		// Characters to compare.
+) {
+	if (!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString1)) ||
+		!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString2))) return STATUS_INVALID_PARAMETER;
+
+	return RtlStringCompareLength(UnicodeString1->Buffer, UnicodeString2->Buffer, Characters); // Return the result.
 }
 
 
-NTSTATUS
-RtlUnicodeStringCopy(
-	__out PUNICODE_STRING DestinationString,
-	__in PCUNICODE_STRING SourceString
-)
-/*++
 
-Routine Description:
-
-	Abc.
-
-Arguments:
-
-	.
-
-Return Value:
-
-	None.
-
---*/
-
-{
-	NTSTATUS ntStatus = STATUS_SUCCESS;
-
-	if ( DestinationString == NULL ||
-		SourceString == NULL )
-		return STATUS_INVALID_PARAMETER;
-
-	if ( DestinationString->Buffer == NULL ||
-		SourceString->Buffer == NULL )
-		return STATUS_INVALID_PARAMETER;
-
-	ULONG DestinationSize = DestinationString->MaximumLength;
-	ULONG Index = 0;
-
-	if ( DestinationSize <= 2 )
-		return STATUS_INVALID_PARAMETER;
-
-	if ( DestinationSize < SourceString->MaximumLength )
-		ntStatus = STATUS_BUFFER_OVERFLOW;
-
-
-	while ( DestinationSize -= sizeof( WCHAR ) ) {
-		DestinationString->Buffer[ Index ] = SourceString->Buffer[ Index ];
-
-		Index++;
-	}
-	DestinationString->Buffer[ ( ULONG )DestinationString->MaximumLength / sizeof( WCHAR ) ] = UNICODE_NULL;
-	DestinationString->Length = ( USHORT )RtlStringLength( DestinationString->Buffer );
-
-	return ntStatus;
-}
-
-ULONG
-RtlUnicodeStringCompare(
-	__in PUNICODE_STRING String1,
-	__in PUNICODE_STRING String2
-)
-{
-
-	NTSTATUS ntStatus = RtlUnicodeStringValidate( String1 );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		return ntStatus;
-	}
-
-	ntStatus = RtlUnicodeStringValidate( String2 );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		return ntStatus;
-	}
-
-	//change.
-	return ( ULONG )RtlStringCompare( String1->Buffer, String2->Buffer );
-}
-
-ULONG
-RtlUnicodeStringCompareLength(
-	__in PUNICODE_STRING String1,
-	__in PUNICODE_STRING String2,
-	__in ULONG Characters
-)
-{
-
-	NTSTATUS ntStatus = RtlUnicodeStringValidate( String1 );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		return ntStatus;
-	}
-
-	ntStatus = RtlUnicodeStringValidate( String2 );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		return ntStatus;
-	}
-
-	ULONG i = RtlStringCompareLength( String1->Buffer, String2->Buffer, Characters );
-
-	//change.
-	return i;
-}
+// Crt Balls
 
 int _strcmp( char* str1, char* str2 ) {
 	while ( *str1 && *str2 && ( *str1 == *str2 ) )
