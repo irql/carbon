@@ -35,7 +35,7 @@ FsPartitionCreateObject(
 	__in PDISK_OBJECT Disk
 	)
 {
-	PPARTITION_OBJECT New = (PPARTITION_OBJECT)ExAllocatePoolWithTag(sizeof(PARTITION_OBJECT), 'traP');
+	PPARTITION_OBJECT New = (PPARTITION_OBJECT)ExAllocatePoolWithTag(sizeof(PARTITION_OBJECT), TAGEX_PARTITION);
 	_memset((void*)New, 0, sizeof(PARTITION_OBJECT));
 
 	New->Disk = Disk;
@@ -96,7 +96,7 @@ FsInitializePartitions(
 				FirstPartition->Flags |= PARTITION_FLAG_ACTIVE;
 			}
 
-			FirstPartition->BootSector = ExAllocatePoolWithTag(Disk->Geometry.SectorSize, 'tooB');
+			FirstPartition->BootSector = ExAllocatePoolWithTag(Disk->Geometry.SectorSize, TAGEX_BOOT);
 			FirstPartition->BootStatus = FirstPartition->AccessBlock.Read(FirstPartition, 0, FirstPartition->BootSector, Disk->Geometry.SectorSize);
 
 			if (!NT_SUCCESS(FirstPartition->BootStatus)) {
@@ -129,7 +129,7 @@ FsInitializePartitions(
 				NewPartition->Flags |= PARTITION_FLAG_ACTIVE;
 			}
 
-			NewPartition->BootSector = ExAllocatePoolWithTag(Disk->Geometry.SectorSize, 'tooB');
+			NewPartition->BootSector = ExAllocatePoolWithTag(Disk->Geometry.SectorSize, TAGEX_BOOT);
 			NewPartition->BootStatus = Disk->AccessBlock.Read(Disk, NewPartition->StartLogicalBlockAddress, NewPartition->BootSector, Disk->Geometry.SectorSize);
 
 			if (!NT_SUCCESS(NewPartition->BootStatus)) {

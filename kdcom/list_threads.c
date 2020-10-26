@@ -21,7 +21,7 @@ KdCmdListThreads(
 	//
 
 	ULONG32 CmdSize = sizeof( KD_CMDR_LIST_THREADS ) + ObjectTypeThread->TotalNumberOfObjects * sizeof( KD_THREAD );
-	PKD_CMDR_LIST_THREADS ListThreads = ExAllocatePoolWithTag( CmdSize, ' dmC' );
+	PKD_CMDR_LIST_THREADS ListThreads = ExAllocatePoolWithTag( CmdSize, TAGEX_CMD );
 	KdInitCmdSz( ListThreads, KD_CMD_LIST_THREADS, CmdSize );
 
 	ULONG32 i = 0;

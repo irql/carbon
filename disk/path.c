@@ -24,7 +24,7 @@ FsSplitDirectoryPath(
 			root directory, aka \
 		*/
 
-		*SplitPath = (PWCHAR*)ExAllocatePoolWithTag(BufferSize, 'htaP');
+		*SplitPath = (PWCHAR*)ExAllocatePoolWithTag(BufferSize, TAGEX_PATH);
 		(*SplitPath)[0] = NULL;
 
 		return STATUS_SUCCESS;
@@ -65,7 +65,7 @@ FsSplitDirectoryPath(
 		}
 	}
 
-	*SplitPath = (PWCHAR*)ExAllocatePoolWithTag(BufferSize, 'htaP');
+	*SplitPath = (PWCHAR*)ExAllocatePoolWithTag(BufferSize, TAGEX_PATH);
 
 	ULONG32 j = 0;
 	for (ULONG32 i = 0; i < PathLength; i++) {

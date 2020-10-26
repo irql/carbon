@@ -96,7 +96,7 @@ Return Value:
 	HalGdtAddEntry( &Processor->Gdtr, &Code64 );
 	HalGdtAddEntry( &Processor->Gdtr, &Data );
 
-	PTSS TaskStateSegment = ( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), ' SST' );
+	PTSS TaskStateSegment = ( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), TAGEX_TSS );
 	_memset( ( void* )TaskStateSegment, 0, sizeof( TSS ) );
 
 	TaskStateSegment->Rsp0 = 0;
@@ -175,7 +175,7 @@ Return Value:
 
 	__lidt( &Processor->Idtr );
 
-	PTSS TaskStateSegment = ( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), ' SST' );
+	PTSS TaskStateSegment = ( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), TAGEX_TSS );
 	_memset( ( void* )TaskStateSegment, 0, sizeof( TSS ) );
 
 	TaskStateSegment->Rsp0 = 0;

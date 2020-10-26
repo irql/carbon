@@ -2,8 +2,7 @@
 
 #pragma once
 
-#define DI_TAG '  ID'
-#define NtGdiAllocateDi( type ) ExAllocatePoolWithTag( sizeof( type ), DI_TAG )
+#define NtGdiAllocateDi( type ) ExAllocatePoolWithTag( sizeof( type ), TAGEX_DI )
 
 VOID
 NtGdiDiInsert(

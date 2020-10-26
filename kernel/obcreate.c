@@ -36,7 +36,7 @@ ObpCreateHandle(
 {
 	POBJECT_ENTRY_HEADER ObjectHeader = OB_OBJ2HEADER( Object );
 
-	PHANDLE_TABLE_ENTRY HandleEntry = ExAllocatePoolWithTag( sizeof( HANDLE_TABLE_ENTRY ), OB_POOL_TAG );
+	PHANDLE_TABLE_ENTRY HandleEntry = ExAllocatePoolWithTag( sizeof( HANDLE_TABLE_ENTRY ), TAGEX_OB );
 
 	if ( HandleEntry == NULL ) {
 
@@ -82,7 +82,7 @@ ObpCloseHandle(
 			KeRemoveListEntry( &HandleEntry->HandleLinks );
 
 			ObDereferenceObject( HandleEntry->Object );
-			ExFreePoolWithTag( HandleEntry, OB_POOL_TAG );
+			ExFreePoolWithTag( HandleEntry, TAGEX_OB );
 			HandleTable->TotalNumberOfHandles--;
 
 			KeReleaseSpinLock( &HandleTable->HandleLinks.Lock );

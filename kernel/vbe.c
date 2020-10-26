@@ -323,7 +323,7 @@ VbeGetInfo(
 
 )
 {
-	PGDI_INFO Info = ExAllocatePoolWithTag( sizeof( GDI_INFO ), ' EBV' );
+	PGDI_INFO Info = ExAllocatePoolWithTag( sizeof( GDI_INFO ), TAGEX_VBE );
 
 	Info->Framebuffer = ( ULONG32* )Framebuffer;
 	Info->Height = YResolution;

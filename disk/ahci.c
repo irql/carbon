@@ -85,7 +85,7 @@ FsAhciDetectDrives(
 			HalPciDeviceList.PciDevices[ i ].PciHeader.Prog_IF == 0x1 ) {
 
 			//NTSTATUS ntStatus;
-			PAHCI_CONTROLLER Ahci = ExAllocatePoolWithTag( sizeof( AHCI_CONTROLLER ), 'ichA' );
+			PAHCI_CONTROLLER Ahci = ExAllocatePoolWithTag( sizeof( AHCI_CONTROLLER ), TAGEX_AHCI );
 
 			Ahci->PciDevice = &HalPciDeviceList.PciDevices[ i ];
 
@@ -147,7 +147,7 @@ FsAhciDetectDrives(
 
 					PDISK_OBJECT NewDisk = FsDiskCreateObject( );
 					NewDisk->Flags |= DISK_FLAG_CONTROLLER_AHCI;
-					NewDisk->ControllerData = ExAllocatePoolWithTag( sizeof( AHCI_DISK_DATA ), 'ichA' );
+					NewDisk->ControllerData = ExAllocatePoolWithTag( sizeof( AHCI_DISK_DATA ), TAGEX_AHCI );
 
 					PAHCI_DISK_DATA ControllerData = ( ( PAHCI_DISK_DATA )NewDisk->ControllerData );
 
@@ -228,7 +228,7 @@ FsAhciDetectDrives(
 					}
 
 					if ( NT_SUCCESS( NewDisk->BootStatus ) ) {
-						NewDisk->BootSector = ExAllocatePoolWithTag( NewDisk->Geometry.SectorSize, 'tooB' );
+						NewDisk->BootSector = ExAllocatePoolWithTag( NewDisk->Geometry.SectorSize, TAGEX_BOOT );
 
 						NewDisk->AccessBlock.Read( NewDisk, 0, NewDisk->BootSector, NewDisk->Geometry.SectorSize );
 

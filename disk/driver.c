@@ -77,7 +77,7 @@ DriverDispatch(
 		NTSTATUS ntStatus;
 		PWCHAR* SplitPath = NULL;
 
-		PWCHAR DirectoryPath = ( PWCHAR )ExAllocatePoolWithTag( Irp->FileObject->FileName->Size, 'htaP' );
+		PWCHAR DirectoryPath = ( PWCHAR )ExAllocatePoolWithTag( Irp->FileObject->FileName->Size, TAGEX_PATH );
 		_memcpy( ( void* )DirectoryPath, ( void* )Irp->FileObject->FileName->Buffer, ( int )Irp->FileObject->FileName->Size );
 
 		ULONG32 FsDirectoryPathIndex = 0;

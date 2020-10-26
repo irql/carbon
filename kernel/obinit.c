@@ -33,7 +33,7 @@ ObpInitializeObjectType(
 )
 {
 
-	*ObjectType = ExAllocatePoolWithTag( sizeof( OBJECT_TYPE_DESCRIPTOR ), OB_POOL_TAG );
+	*ObjectType = ExAllocatePoolWithTag( sizeof( OBJECT_TYPE_DESCRIPTOR ), TAGEX_OB );
 
 	if ( *ObjectType == NULL ) {
 

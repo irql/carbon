@@ -23,7 +23,7 @@ IoAllocateIrpStack(
 {
 
 
-	return ExAllocatePoolWithTag(sizeof(IO_STACK_LOCATION), '  oI');
+	return ExAllocatePoolWithTag(sizeof(IO_STACK_LOCATION), TAGEX_IO);
 }
 
 VOID
@@ -52,7 +52,7 @@ IoAllocateIrp(
 	)
 {
 
-	return ExAllocatePoolWithTag(sizeof(IRP), ' prI');
+	return ExAllocatePoolWithTag(sizeof(IRP), TAGEX_IRP);
 }
 
 PIRP

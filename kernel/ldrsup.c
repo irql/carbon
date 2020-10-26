@@ -332,7 +332,7 @@ LdrSupLoadSupervisorModule(
 
 		PIMAGE_IMPORT_DESCRIPTOR iat = ( PIMAGE_IMPORT_DESCRIPTOR )( ( PUCHAR )ModuleBase + NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_IMPORT ].VirtualAddress );
 #if 1
-		PWCHAR ModuleFileNameBuffer = ExAllocatePoolWithTag( 256 * sizeof( WCHAR ), 'eliF' );
+		PWCHAR ModuleFileNameBuffer = ExAllocatePoolWithTag( 256 * sizeof( WCHAR ), TAGEX_FILE );
 
 		while ( iat->Characteristics ) {
 
