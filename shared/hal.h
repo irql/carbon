@@ -235,6 +235,7 @@ HalPciSetIoEnable(
 
 typedef struct _KTRAP_FRAME {
 	UCHAR x87save[ 4096 ];
+	ULONG64 DataSegment;
 	ULONG64 R15, R14, R13, R12, R11, R10, R9, R8, Rdi, Rsi, Rbp, Rbx, Rdx, Rcx, Rax;
 	ULONG64 Interrupt, Error;
 	ULONG64 Rip, CodeSegment, Rflags, Rsp, StackSegment;

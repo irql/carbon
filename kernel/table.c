@@ -276,7 +276,6 @@ MiLeaveKernelSpace(
 	MiSetAddressSpace( PreviousAddressSpace );
 }
 
-
 ULONG64
 MmPhysicalMapping(
 	__in ULONG64 Address

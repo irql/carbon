@@ -13,6 +13,7 @@ Abstract:
 #include <carbsup.h>
 #include "ke.h"
 #include "ob.h"
+#include "psp.h"
 
 PKPROCESS KiSystemProcess = 0;
 
@@ -88,18 +89,6 @@ KeQueryCurrentProcess(
 	return ProcessHandle;
 }
 
-
-NTSTATUS
-KiInsertProcess(
-	__in PKPROCESS Process
-)
-{
-
-	KeInsertListEntry( &KiSystemProcess->ActiveProcessLinks, &Process->ActiveProcessLinks );
-
-	return STATUS_SUCCESS;
-}
-
 //should this like, create a process and a thread on the entry point of the module?
 NTSTATUS
 KeCreateProcess(
@@ -136,12 +125,7 @@ KeCreateProcess(
 		return ntStatus;
 	}
 
-	ntStatus = KiInsertProcess( NewProcessObject );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		ObpCloseHandle( ObpQueryCurrentHandleTable( ), *NewProcessHandle );
-	}
+	PspInsertProcess( NewProcessObject );
 
 	ObDereferenceObject( NewProcessObject );
 	ObDereferenceObject( AssociatedModuleObject );

@@ -2,33 +2,6 @@
 
 #pragma once
 
-#if 0
-NTSTATUS
-LdrpSupFindModuleBase(
-	__in PVOID FileBase,
-	__out PVOID* ModuleBase
-);
-#endif
-
-FORCEINLINE
-PWCHAR
-LdrpNameFromPath(
-	__in PWCHAR Path
-)
-{
-
-	for ( LONG32 i = _wcslen( Path ); i >= 0; i-- ) {
-
-		if ( Path[ i ] == '\\' ) {
-
-			return &Path[ i + 1 ];
-		}
-	}
-
-	return Path;
-}
-
-
 NTSTATUS
 LdrpSupGetInfoBlock(
 	__in PVOID ModuleBase,

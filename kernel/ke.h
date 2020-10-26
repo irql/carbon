@@ -135,3 +135,4 @@ KiBspBootBugcheck(
 	__in ULONG64 Arg3,
 	__in ULONG64 Arg4
 );
+

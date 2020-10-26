@@ -31,6 +31,9 @@
     <Filter Include="shared">
       <UniqueIdentifier>{cfd2cc05-362f-44c0-b16a-26d72f6ec8a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ps">
+      <UniqueIdentifier>{40809707-dc22-4af8-8b16-a99a8df429de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\carbsup.h">
@@ -95,6 +98,18 @@
     </ClInclude>
     <ClInclude Include="ke_struct.h">
       <Filter>Ke</Filter>
+    </ClInclude>
+    <ClInclude Include="psp.h">
+      <Filter>Ps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ps.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="ldrusr.h">
+      <Filter>Ldr</Filter>
+    </ClInclude>
+    <ClInclude Include="ldr.h">
+      <Filter>Ldr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -227,6 +242,15 @@
     </ClCompile>
     <ClCompile Include="crt.c">
       <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="user.c">
+      <Filter>Ps</Filter>
+    </ClCompile>
+    <ClCompile Include="process_list.c">
+      <Filter>Ps</Filter>
+    </ClCompile>
+    <ClCompile Include="ldrusr.c">
+      <Filter>Ldr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

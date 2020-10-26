@@ -14,73 +14,7 @@ Abstract:
 #include "pesup.h"
 #include "ldrsup.h"
 #include "mm.h"
-
-#if 0
-NTSTATUS
-LdrpSupFindModuleBase(
-	__in PVOID FileBase,
-	__out PVOID* ModuleBase
-)
-/*++
-
-Routine Description:
-
-	Supplies a pointer to memory which is free and can inhibit the module.
-
-Arguments:
-
-	FileBase - Supplies a pointer to the base of the file module to find a base address for.
-
-	ModuleBase - Supplies a pointer to a pointer for the procedure to write the module base to.
-
-Return Value:
-
-	Status.
-
---*/
-{
-	PIMAGE_DOS_HEADER DosHeader = ( PIMAGE_DOS_HEADER )FileBase;
-
-	if ( !PeSupVerifyDosHeader( DosHeader ) ) {
-
-		return STATUS_INVALID_PE_FILE;
-	}
-
-	PIMAGE_NT_HEADERS NtHeaders = ( PIMAGE_NT_HEADERS )( ( PUCHAR )FileBase + DosHeader->e_lfanew );
-
-	if ( !PeSupVerifyNtHeaders( NtHeaders ) ) {
-
-		return STATUS_INVALID_PE_FILE;
-	}
-
-	PIMAGE_SECTION_HEADER SectionHeaders = IMAGE_FIRST_SECTION64( NtHeaders );
-
-	USHORT LastSection = NtHeaders->FileHeader.NumberOfSections - 1;
-	ULONG64 ModuleSize = ( ULONG64 )SectionHeaders[ LastSection ].VirtualAddress + ( ULONG64 )ROUND_TO_PAGES( ( ( ULONG64 )SectionHeaders[ LastSection ].Misc.VirtualSize ) );
-	/*
-	if (MmpIsVirtualRangeFree(NtHeaders->OptionalHeader.ImageBase, ModuleSize)) {
-
-		*ModuleBase = (PVOID)NtHeaders->OptionalHeader.ImageBase;
-	}
-	else {
-		*/
-		/*
-			image's don't need a base reloc if there is nothing to reloc.
-
-			if (NtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress == 0 ||
-				NtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size == 0) {
-
-				*ModuleBase = NULL;
-
-				return STATUS_UNSUCCESSFUL;
-			}*/
-
-			//*ModuleBase = Mm//(PVOID)MmpFindFreeVirtual(ModuleSize, PAGE_READ | PAGE_WRITE | PAGE_EXECUTE);
-		//}
-
-	return STATUS_SUCCESS;
-}
-#endif
+#include "ldr.h"
 
 NTSTATUS
 LdrpSupGetInfoBlock(
@@ -160,16 +94,6 @@ LdrpSupLoadModule(
 	ULONG64 ModuleSize = ( ULONG64 )SectionHeaders[ LastSection ].VirtualAddress + ( ULONG64 )ROUND_TO_PAGES( ( ( ULONG64 )SectionHeaders[ LastSection ].Misc.VirtualSize ) );
 	PVOID ModuleBase = NULL;
 
-#if 0
-	ntStatus = LdrpSupFindModuleBase( FileBase, &ModuleBase );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		return ntStatus;
-	}
-
-	ModuleBase = ( PVOID )MmAllocateMemoryAtVirtual( ( ULONG64 )ModuleBase, ModuleSize, PAGE_READ | PAGE_WRITE | PAGE_EXECUTE );
-#endif
 	ModuleBase = MmAllocateMemory( ModuleSize, PAGE_READ | PAGE_WRITE | PAGE_EXECUTE );
 
 	_memcpy( ModuleBase, FileBase, NtHeaders->OptionalHeader.SizeOfHeaders );
@@ -385,9 +309,9 @@ LdrSupLoadSupervisorModule(
 			MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
 			MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
 			return ntStatus;
-		}
-#endif
 	}
+#endif
+}
 
 	MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
 

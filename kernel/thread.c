@@ -236,6 +236,7 @@ KiCreateThread(
 
 	NewThread->ThreadControlBlock.Registers.CodeSegment = 8;
 	NewThread->ThreadControlBlock.Registers.StackSegment = 16;
+	NewThread->ThreadControlBlock.Registers.DataSegment = 16;
 
 	NewThread->ThreadControlBlock.Registers.Rip = ( ULONG64 )StartRoutine;
 

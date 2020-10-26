@@ -29,3 +29,9 @@ NTSTATUS
 LdrLoadDll(
 	__in PUNICODE_STRING FilePath
 );
+
+typedef struct _VAD {
+	PLDR_INFO_BLOCK Range;
+
+	struct _VAD* Next;
+} VAD, *PVAD;

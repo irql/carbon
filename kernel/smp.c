@@ -90,11 +90,15 @@ Return Value:
 
 	HalGdtCreate( &Processor->Gdtr );
 
-	GLOBAL_DESCRIPTOR_TABLE_ENTRY Code64 = { 0, 0, 0, {0, 1, 0, 1, 1, 0, 1}, {0xf, 0, 1, 0, 1}, 0 };
-	GLOBAL_DESCRIPTOR_TABLE_ENTRY Data = { 0, 0, 0, {0, 1, 0, 0, 1, 0, 1}, {0, 0, 0, 0, 0}, 0 };
+	GLOBAL_DESCRIPTOR_TABLE_ENTRY KernelCode64 = { 0, 0, 0, { 0, 1, 0, 1, 1, 0, 1 }, { 0xf, 0, 1, 0, 1 }, 0 };
+	GLOBAL_DESCRIPTOR_TABLE_ENTRY KernelData = { 0, 0, 0, { 0, 1, 0, 0, 1, 0, 1 }, { 0, 0, 0, 0, 0 }, 0 };
+	GLOBAL_DESCRIPTOR_TABLE_ENTRY UserCode64 = { 0, 0, 0, { 0, 1, 0, 1, 1, 3, 1 }, { 0, 0, 1, 0, 1 }, 0 };
+	GLOBAL_DESCRIPTOR_TABLE_ENTRY UserData = { 0, 0, 0, { 0, 1, 0, 0, 1, 3, 1 }, { 0, 0, 0, 0, 0 }, 0 };
 
-	HalGdtAddEntry( &Processor->Gdtr, &Code64 );
-	HalGdtAddEntry( &Processor->Gdtr, &Data );
+	HalGdtAddEntry( &Processor->Gdtr, &KernelCode64 );
+	HalGdtAddEntry( &Processor->Gdtr, &KernelData );
+	HalGdtAddEntry( &Processor->Gdtr, &UserCode64 );
+	HalGdtAddEntry( &Processor->Gdtr, &UserData );
 
 	PTSS TaskStateSegment = ( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), ' SST' );
 	_memset( ( void* )TaskStateSegment, 0, sizeof( TSS ) );
@@ -246,7 +250,7 @@ HalSmpEnableCpuFeatures(
 		printf( "pogs %p\n", HalSimdSaveRegion );
 		__halt( );
 
-	}
+}
 #endif
 
 	__fninit( );

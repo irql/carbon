@@ -39,6 +39,14 @@ HalInitTrapFrame:
 	push r14
 	push r15
 
+	mov rax, ds
+	push rax
+	mov rax, 16
+	mov ds, rax
+	mov fs, rax
+	mov gs, rax
+	mov es, rax
+
 	mov rdi, rsp
 
 	sub rsp, 4096
@@ -73,6 +81,12 @@ HalInitTrapFrame:
 	fxrstor [rsp]
 	.fp_restored:
 	mov rsp, rdi
+
+	pop rax
+	mov ds, rax
+	mov fs, rax
+	mov gs, rax
+	mov es, rax
 
 	pop r15
 	pop r14
