@@ -163,13 +163,13 @@ Return Value:
 
 				ULONG32 NeededLength = ( NameLink->LinkTargetName.Length + ( EntireName->Length - NameLink->LinkName.Length ) + 1 ) * sizeof( WCHAR );
 
-				if ( NeededLength > EntireName->MaximumLength ) {
+				if ( NeededLength > EntireName->Size ) {
 
 					PWCHAR NewBuffer = ( PWCHAR )ExAllocatePoolWithTag( NeededLength, ' rtS' );
-					_memcpy( ( void* )NewBuffer, ( void* )EntireName->Buffer, EntireName->MaximumLength );
+					_memcpy( ( void* )NewBuffer, ( void* )EntireName->Buffer, EntireName->Size );
 					ExFreePoolWithTag( EntireName->Buffer, ' rtS' );
 					EntireName->Buffer = NewBuffer;
-					EntireName->MaximumLength = ( USHORT )NeededLength;
+					EntireName->Size = ( USHORT )NeededLength;
 				}
 
 				PWCHAR TempBuffer = NULL;
@@ -181,7 +181,7 @@ Return Value:
 					_memcpy( ( void* )TempBuffer, ( void* )( EntireName->Buffer + NameLink->LinkName.Length ), TempBufferSize );
 				}
 
-				_memset( ( void* )EntireName->Buffer, 0, EntireName->MaximumLength );
+				_memset( ( void* )EntireName->Buffer, 0, EntireName->Size );
 				_memcpy( ( void* )EntireName->Buffer, ( void* )NameLink->LinkTargetName.Buffer, NameLink->LinkTargetName.Length * sizeof( WCHAR ) );
 
 				if ( TempBufferSize > 0 ) {
@@ -207,7 +207,7 @@ Return Value:
 				_memcpy( RootName, EntireName, sizeof( UNICODE_STRING ) );
 				RootName->Buffer += NameLink->LinkName.Length;
 				RootName->Length -= NameLink->LinkName.Length;
-				RootName->MaximumLength -= ( NameLink->LinkName.Length * sizeof( WCHAR ) );
+				RootName->Size -= ( NameLink->LinkName.Length * sizeof( WCHAR ) );
 
 				if ( Object ) {
 					NameLink->LinkTarget->ReferenceCount++;
