@@ -101,7 +101,7 @@ VOID RtlAllocateAndInitUnicodeString(
 
 	AllocatedUnicodeString->Length = RtlStringLength( SourceString );
 	AllocatedUnicodeString->Size = ( ( ( ( ( AllocatedUnicodeString->Length + 1 ) * sizeof( WCHAR ) ) + 63 ) / 64 ) * 64 );
-	AllocatedUnicodeString->Buffer = ExAllocatePoolWithTag( AllocatedUnicodeString->Size, _byteswap_ulong( 'Str ' ) );
+	AllocatedUnicodeString->Buffer = ExAllocatePoolWithTag( AllocatedUnicodeString->Size, TAGEX_STRING );
 
 	RtlStringCopy( AllocatedUnicodeString->Buffer, SourceString );
 }
@@ -111,12 +111,12 @@ VOID RtlAllocateAndInitUnicodeStringEx(
 	__inout PUNICODE_STRING	*AllocatedUnicodeString,	// Allocated unicode string.
 	__in	PWSTR			SourceString				// Source string.
 ) {
-	*AllocatedUnicodeString = ( PUNICODE_STRING )ExAllocatePoolWithTag( sizeof( UNICODE_STRING ), _byteswap_ulong( 'Str ' ) );
+	*AllocatedUnicodeString = ( PUNICODE_STRING )ExAllocatePoolWithTag( sizeof( UNICODE_STRING ), TAGEX_STRING );
 
 	( *AllocatedUnicodeString )->Length = RtlStringLength( SourceString );
 	( *AllocatedUnicodeString )->Size = ( ( *AllocatedUnicodeString )->Length + 1 ) * sizeof( WCHAR );
 
-	( *AllocatedUnicodeString )->Buffer = ExAllocatePoolWithTag( ( *AllocatedUnicodeString )->Size, _byteswap_ulong( 'Str ' ) );
+	( *AllocatedUnicodeString )->Buffer = ExAllocatePoolWithTag( ( *AllocatedUnicodeString )->Size, TAGEX_STRING );
 	RtlStringCopy( ( *AllocatedUnicodeString )->Buffer, SourceString );
 }
 
@@ -124,7 +124,7 @@ VOID RtlAllocateAndInitUnicodeStringEx(
 VOID RtlFreeUnicodeString(
 	__in PUNICODE_STRING AllocatedUnicodeString // Allocated unicode string.
 ) {
-	ExFreePoolWithTag( AllocatedUnicodeString, _byteswap_ulong( 'Str ' ) );
+	ExFreePoolWithTag( AllocatedUnicodeString, TAGEX_STRING );
 }
 
 /* Copies contents from one string to another. */

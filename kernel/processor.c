@@ -27,7 +27,7 @@ KiCreateKpcr(
 
 	if ( KiLogicalProcessors == 0 ) {
 
-		KiLogicalProcessors = ( PKPCR* )ExAllocatePoolWithTag( sizeof( PKPCR ) * MadtProcessorLocalApicCount, ' UPC' );
+		KiLogicalProcessors = ( PKPCR* )ExAllocatePoolWithTag( sizeof( PKPCR ) * MadtProcessorLocalApicCount, TAGEX_CPU );
 
 		if ( KiLogicalProcessors == NULL ) {
 
@@ -35,7 +35,7 @@ KiCreateKpcr(
 		}
 	}
 
-	*Kpcr = ( PKPCR )ExAllocatePoolWithTag( sizeof( KPCR ), 'RCPK' );
+	*Kpcr = ( PKPCR )ExAllocatePoolWithTag( sizeof( KPCR ), TAGEX_KPCR );
 
 	if ( *Kpcr == NULL ) {
 

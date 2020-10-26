@@ -165,10 +165,10 @@ HalInitializeAcpi(
 
 	Madt = ( PMADT )HalAcpiFindSdt( "APIC" );
 
-	MadtProcessorLocalApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), 'ALPM' );
-	MadtIoApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), 'AOIM' );
-	MadtInterruptSourceOverrideApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), 'OSIM' );
-	MadtNonMaskableInterruptApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), 'IMNM' );
+	MadtProcessorLocalApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), TAGEX_MPLA );
+	MadtIoApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), TAGEX_MIOA );
+	MadtInterruptSourceOverrideApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), TAGEX_MISO );
+	MadtNonMaskableInterruptApics = ExAllocatePoolWithTag( MADT_TABLES_MAX * sizeof( void* ), TAGEX_MNMI );
 
 	for ( PMADT_HEADER MadtPtr = ( PMADT_HEADER )&Madt->Entry0;
 		( ( ULONG64 )MadtPtr ) < ( ( ULONG64 )( ( ( ULONG64 )Madt ) + Madt->Header.Length ) );

@@ -15,7 +15,7 @@ KdCmdListModules(
 	//
 
 	ULONG32 CmdSize = sizeof( KD_CMDR_LIST_MODULES ) + ObjectTypeModule->TotalNumberOfObjects * sizeof( KD_MODULE );
-	PKD_CMDR_LIST_MODULES ListModules = ExAllocatePoolWithTag( CmdSize, ' dmC' );
+	PKD_CMDR_LIST_MODULES ListModules = ExAllocatePoolWithTag( CmdSize, TAGEX_CMD );
 	KdInitCmdSz( ListModules, KD_CMD_LIST_MODULES, CmdSize );
 
 	ULONG32 i = 0;

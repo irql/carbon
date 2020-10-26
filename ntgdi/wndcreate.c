@@ -38,7 +38,7 @@ NtGdiRegisterClass(
 	__in PWNDCLASSEX Class
 )
 {
-	PWNDCLASSEX_INTERNAL InternalClass = ExAllocatePoolWithTag( sizeof( WNDCLASSEX_INTERNAL ), 'XECW' );
+	PWNDCLASSEX_INTERNAL InternalClass = ExAllocatePoolWithTag( sizeof( WNDCLASSEX_INTERNAL ), TAGEX_WNDCLASS );
 
 	_memcpy( ( void* )InternalClass, ( void* )Class, sizeof( WNDCLASSEX ) );
 

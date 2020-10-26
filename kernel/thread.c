@@ -102,7 +102,7 @@ KiInitializeDispatcher(
 	__in PKPROCESS KernelProcess
 )
 {
-	PKTHREAD* IdleThread = ExAllocatePoolWithTag( sizeof( PKTHREAD ) * KiLogicalProcessorsInstalled, 'eldI' );
+	PKTHREAD* IdleThread = ExAllocatePoolWithTag( sizeof( PKTHREAD ) * KiLogicalProcessorsInstalled, TAGEX_IDLE );
 
 	for ( ULONG32 i = 0; i < KiLogicalProcessorsInstalled; i++ ) {
 		KiCreateThread( &IdleThread[ i ], KernelProcess, ( PKSTART_ROUTINE )KiIdleThread, NULL, 0x1000, 0x1000 );

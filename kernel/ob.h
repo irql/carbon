@@ -57,7 +57,6 @@ typedef struct _HANDLE_TABLE_ENTRY {
 	POBJECT_ENTRY_HEADER Object;
 } HANDLE_TABLE_ENTRY, *PHANDLE_TABLE_ENTRY;
 
-#define OB_POOL_TAG							'  bO'
 #define OB_OBJ2HEADER( object )				( (POBJECT_ENTRY_HEADER)( object ) - 1 )
 #define OB_HEADER2OBJ( object )				( PVOID )( (POBJECT_ENTRY_HEADER)( object ) + 1 )
 

@@ -16,7 +16,7 @@ DbgPrint(
 
 	/* Implement a max buffer parameter for a vsprintfw */
 
-	PDBG_LINE DbgLine = ( PDBG_LINE )ExAllocatePoolWithTag( sizeof( DBG_LINE ), ' gbD' );
+	PDBG_LINE DbgLine = ( PDBG_LINE )ExAllocatePoolWithTag( sizeof( DBG_LINE ), TAGEX_DEBUG );
 	DbgLine->LineNumber = LineNumber++;
 
 	va_list Args;

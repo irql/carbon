@@ -165,9 +165,9 @@ Return Value:
 
 				if ( NeededLength > EntireName->Size ) {
 
-					PWCHAR NewBuffer = ( PWCHAR )ExAllocatePoolWithTag( NeededLength, ' rtS' );
+					PWCHAR NewBuffer = ( PWCHAR )ExAllocatePoolWithTag( NeededLength, TAGEX_STRING );
 					_memcpy( ( void* )NewBuffer, ( void* )EntireName->Buffer, EntireName->Size );
-					ExFreePoolWithTag( EntireName->Buffer, ' rtS' );
+					ExFreePoolWithTag( EntireName->Buffer, TAGEX_STRING );
 					EntireName->Buffer = NewBuffer;
 					EntireName->Size = ( USHORT )NeededLength;
 				}
@@ -177,7 +177,7 @@ Return Value:
 
 				if ( TempBufferSize > 0 ) {
 
-					TempBuffer = ( PWCHAR )ExAllocatePoolWithTag( TempBufferSize, ' rtS' );
+					TempBuffer = ( PWCHAR )ExAllocatePoolWithTag( TempBufferSize, TAGEX_STRING );
 					_memcpy( ( void* )TempBuffer, ( void* )( EntireName->Buffer + NameLink->LinkName.Length ), TempBufferSize );
 				}
 

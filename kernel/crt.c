@@ -8,14 +8,14 @@ Abstract:
 #include <carbsup.h>
 
 int _strcmp( char *str1, char *str2 ) {
-	while ( *str1 && *str2 && ( *str1 == *str2 ) )
+	while ( *str1 && *str2 && *str1 == *str2 )
 		str1++, str2++;
 
 	return *str1 - *str2;
 }
 
 int _wcscmp( wchar_t *str1, wchar_t *str2 ) {
-	while ( *str1 && *str2 && ( *str1 == *str2 ) )
+	while ( *str1 && *str2 && *str1 == *str2 )
 		str1++, str2++;
 
 	return *str1 - *str2;

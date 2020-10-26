@@ -62,7 +62,7 @@ ZwCreateFile(
 
 	Iocb->InitialIrp = IoAllocateIrp( );
 	_memcpy( &Iocb->EntireName, ObjectAttributes->ObjectName, sizeof( UNICODE_STRING ) );
-	Iocb->EntireName.Buffer = ( PWCHAR )ExAllocatePoolWithTag( Iocb->EntireName.Size, ' rtS' );
+	Iocb->EntireName.Buffer = ( PWCHAR )ExAllocatePoolWithTag( Iocb->EntireName.Size, TAGEX_STRING );
 	_memcpy( Iocb->EntireName.Buffer, ObjectAttributes->ObjectName->Buffer, Iocb->EntireName.Size );
 
 	ntStatus = IoInitializeIocb( Iocb );

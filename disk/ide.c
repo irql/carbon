@@ -59,7 +59,7 @@ FsIdeDetectDrives(
 		if ( HalPciDeviceList.PciDevices[ i ].PciHeader.ClassCode == PCI_CLASS_CODE_MASS_STORAGE_CONTROLLER &&
 			HalPciDeviceList.PciDevices[ i ].PciHeader.SubClass == 0x1 ) {
 
-			PIDE_CONTROLLER Ide = ExAllocatePoolWithTag( sizeof( IDE_CONTROLLER ), ' edI' );
+			PIDE_CONTROLLER Ide = ExAllocatePoolWithTag( sizeof( IDE_CONTROLLER ), TAGEX_IDE );
 
 			Ide->PciDevice = &HalPciDeviceList.PciDevices[ i ];
 
@@ -172,7 +172,7 @@ FsIdeDetectDrives(
 
 					PDISK_OBJECT NewDisk = FsDiskCreateObject( );
 					NewDisk->Flags |= DISK_FLAG_CONTROLLER_IDE;
-					NewDisk->ControllerData = ExAllocatePoolWithTag( sizeof( IDE_DISK_DATA ), ' edI' );
+					NewDisk->ControllerData = ExAllocatePoolWithTag( sizeof( IDE_DISK_DATA ), TAGEX_IDE );
 
 					NewDisk->Geometry.Cylinders = Ide->Devices[ Count ].Identity.Cylinders;
 					NewDisk->Geometry.Heads = Ide->Devices[ Count ].Identity.Heads;
@@ -199,7 +199,7 @@ FsIdeDetectDrives(
 					}
 
 					if ( NT_SUCCESS( NewDisk->BootStatus ) ) {
-						NewDisk->BootSector = ExAllocatePoolWithTag( NewDisk->Geometry.SectorSize, 'tooB' );
+						NewDisk->BootSector = ExAllocatePoolWithTag( NewDisk->Geometry.SectorSize, TAGEX_BOOT );
 
 						NewDisk->AccessBlock.Read( NewDisk, 0, NewDisk->BootSector, NewDisk->Geometry.SectorSize );
 

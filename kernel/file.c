@@ -22,7 +22,7 @@ IoAllocateFileObject(
 	)
 {
 	
-	return ExAllocatePoolWithTag(sizeof(FILE_OBJECT), 'eliF');
+	return ExAllocatePoolWithTag(sizeof(FILE_OBJECT), TAGEX_FILE );
 }
 
 VOID
@@ -31,7 +31,7 @@ IoFreeFileObject(
 	)
 {
 	
-	ExFreePoolWithTag(FileObject, 'eliF');
+	ExFreePoolWithTag(FileObject, TAGEX_FILE);
 	
 	return;
 }
