@@ -19,19 +19,19 @@ Abstract:
 NTSTATUS
 IoInitializeIocb(
 	__inout PIOCB Iocb
-	)
+)
 {
 	NTSTATUS ntStatus;
 
 	ntStatus = ObParseObjectDirectory(
-		&Iocb->EntireName, 
-		&Iocb->ObjectName, 
-		&Iocb->RootName, 
-		&Iocb->DeviceObject);
+		&Iocb->EntireName,
+		&Iocb->ObjectName,
+		&Iocb->RootName,
+		&Iocb->DeviceObject );
 
 	//DbgPrint("EntireName: %w, ObjectName: %w, RootName: %w, DeviceObject: %#.16P\n", Iocb->EntireName.Buffer, Iocb->ObjectName.Buffer, Iocb->RootName.Buffer, Iocb->DeviceObject);
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
@@ -47,29 +47,29 @@ ZwCreateFile(
 	__in ACCESS_MASK DesiredAccess,
 	__in ULONG Disposition,
 	__in POBJECT_ATTRIBUTES ObjectAttributes
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 	STATIC OBJECT_ATTRIBUTES DefaultAttributes = { 0, NULL };
 
-	ntStatus = ObpCreateObject(&Iocb, &DefaultAttributes, ObjectTypeIoCommunicationBlock);
+	ntStatus = ObpCreateObject( &Iocb, &DefaultAttributes, ObjectTypeIoCommunicationBlock );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
-	Iocb->InitialIrp = IoAllocateIrp();
-	_memcpy(&Iocb->EntireName, ObjectAttributes->ObjectName, sizeof(UNICODE_STRING));
-	Iocb->EntireName.Buffer = (PWCHAR)ExAllocatePoolWithTag(Iocb->EntireName.MaximumLength, ' rtS');
-	_memcpy(Iocb->EntireName.Buffer, ObjectAttributes->ObjectName->Buffer, Iocb->EntireName.MaximumLength);
-	
-	ntStatus = IoInitializeIocb(Iocb);
-	
-	if (!NT_SUCCESS(ntStatus)) {
+	Iocb->InitialIrp = IoAllocateIrp( );
+	_memcpy( &Iocb->EntireName, ObjectAttributes->ObjectName, sizeof( UNICODE_STRING ) );
+	Iocb->EntireName.Buffer = ( PWCHAR )ExAllocatePoolWithTag( Iocb->EntireName.Size, ' rtS' );
+	_memcpy( Iocb->EntireName.Buffer, ObjectAttributes->ObjectName->Buffer, Iocb->EntireName.Size );
 
-		ObDereferenceObject(Iocb);
+	ntStatus = IoInitializeIocb( Iocb );
+
+	if ( !NT_SUCCESS( ntStatus ) ) {
+
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
@@ -80,20 +80,20 @@ ZwCreateFile(
 	//	close the handle then the process object can never be freed.
 	//
 
-	Iocb->InitialIrp->Thread = KiQueryCurrentThread();
-	ObDereferenceObject(Iocb->InitialIrp->Thread);
+	Iocb->InitialIrp->Thread = KiQueryCurrentThread( );
+	ObDereferenceObject( Iocb->InitialIrp->Thread );
 
-	Iocb->InitialIrp->IssuingProcess = KiQueryCurrentProcess();
-	ObDereferenceObject(Iocb->InitialIrp->IssuingProcess);
+	Iocb->InitialIrp->IssuingProcess = KiQueryCurrentProcess( );
+	ObDereferenceObject( Iocb->InitialIrp->IssuingProcess );
 
 	//
 	//	this "object" will be the same for every irp sent from this process/handle
 	//	we will only allocate it and set the RootDirectory field.
 	//
 
-	Iocb->InitialIrp->FileObject = IoAllocateFileObject();
+	Iocb->InitialIrp->FileObject = IoAllocateFileObject( );
 	Iocb->InitialIrp->FileObject->FileName = &Iocb->RootName;
-	Iocb->InitialIrp->FileObject->DirectoryFile = IoAllocateFileObject();
+	Iocb->InitialIrp->FileObject->DirectoryFile = IoAllocateFileObject( );
 
 	//
 	//	IRP_MJ_CREATE has these buffers set to NULL.
@@ -101,35 +101,35 @@ ZwCreateFile(
 
 	Iocb->InitialIrp->SystemBuffer = NULL;
 	Iocb->InitialIrp->UserBuffer = NULL;
-	
-	Iocb->InitialIrp->StackLocation = IoAllocateIrpStack();
+
+	Iocb->InitialIrp->StackLocation = IoAllocateIrpStack( );
 
 	Iocb->InitialIrp->StackLocation->MajorFunction = IRP_MJ_CREATE;
 	Iocb->InitialIrp->StackLocation->MinorFunction = 0;
 	Iocb->InitialIrp->StackLocation->Parameters.Create.Access = DesiredAccess;
 	Iocb->InitialIrp->StackLocation->Parameters.Create.Disposition = Disposition;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	_memcpy(IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof(IO_STATUS_BLOCK));
+	_memcpy( IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof( IO_STATUS_BLOCK ) );
 
-	if (!NT_SUCCESS(Iocb->InitialIrp->UserIosb.Status)) {
+	if ( !NT_SUCCESS( Iocb->InitialIrp->UserIosb.Status ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	ntStatus = ObCreateHandle(FileHandle, (PVOID)Iocb);
+	ntStatus = ObCreateHandle( FileHandle, ( PVOID )Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
@@ -141,29 +141,29 @@ ZwReadFile(
 	__in HANDLE FileHandle,
 	__out PIO_STATUS_BLOCK IoStatusBlock,
 	__in PVOID Buffer,
-	__in ULONG Length,
+	__in ULONG64 Length,
 	__in ULONG64 ByteOffset
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 
-	ntStatus = ObReferenceObjectByHandle(FileHandle, &Iocb);
+	ntStatus = ObReferenceObjectByHandle( FileHandle, &Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
 	POBJECT_TYPE_DESCRIPTOR Type;
-	ntStatus = ObQueryObjectType(Iocb, &Type);
+	ntStatus = ObQueryObjectType( Iocb, &Type );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
-	if (Type != ObjectTypeIoCommunicationBlock) {
+	if ( Type != ObjectTypeIoCommunicationBlock ) {
 
 		return STATUS_INVALID_HANDLE;
 	}
@@ -177,15 +177,15 @@ ZwReadFile(
 	Iocb->InitialIrp->UserBuffer = NULL;
 	Iocb->InitialIrp->SystemBuffer = Buffer;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	_memcpy(IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof(IO_STATUS_BLOCK));
+	_memcpy( IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof( IO_STATUS_BLOCK ) );
 
 	return STATUS_SUCCESS;
 }
@@ -195,32 +195,32 @@ ZwWriteFile(
 	__in HANDLE FileHandle,
 	__out PIO_STATUS_BLOCK IoStatusBlock,
 	__in PVOID Buffer,
-	__in ULONG Length,
+	__in ULONG64 Length,
 	__in ULONG64 ByteOffset
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 
-	ntStatus = ObReferenceObjectByHandle(FileHandle, &Iocb);
+	ntStatus = ObReferenceObjectByHandle( FileHandle, &Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
 	POBJECT_TYPE_DESCRIPTOR Type;
-	ntStatus = ObQueryObjectType(Iocb, &Type);
+	ntStatus = ObQueryObjectType( Iocb, &Type );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	if (Type != ObjectTypeIoCommunicationBlock) {
+	if ( Type != ObjectTypeIoCommunicationBlock ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return STATUS_INVALID_HANDLE;
 	}
 
@@ -233,48 +233,48 @@ ZwWriteFile(
 	Iocb->InitialIrp->UserBuffer = NULL;
 	Iocb->InitialIrp->SystemBuffer = Buffer;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	_memcpy(IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof(IO_STATUS_BLOCK));
+	_memcpy( IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof( IO_STATUS_BLOCK ) );
 
-	ObDereferenceObject(Iocb);
+	ObDereferenceObject( Iocb );
 	return STATUS_SUCCESS;
 }
 
 NTSTATUS
 ZwClose(
 	__in HANDLE Handle
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 
-	ntStatus = ObReferenceObjectByHandle(Handle, &Iocb);
+	ntStatus = ObReferenceObjectByHandle( Handle, &Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		return ObCloseHandle(Handle);
+		return ObCloseHandle( Handle );
 	}
 
 	POBJECT_TYPE_DESCRIPTOR Type;
-	ntStatus = ObQueryObjectType(Iocb, &Type);
+	ntStatus = ObQueryObjectType( Iocb, &Type );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
-		return ObCloseHandle(Handle);
+		ObDereferenceObject( Iocb );
+		return ObCloseHandle( Handle );
 	}
 
-	if (Type != ObjectTypeIoCommunicationBlock) {
+	if ( Type != ObjectTypeIoCommunicationBlock ) {
 
-		ObDereferenceObject(Iocb);
-		return ObCloseHandle(Handle);
+		ObDereferenceObject( Iocb );
+		return ObCloseHandle( Handle );
 	}
 
 	Iocb->InitialIrp->StackLocation->MajorFunction = IRP_MJ_CLOSE;
@@ -283,16 +283,16 @@ ZwClose(
 	Iocb->InitialIrp->UserBuffer = NULL;
 	Iocb->InitialIrp->SystemBuffer = NULL;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	ExFreePoolWithTag(Iocb->EntireName.Buffer, ' rtS');
+	ExFreePoolWithTag( Iocb->EntireName.Buffer, ' rtS' );
 
-	IoFreeFileObject(Iocb->InitialIrp->FileObject);
-	IoFreeIrpStack(Iocb->InitialIrp->StackLocation);
-	IoFreeIrp(Iocb->InitialIrp);
+	IoFreeFileObject( Iocb->InitialIrp->FileObject );
+	IoFreeIrpStack( Iocb->InitialIrp->StackLocation );
+	IoFreeIrp( Iocb->InitialIrp );
 
-	ObDereferenceObject(Iocb);
-	return ObCloseHandle(Handle);
+	ObDereferenceObject( Iocb );
+	return ObCloseHandle( Handle );
 }
 
 /*
@@ -310,30 +310,30 @@ ZwQueryDirectoryFile(
 	__in ULONG Length,
 	__in FILE_INFORMATION_CLASS FileInformationClass,
 	__in_opt PUNICODE_STRING FileName
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 
-	ntStatus = ObReferenceObjectByHandle(FileHandle, &Iocb);
+	ntStatus = ObReferenceObjectByHandle( FileHandle, &Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
 	POBJECT_TYPE_DESCRIPTOR Type;
-	ntStatus = ObQueryObjectType(Iocb, &Type);
+	ntStatus = ObQueryObjectType( Iocb, &Type );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	if (Type != ObjectTypeIoCommunicationBlock) {
+	if ( Type != ObjectTypeIoCommunicationBlock ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return STATUS_INVALID_HANDLE;
 	}
 
@@ -347,17 +347,17 @@ ZwQueryDirectoryFile(
 	Iocb->InitialIrp->UserBuffer = NULL;
 	Iocb->InitialIrp->SystemBuffer = FileInformation;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	_memcpy(IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof(IO_STATUS_BLOCK));
+	_memcpy( IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof( IO_STATUS_BLOCK ) );
 
-	ObDereferenceObject(Iocb);
+	ObDereferenceObject( Iocb );
 	return STATUS_SUCCESS;
 }
 
@@ -368,30 +368,30 @@ ZwQueryInformationFile(
 	__in PVOID FileInformation,
 	__in ULONG Length,
 	__in FILE_INFORMATION_CLASS FileInformationClass
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 
-	ntStatus = ObReferenceObjectByHandle(FileHandle, &Iocb);
+	ntStatus = ObReferenceObjectByHandle( FileHandle, &Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
 	POBJECT_TYPE_DESCRIPTOR Type;
-	ntStatus = ObQueryObjectType(Iocb, &Type);
+	ntStatus = ObQueryObjectType( Iocb, &Type );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	if (Type != ObjectTypeIoCommunicationBlock) {
+	if ( Type != ObjectTypeIoCommunicationBlock ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return STATUS_INVALID_HANDLE;
 	}
 
@@ -404,17 +404,17 @@ ZwQueryInformationFile(
 	Iocb->InitialIrp->UserBuffer = NULL;
 	Iocb->InitialIrp->SystemBuffer = FileInformation;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	_memcpy(IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof(IO_STATUS_BLOCK));
+	_memcpy( IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof( IO_STATUS_BLOCK ) );
 
-	ObDereferenceObject(Iocb);
+	ObDereferenceObject( Iocb );
 	return STATUS_SUCCESS;
 }
 
@@ -425,30 +425,30 @@ ZwSetInformationFile(
 	__in PVOID FileInformation,
 	__in ULONG Length,
 	__in FILE_INFORMATION_CLASS FileInformationClass
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 
-	ntStatus = ObReferenceObjectByHandle(FileHandle, &Iocb);
+	ntStatus = ObReferenceObjectByHandle( FileHandle, &Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
 	POBJECT_TYPE_DESCRIPTOR Type;
-	ntStatus = ObQueryObjectType(Iocb, &Type);
+	ntStatus = ObQueryObjectType( Iocb, &Type );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	if (Type != ObjectTypeIoCommunicationBlock) {
+	if ( Type != ObjectTypeIoCommunicationBlock ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return STATUS_INVALID_HANDLE;
 	}
 
@@ -461,17 +461,17 @@ ZwSetInformationFile(
 	Iocb->InitialIrp->UserBuffer = NULL;
 	Iocb->InitialIrp->SystemBuffer = FileInformation;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	_memcpy(IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof(IO_STATUS_BLOCK));
+	_memcpy( IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof( IO_STATUS_BLOCK ) );
 
-	ObDereferenceObject(Iocb);
+	ObDereferenceObject( Iocb );
 	return STATUS_SUCCESS;
 }
 
@@ -484,30 +484,30 @@ ZwDeviceIoControlFile(
 	__in ULONG InputBufferLength,
 	__in PVOID OutputBuffer,
 	__in ULONG OutputBufferLength
-	)
+)
 {
 	NTSTATUS ntStatus;
 	PIOCB Iocb;
 
-	ntStatus = ObReferenceObjectByHandle(FileHandle, &Iocb);
+	ntStatus = ObReferenceObjectByHandle( FileHandle, &Iocb );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
 	POBJECT_TYPE_DESCRIPTOR Type;
-	ntStatus = ObQueryObjectType(Iocb, &Type);
+	ntStatus = ObQueryObjectType( Iocb, &Type );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	if (Type != ObjectTypeIoCommunicationBlock) {
+	if ( Type != ObjectTypeIoCommunicationBlock ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return STATUS_INVALID_HANDLE;
 	}
 
@@ -521,16 +521,16 @@ ZwDeviceIoControlFile(
 	Iocb->InitialIrp->UserBuffer = OutputBuffer;
 	Iocb->InitialIrp->SystemBuffer = InputBuffer;
 
-	ntStatus = IoCallDevice(Iocb->DeviceObject, Iocb->InitialIrp);
+	ntStatus = IoCallDevice( Iocb->DeviceObject, Iocb->InitialIrp );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
-		ObDereferenceObject(Iocb);
+		ObDereferenceObject( Iocb );
 		return ntStatus;
 	}
 
-	_memcpy(IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof(IO_STATUS_BLOCK));
+	_memcpy( IoStatusBlock, &Iocb->InitialIrp->UserIosb, sizeof( IO_STATUS_BLOCK ) );
 
-	ObDereferenceObject(Iocb);
+	ObDereferenceObject( Iocb );
 	return STATUS_SUCCESS;
 }

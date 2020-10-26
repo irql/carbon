@@ -195,3 +195,68 @@ NtGdiMouseHandleMove(
 	__in POINT OldPosition,
 	__in POINT NewPosition
 );
+
+#include "font.h"
+
+#include "wnd.h"
+
+#define CONSOLE_DEFAULT_HEIGHT 450
+#define CONSOLE_DEFAULT_WIDTH  600
+
+#define CON_FLAG_READING 0x80
+
+typedef struct _KCONSOLE {
+
+	PKWINDOW Console;
+
+	ULONG32 Flags;
+
+} KCONSOLE, *PKCONSOLE;
+
+NTSTATUS
+NtGdiConsoleInitializeSubsystem(
+
+);
+
+NTSTATUS
+NtGdiCreateConsole(
+	__out PHANDLE ConsoleHandle,
+	__in PUNICODE_STRING Name,
+	__in ULONG32 Flags,
+	__in ULONG32 x,
+	__in ULONG32 y
+);
+
+NTSTATUS
+NtGdiReadConsole(
+	__in HANDLE ConsoleHandle,
+	__in PWCHAR Buffer,
+	__in ULONG32 Length
+);
+
+NTSTATUS
+NtGdiWriteConsole(
+	__in HANDLE ConsoleHandle,
+	__in PWCHAR Buffer,
+	__in ULONG32 Length
+);
+
+PKCONSOLE
+NtGdiReferenceConsoleFromWindow(
+	__in PKWINDOW Window
+);
+
+#define EDITBOX_REJECT_INPUT (0x00000001L)
+#define EDITBOX_NO_FOCUS_OUTLINE (0x00000002L)
+
+#define WND_PRIMARY_COLOUR (0xFF0078D7L)
+
+
+EXTERN BOOLEAN g_CursorVisible;
+EXTERN BOOLEAN g_TypingCursor;
+EXTERN RECT g_TypingCursorPosition;
+
+VOID
+NtGdiTypingCursorRender(
+
+);

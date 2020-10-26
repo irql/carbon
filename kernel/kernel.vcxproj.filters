@@ -25,20 +25,11 @@
     <Filter Include="Mm">
       <UniqueIdentifier>{7d61be54-adfc-43aa-be16-a7d811c90d6a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ob\OldOb">
-      <UniqueIdentifier>{c60a4435-2a9e-4503-b859-77b3a5608b43}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mm\OldMm">
-      <UniqueIdentifier>{17c9687a-fd47-48c1-826f-3a7ba1f30d31}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Dbg">
       <UniqueIdentifier>{d26a63d1-655a-4a2e-95d4-9953313d403d}</UniqueIdentifier>
     </Filter>
     <Filter Include="shared">
       <UniqueIdentifier>{cfd2cc05-362f-44c0-b16a-26d72f6ec8a7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mm\OldNewMm">
-      <UniqueIdentifier>{563133d0-6531-487c-8543-4692bfddac41}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -95,9 +86,6 @@
     </ClInclude>
     <ClInclude Include="..\shared\dbg.h">
       <Filter>shared</Filter>
-    </ClInclude>
-    <ClInclude Include="OldNewMm\mm.h">
-      <Filter>Mm\OldNewMm</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\mm.h">
       <Filter>shared</Filter>
@@ -210,21 +198,6 @@
       <Filter>Dbg</Filter>
     </ClCompile>
     <ClCompile Include="initos.c" />
-    <ClCompile Include="OldNewMm\mm.c">
-      <Filter>Mm\OldNewMm</Filter>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\page_fault.c">
-      <Filter>Mm\OldNewMm</Filter>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\page_table.c">
-      <Filter>Mm\OldNewMm</Filter>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\physical.c">
-      <Filter>Mm\OldNewMm</Filter>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\virtual.c">
-      <Filter>Mm\OldNewMm</Filter>
-    </ClCompile>
     <ClCompile Include="virt.c">
       <Filter>Mm</Filter>
     </ClCompile>
@@ -252,6 +225,9 @@
     <ClCompile Include="dllsup.c">
       <Filter>Ldr</Filter>
     </ClCompile>
+    <ClCompile Include="crt.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <NASM Include="arch.asm">
@@ -269,39 +245,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.bat" />
-    <None Include="OldOb\ob.h">
-      <Filter>Ob\OldOb</Filter>
-    </None>
-    <None Include="OldOb\obcreate.c">
-      <Filter>Ob\OldOb</Filter>
-    </None>
-    <None Include="OldOb\obdir.c">
-      <Filter>Ob\OldOb</Filter>
-    </None>
-    <None Include="OldOb\obinit.c">
-      <Filter>Ob\OldOb</Filter>
-    </None>
-    <None Include="OldOb\obquery.c">
-      <Filter>Ob\OldOb</Filter>
-    </None>
-    <None Include="OldMm\virtual.c">
-      <Filter>Mm\OldMm</Filter>
-    </None>
-    <None Include="OldMm\mm.c">
-      <Filter>Mm\OldMm</Filter>
-    </None>
-    <None Include="OldMm\mm.h">
-      <Filter>Mm\OldMm</Filter>
-    </None>
-    <None Include="OldMm\page_fault.c">
-      <Filter>Mm\OldMm</Filter>
-    </None>
-    <None Include="OldMm\page_table.c">
-      <Filter>Mm\OldMm</Filter>
-    </None>
-    <None Include="OldMm\physical.c">
-      <Filter>Mm\OldMm</Filter>
-    </None>
     <None Include="..\bochs\bochsrc.bxrc" />
     <None Include="finalize.bat" />
   </ItemGroup>

@@ -112,14 +112,14 @@ DriverDispatch(
 	}
 	case IRP_MJ_WRITE:
 
-		SerialWrite( Irp->FileObject->DiskId, Irp->StackLocation->Parameters.Write.Length, Irp->SystemBuffer );
+		SerialWrite( Irp->FileObject->DiskId, ( ULONG32 )Irp->StackLocation->Parameters.Write.Length, Irp->SystemBuffer );
 		Irp->UserIosb.Information = Irp->StackLocation->Parameters.Write.Length;
 		Irp->UserIosb.Status = STATUS_SUCCESS;
 
 		break;
 	case IRP_MJ_READ:
 
-		SerialRead( Irp->FileObject->DiskId, Irp->StackLocation->Parameters.Read.Length, Irp->SystemBuffer );
+		SerialRead( Irp->FileObject->DiskId, ( ULONG32 )Irp->StackLocation->Parameters.Read.Length, Irp->SystemBuffer );
 		Irp->UserIosb.Information = Irp->StackLocation->Parameters.Write.Length;
 		Irp->UserIosb.Status = STATUS_SUCCESS;
 

@@ -6,14 +6,6 @@
 #define NtGdiAllocateDi( type ) ExAllocatePoolWithTag( sizeof( type ), DI_TAG )
 
 VOID
-NtGdiRenderText(
-	__in ULONG32* Buffer,
-	__in PUNICODE_STRING Text,
-	__in PRECT Rect,
-	__in PPOINT BufferRegion
-);
-
-VOID
 NtGdiDiInsert(
 	__in PKWINDOW Window,
 	__in PDI_BASE DiToInsert
@@ -121,6 +113,49 @@ NtGdiDiConsoleBaseDrawProc(
 
 //
 //    diconbase.c
+//
+
+
+//
+//	dieditbox.c
+//
+
+typedef struct _CS_EDIT_BOX {
+	int pd0;
+
+} CS_EDIT_BOX, *PCS_EDIT_BOX;
+
+typedef struct _DI_EDIT_BOX {
+	DI_BASE Base;
+
+	ULONG32 Fill;
+	ULONG32 Border;
+
+
+} DI_EDIT_BOX, *PDI_EDIT_BOX;
+
+VOID
+NtGdiDiEditboxWndProc(
+	__in PKWINDOW Window,
+	__in ULONG32 Message,
+	__in ULONG32 Param1,
+	__in ULONG32 Param2
+);
+
+VOID
+NtGdiDiEditboxClassInit(
+	__in PKWINDOW Window,
+	__in PWNDCLASSEX Class
+);
+
+VOID
+NtGdiDiEditboxDrawProc(
+	__in PKWINDOW Window,
+	__in PDI_EDIT_BOX Editbox
+);
+
+//
+//	dieditbox.c
 //
 
 

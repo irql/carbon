@@ -259,7 +259,7 @@ ObpCreateSymbolicLink(
 
 		NameLink->LinkTargetName.Buffer = NULL;
 		NameLink->LinkTargetName.Length = 0;
-		NameLink->LinkTargetName.MaximumLength = 0;
+		NameLink->LinkTargetName.Size = 0;
 	}
 
 	if ( Object != NULL ) {

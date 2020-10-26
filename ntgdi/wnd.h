@@ -60,6 +60,7 @@ typedef struct _KWINDOW {
 	UNICODE_STRING Name;
 
 	ULONG32* PrimaryBuffer;
+	PVOID ClassSpecific;
 
 	PDI_BASE DiFlink;
 

@@ -18,7 +18,7 @@ ULONG RtlStringLength(
 ) {
 	ULONG Length = 0;
 
-	while (String[Length])
+	while ( String[ Length ] )
 		Length++;
 
 	return Length; // Return the length excluding a null terminator.
@@ -29,7 +29,7 @@ VOID RtlStringCopy(
 	__inout PWSTR	DestinationString,	// Destination string.
 	__in	PWSTR	SourceString		// Source string.
 ) {
-	while (*SourceString != 0)
+	while ( *SourceString != 0 )
 		*DestinationString++ = *SourceString++;
 
 	*DestinationString = 0;
@@ -41,7 +41,7 @@ VOID RtlStringCopyLength(
 	__in	PWSTR SourceString,			// Source string.
 	__in	ULONG Characters			// Characters to copy.
 ) {
-	while (Characters-- && *SourceString != 0)
+	while ( Characters-- && *SourceString != 0 )
 		*DestinationString++ = *SourceString++;
 
 	*DestinationString = 0;
@@ -53,8 +53,9 @@ LONG RtlStringCompare(
 	__in PCWSTR String2		// String 2.
 ) {
 	while ( *String1 != 0 && *String2 != 0 &&
-			*String1++ == *String2++ );
-	
+		*String1 == *String2 )
+		String1++, String2++;
+
 	return *String1 - *String2; // Return the difference between string lengths.
 }
 
@@ -65,7 +66,8 @@ LONG RtlStringCompareLength(
 	__in ULONG	Characters	// Characters to compare.
 ) {
 	while ( --Characters &&
-			*String1++ == *String2++ );
+		*String1 == *String2 )
+		String1++, String2++;
 
 	return *String1 - *String2; // Return the difference between string lengths.
 }
@@ -74,7 +76,7 @@ LONG RtlStringCompareLength(
 NTSTATUS RtlUnicodeStringValidate(
 	__in PUNICODE_STRING UnicodeString // Unicode string.
 ) {
-	if (UnicodeString == NULL || UnicodeString->Buffer == NULL)
+	if ( UnicodeString == NULL || UnicodeString->Buffer == NULL )
 		return STATUS_UNSUCCESSFUL;
 
 	return STATUS_SUCCESS; // Return success if the string is valid.
@@ -85,8 +87,8 @@ VOID RtlInitUnicodeString(
 	__inout PUNICODE_STRING	UnicodeString,	// Unicode string.
 	__in	PWSTR			String			// Source string.
 ) {
-	UnicodeString->Length = RtlStringLength(String);
-	UnicodeString->Size = (UnicodeString->Length + 1) * sizeof(WCHAR);
+	UnicodeString->Length = RtlStringLength( String );
+	UnicodeString->Size = ( UnicodeString->Length + 1 ) * sizeof( WCHAR );
 	UnicodeString->Buffer = String;
 }
 
@@ -95,13 +97,13 @@ VOID RtlAllocateAndInitUnicodeString(
 	__inout PUNICODE_STRING	AllocatedUnicodeString, // Allocated unicode string.
 	__in	PWSTR			SourceString			// Source string.
 ) {
-	if (!NT_SUCCESS(RtlUnicodeStringValidate(AllocatedUnicodeString))) return; // pog 
+	if ( !NT_SUCCESS( RtlUnicodeStringValidate( AllocatedUnicodeString ) ) ) return; // pog 
 
-	AllocatedUnicodeString->Length = RtlStringLength(SourceString);
-	AllocatedUnicodeString->Size = (((((AllocatedUnicodeString->Length + 1) * sizeof(WCHAR)) + 63) / 64) * 64);
-	AllocatedUnicodeString->Buffer = ExAllocatePoolWithTag(AllocatedUnicodeString->Size, _byteswap_ulong('Str '));
+	AllocatedUnicodeString->Length = RtlStringLength( SourceString );
+	AllocatedUnicodeString->Size = ( ( ( ( ( AllocatedUnicodeString->Length + 1 ) * sizeof( WCHAR ) ) + 63 ) / 64 ) * 64 );
+	AllocatedUnicodeString->Buffer = ExAllocatePoolWithTag( AllocatedUnicodeString->Size, _byteswap_ulong( 'Str ' ) );
 
-	RtlStringCopy(AllocatedUnicodeString->Buffer, SourceString);
+	RtlStringCopy( AllocatedUnicodeString->Buffer, SourceString );
 }
 
 /* Initializes and allocates a unicode string. */
@@ -109,20 +111,20 @@ VOID RtlAllocateAndInitUnicodeStringEx(
 	__inout PUNICODE_STRING	*AllocatedUnicodeString,	// Allocated unicode string.
 	__in	PWSTR			SourceString				// Source string.
 ) {
-	*AllocatedUnicodeString = (PUNICODE_STRING)ExAllocatePoolWithTag(sizeof(UNICODE_STRING), _byteswap_ulong('Str '));
+	*AllocatedUnicodeString = ( PUNICODE_STRING )ExAllocatePoolWithTag( sizeof( UNICODE_STRING ), _byteswap_ulong( 'Str ' ) );
 
-	(*AllocatedUnicodeString)->Length = RtlStringLength(SourceString);
-	(*AllocatedUnicodeString)->Size = ((*AllocatedUnicodeString)->Length + 1) * sizeof(WCHAR);
+	( *AllocatedUnicodeString )->Length = RtlStringLength( SourceString );
+	( *AllocatedUnicodeString )->Size = ( ( *AllocatedUnicodeString )->Length + 1 ) * sizeof( WCHAR );
 
-	(*AllocatedUnicodeString)->Buffer = ExAllocatePoolWithTag((*AllocatedUnicodeString)->Size, _byteswap_ulong('Str '));
-	RtlStringCopy((*AllocatedUnicodeString)->Buffer, SourceString);
+	( *AllocatedUnicodeString )->Buffer = ExAllocatePoolWithTag( ( *AllocatedUnicodeString )->Size, _byteswap_ulong( 'Str ' ) );
+	RtlStringCopy( ( *AllocatedUnicodeString )->Buffer, SourceString );
 }
 
 /* Frees an allocated unicode string. */
 VOID RtlFreeUnicodeString(
 	__in PUNICODE_STRING AllocatedUnicodeString // Allocated unicode string.
 ) {
-	ExFreePoolWithTag(AllocatedUnicodeString, _byteswap_ulong('Str '));
+	ExFreePoolWithTag( AllocatedUnicodeString, _byteswap_ulong( 'Str ' ) );
 }
 
 /* Copies contents from one string to another. */
@@ -130,13 +132,13 @@ NTSTATUS RtlUnicodeStringCopy(
 	__inout PUNICODE_STRING DestinationUnicodeString,	// Destination unicode string.
 	__in	PUNICODE_STRING SourceUnicodeString			// Source unicode string.
 ) {
-	if (!NT_SUCCESS(RtlUnicodeStringValidate(DestinationUnicodeString)) ||
-		!NT_SUCCESS(RtlUnicodeStringValidate(SourceUnicodeString))) return STATUS_INVALID_PARAMETER;
+	if ( !NT_SUCCESS( RtlUnicodeStringValidate( DestinationUnicodeString ) ) ||
+		!NT_SUCCESS( RtlUnicodeStringValidate( SourceUnicodeString ) ) ) return STATUS_INVALID_PARAMETER;
 
-	RtlStringCopy(DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer);
+	RtlStringCopy( DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer );
 
-	DestinationUnicodeString->Length = RtlStringLength(DestinationUnicodeString->Buffer);
-	DestinationUnicodeString->Size = (DestinationUnicodeString->Length + 1) * sizeof(WCHAR);
+	DestinationUnicodeString->Length = RtlStringLength( DestinationUnicodeString->Buffer );
+	DestinationUnicodeString->Size = ( DestinationUnicodeString->Length + 1 ) * sizeof( WCHAR );
 
 	return STATUS_SUCCESS; // Return success if the parameters are valid.
 }
@@ -147,13 +149,13 @@ NTSTATUS RtlUnicodeStringCopyLength(
 	__in	PUNICODE_STRING SourceUnicodeString,		// Source unicode string.
 	__in	ULONG			Characters					// Characters to copy.
 ) {
-	if (!NT_SUCCESS(RtlUnicodeStringValidate(DestinationUnicodeString)) ||
-		!NT_SUCCESS(RtlUnicodeStringValidate(SourceUnicodeString))) return STATUS_INVALID_PARAMETER;
+	if ( !NT_SUCCESS( RtlUnicodeStringValidate( DestinationUnicodeString ) ) ||
+		!NT_SUCCESS( RtlUnicodeStringValidate( SourceUnicodeString ) ) ) return STATUS_INVALID_PARAMETER;
 
-	RtlStringCopyLength(DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer, Characters);
+	RtlStringCopyLength( DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer, Characters );
 
-	DestinationUnicodeString->Length = RtlStringLength(DestinationUnicodeString->Buffer);
-	DestinationUnicodeString->Size = (DestinationUnicodeString->Length + 1) * sizeof(WCHAR);
+	DestinationUnicodeString->Length = RtlStringLength( DestinationUnicodeString->Buffer );
+	DestinationUnicodeString->Size = ( DestinationUnicodeString->Length + 1 ) * sizeof( WCHAR );
 
 	return STATUS_SUCCESS; // Return success if the parameters are valid.
 }
@@ -163,10 +165,10 @@ ULONG RtlUnicodeStringCompare(
 	__in PUNICODE_STRING UnicodeString1,	// Unicode string 1.
 	__in PUNICODE_STRING UnicodeString2		// Unicode string 2.
 ) {
-	if (!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString1)) ||
-		!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString2))) return STATUS_INVALID_PARAMETER;
+	if ( !NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString1 ) ) ||
+		!NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString2 ) ) ) return STATUS_INVALID_PARAMETER;
 
-	return RtlStringCompare(UnicodeString1->Buffer, UnicodeString2->Buffer); // Return the result.
+	return RtlStringCompare( UnicodeString1->Buffer, UnicodeString2->Buffer ); // Return the result.
 }
 
 /* Compares 2 unicode strings by length. */
@@ -175,8 +177,8 @@ ULONG RtlUnicodeStringCompareLength(
 	__in PUNICODE_STRING	UnicodeString2,	// Unicode string 2.
 	__in ULONG				Characters		// Characters to compare.
 ) {
-	if (!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString1)) ||
-		!NT_SUCCESS(RtlUnicodeStringValidate(UnicodeString2))) return STATUS_INVALID_PARAMETER;
+	if ( !NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString1 ) ) ||
+		!NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString2 ) ) ) return STATUS_INVALID_PARAMETER;
 
-	return RtlStringCompareLength(UnicodeString1->Buffer, UnicodeString2->Buffer, Characters); // Return the result.
+	return RtlStringCompareLength( UnicodeString1->Buffer, UnicodeString2->Buffer, Characters ); // Return the result.
 }

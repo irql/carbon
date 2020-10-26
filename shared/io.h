@@ -53,7 +53,7 @@ typedef enum _FILE_INFORMATION_CLASS {
 
 } FILE_INFORMATION_CLASS, *PFILE_INFORMATION_CLASS;
 
-typedef struct _FILE_BASIC_INFORMATION{
+typedef struct _FILE_BASIC_INFORMATION {
 	ULONG64 FileSize;
 	ULONG64 FileSizeOnDisk;
 
@@ -105,7 +105,7 @@ typedef struct _DRIVER_OBJECT {
 typedef struct _DEVICE_OBJECT {
 	PDRIVER_OBJECT DriverObject;
 
-	PKDRIVER_DISPATCH MajorFunction[IRP_MJ_MAX];
+	PKDRIVER_DISPATCH MajorFunction[ IRP_MJ_MAX ];
 } DEVICE_OBJECT, *PDEVICE_OBJECT;
 
 #if 0
@@ -114,7 +114,7 @@ typedef struct _VPB {
 	ULONG32 SerialNumber;
 	ULONG32 ReferenceCount;
 	USHORT VolumeLabelLength;
-	WCHAR VolumeLabel[32];
+	WCHAR VolumeLabel[ 32 ];
 	PDEVICE_OBJECT DeviceObject;
 } VPB, *PVPB;
 #endif
@@ -162,13 +162,13 @@ typedef struct _IO_STACK_LOCATION {
 		} Create;
 
 		struct {
-			ULONG32 Length;
+			ULONG64 Length;
 			ULONG64 ByteOffset;
 
 		} Read;
 
 		struct {
-			ULONG32 Length;
+			ULONG64 Length;
 			ULONG64 ByteOffset;
 
 		} Write;
@@ -229,7 +229,7 @@ NTSTATUS
 IoCallDevice(
 	__in PDEVICE_OBJECT DeviceObject,
 	__in PIRP Irp
-	);
+);
 
 NTSYSAPI
 PIRP
@@ -239,7 +239,7 @@ IoBuildDeviceIoControlRequest(
 	__in ULONG InputBufferLength,
 	__in PVOID OutputBuffer,
 	__in ULONG OutputBufferLength
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -247,7 +247,7 @@ IoCreateDevice(
 	__in PDRIVER_OBJECT DriverObject,
 	__in PUNICODE_STRING DeviceName,
 	__out PDEVICE_OBJECT* DeviceObject
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -257,7 +257,7 @@ ZwCreateFile(
 	__in ACCESS_MASK DesiredAccess,
 	__in ULONG Disposition,
 	__in POBJECT_ATTRIBUTES ObjectAttributes
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -265,9 +265,9 @@ ZwReadFile(
 	__in HANDLE FileHandle,
 	__out PIO_STATUS_BLOCK IoStatusBlock,
 	__in PVOID Buffer,
-	__in ULONG Length,
+	__in ULONG64 Length,
 	__in ULONG64 ByteOffset
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -275,15 +275,15 @@ ZwWriteFile(
 	__in HANDLE FileHandle,
 	__out PIO_STATUS_BLOCK IoStatusBlock,
 	__in PVOID Buffer,
-	__in ULONG Length,
+	__in ULONG64 Length,
 	__in ULONG64 ByteOffset
-	);
+);
 
 NTSYSAPI
 NTSTATUS
 ZwClose(
 	__in HANDLE Handle
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -294,7 +294,7 @@ ZwQueryDirectoryFile(
 	__in ULONG Length,
 	__in FILE_INFORMATION_CLASS FileInformationClass,
 	__in_opt PUNICODE_STRING FileName
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -304,7 +304,7 @@ ZwQueryInformationFile(
 	__in PVOID FileInformation,
 	__in ULONG Length,
 	__in FILE_INFORMATION_CLASS FileInformationClass
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -314,7 +314,7 @@ ZwSetInformationFile(
 	__in PVOID FileInformation,
 	__in ULONG Length,
 	__in FILE_INFORMATION_CLASS FileInformationClass
-	);
+);
 
 NTSYSAPI
 NTSTATUS
@@ -326,10 +326,10 @@ ZwDeviceIoControlFile(
 	__in ULONG InputBufferLength,
 	__in PVOID OutputBuffer,
 	__in ULONG OutputBufferLength
-	);
+);
 
 NTSYSAPI
 NTSTATUS
 IoLoadDriver(
 	__in PUNICODE_STRING FilePath
-	);
+);

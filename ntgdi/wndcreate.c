@@ -88,7 +88,6 @@ NtGdiCreateWindow(
 	__out PHANDLE Handle
 )
 {
-	MenuId;
 	Flags;
 
 	STATIC OBJECT_ATTRIBUTES DefaultAttributes = { OBJ_PERMANENT, NULL };
@@ -225,6 +224,23 @@ NtGdiWindowsInitializeSubsystem(
 
 		return ntStatus;
 	}
+
+	UNICODE_STRING EditboxClassName = RTL_CONSTANT_UNICODE_STRING( L"SIME_S" );
+
+	WNDCLASSEX EditboxClass;
+	EditboxClass.ClassInit = NtGdiDiEditboxClassInit;
+	EditboxClass.WndProc = NtGdiDiEditboxWndProc;
+	EditboxClass.Fill = 0xFFFFFFFF;
+	EditboxClass.Border = 0xFF000000;
+	EditboxClass.ClassName = EditboxClassName;
+
+	ntStatus = NtGdiRegisterClass( &EditboxClass );
+
+	if ( !NT_SUCCESS( ntStatus ) ) {
+
+		return ntStatus;
+	}
+
 
 	UNICODE_STRING RootClassName = RTL_CONSTANT_UNICODE_STRING( L"rootclass" );
 

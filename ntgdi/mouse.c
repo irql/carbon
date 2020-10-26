@@ -11,6 +11,7 @@ UCHAR NtMouseCycle = 0;
 UCHAR NtMouseByte[ 3 ];
 UCHAR NtPreviousByte0 = 0;
 POINT g_NtCursorPosition = { 0, 0 };
+BOOLEAN g_CursorVisible = FALSE;
 
 VOID
 NtSendMousePacket(
@@ -106,7 +107,13 @@ NtMouseUpdateIrq(
 		g_NtCursorPosition.x = Mouse.x;
 		g_NtCursorPosition.y = Mouse.y;
 
-		SvMoveCursor( TRUE, g_NtCursorPosition.x, g_NtCursorPosition.y );
+		if ( !( NtPreviousByte0 & 1 ) ) {
+
+			g_CursorVisible = TRUE;
+			g_TypingCursor = FALSE;
+		}
+
+		SvMoveCursor( g_CursorVisible, g_NtCursorPosition.x, g_NtCursorPosition.y );
 
 		if ( NtMouseByte[ 0 ] & 1 ) {
 

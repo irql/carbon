@@ -13,12 +13,12 @@ Abstract:
 
 #pragma once
 
-#pragma warning (disable: 4200)
-#pragma warning (disable: 4201)
-#pragma warning (disable: 4204)
-#pragma warning (disable: 4214)
-#pragma warning (disable: 4366)
-#pragma warning (disable: 4213)
+#pragma warning (disable : 4200)
+#pragma warning (disable : 4201)
+#pragma warning (disable : 4204)
+#pragma warning (disable : 4214)
+#pragma warning (disable : 4366)
+#pragma warning (disable : 4213)
 
 #define NULL				((void*)0)
 #define VOID				void
@@ -34,7 +34,7 @@ Abstract:
 #define UNALIGNED			__unaligned
 
 typedef unsigned char		UCHAR, *PUCHAR;
-typedef unsigned short		USHORT,	*PUSHORT;
+typedef unsigned short		USHORT, *PUSHORT;
 typedef unsigned long		ULONG, *PULONG;
 typedef unsigned long		ULONG32, *PULONG32;
 typedef unsigned long long	ULONG64, *PULONG64;

@@ -1,7 +1,5 @@
 
 
-//0xFFE1E1E1 fill
-//0xFFADADAD border
 
 #include "driver.h"
 #include "wnd.h"
@@ -91,35 +89,26 @@ NtGdiDiButtonDrawProc(
 
 		for ( ULONG32 i = 0; i < ( Width * 2 ); i++ ) {
 
-			Window->PrimaryBuffer[ i ] = 0xFF0078D7;
+			Window->PrimaryBuffer[ i ] = WND_PRIMARY_COLOUR;
 		}
 
 		for ( ULONG32 i = 0; i < ( Width * 2 ); i++ ) {
 
-			Window->PrimaryBuffer[ ( Height - 2 ) * Width + i ] = 0xFF0078D7;
+			Window->PrimaryBuffer[ ( Height - 2 ) * Width + i ] = WND_PRIMARY_COLOUR;
 		}
 
 		for ( ULONG32 i = 0; i < ( Height * 2 ); i++ ) {
 
-			Window->PrimaryBuffer[ ( Width * ( i % Height ) ) + ( i / Height ) ] = 0xFF0078D7;
+			Window->PrimaryBuffer[ ( Width * ( i % Height ) ) + ( i / Height ) ] = WND_PRIMARY_COLOUR;
 		}
 
 		for ( ULONG32 i = 0; i < ( Height * 2 ); i++ ) {
 
-			Window->PrimaryBuffer[ ( Width * ( ( i % Height ) + 1 ) ) - 2 + ( i / Height ) ] = 0xFF0078D7;
+			Window->PrimaryBuffer[ ( Width * ( ( i % Height ) + 1 ) ) - 2 + ( i / Height ) ] = WND_PRIMARY_COLOUR;
 		}
-
 
 	}
 
-	POINT BufferRegion = { Width, Height };
-
-	RECT Rect;
-	Rect.top = 4;
-	Rect.left = 4;
-	Rect.bottom = Height - Rect.top;
-	Rect.right = Width - Rect.left;
-
-	NtGdiRenderText( Window->PrimaryBuffer, &Window->Name, &Rect, &BufferRegion );
+	g_DefaultFont->Render( g_DefaultFont, Window->Name.Buffer, 4, 4, 0xFF000000, Window->PrimaryBuffer, &Window->Rect );
 
 }

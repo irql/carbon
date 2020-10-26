@@ -62,9 +62,13 @@ DriverEntry(
 	NtInitializeCursor( );
 
 	SvFifoCommitAll( );
+
+	g_CursorVisible = TRUE;
 	SvMoveCursor( 1, 0, 0 );
 
+	NtGdiFontInitializeObject( );
 	NtGdiWindowsInitializeSubsystem( );
+	NtGdiConsoleInitializeSubsystem( );
 
 	UNICODE_STRING RootClassName = RTL_CONSTANT_UNICODE_STRING( L"asswipe" );
 	WNDCLASSEX RootClass;
@@ -105,6 +109,16 @@ DriverEntry(
 	HANDLE ButtonHandle1;
 
 	NtGdiCreateWindow( &ButtonText1, &ButtonText, 0, 14, 84, 160, 23, 1001, AssHandle1, &ButtonHandle1 );
+
+	UNICODE_STRING Editbox = RTL_CONSTANT_UNICODE_STRING( L"SIME_S" );
+	HANDLE EditboxHandle;
+
+	NtGdiCreateWindow( &Editbox, &Editbox, 0, 150, 10, 400, 450, 1002, AssHandle1, &EditboxHandle );
+
+	HANDLE ConsoleHandle;
+	NtGdiCreateConsole( &ConsoleHandle, &ButtonText1, 0, 30, 30 );
+
+	NtGdiWriteConsole( ConsoleHandle, L"Lime_S", 6 );
 
 #if 1
 	HANDLE RenderThread;

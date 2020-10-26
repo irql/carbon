@@ -16,7 +16,6 @@
     <ClCompile Include="mouse.c">
       <Filter>i8042</Filter>
     </ClCompile>
-    <ClCompile Include="cursor.c" />
     <ClCompile Include="diwinbase.c">
       <Filter>Wnd</Filter>
     </ClCompile>
@@ -53,6 +52,21 @@
     <ClCompile Include="ttf_render.c">
       <Filter>Font</Filter>
     </ClCompile>
+    <ClCompile Include="font.c">
+      <Filter>Font</Filter>
+    </ClCompile>
+    <ClCompile Include="bitfont.c">
+      <Filter>Font</Filter>
+    </ClCompile>
+    <ClCompile Include="dieditbox.c">
+      <Filter>Wnd</Filter>
+    </ClCompile>
+    <ClCompile Include="cursor.c">
+      <Filter>Cursor</Filter>
+    </ClCompile>
+    <ClCompile Include="typing.c">
+      <Filter>Cursor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="driver.h" />
@@ -81,6 +95,12 @@
     <ClInclude Include="ttf.h">
       <Filter>Font</Filter>
     </ClInclude>
+    <ClInclude Include="font.h">
+      <Filter>Font</Filter>
+    </ClInclude>
+    <ClInclude Include="bitfont.h">
+      <Filter>Font</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Wnd">
@@ -94,6 +114,9 @@
     </Filter>
     <Filter Include="Font">
       <UniqueIdentifier>{dbe22234-7f56-4cb4-ad2f-f85b97227482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cursor">
+      <UniqueIdentifier>{b119c83f-057a-4d00-ab07-c162aa0c55d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

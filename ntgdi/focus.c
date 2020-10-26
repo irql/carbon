@@ -58,30 +58,58 @@ NtGdiWindowFromPoint(
 		//	we can start scanning the child windows.
 		//
 
+		Last = Window->Child;
+
+		while ( Last->Child != NULL ) {
+
+			Last = Last->Child;
+		}
+
 		PKWINDOW WindowPoint = Window;
 		PKWINDOW ChildWindow = Window->Child;
 
-		while ( ChildWindow != NULL ) {
+		while ( Last != Window->Child ) {
+			ChildWindow = Last;
+
+			Last = Window->Child;
+			while ( Last->Child != ChildWindow ) {
+
+				Last = Last->Child;
+			}
 
 			if ( ( Window->Rect.top + ChildWindow->Rect.top ) > Point->y ||
 				( Window->Rect.top + ChildWindow->Rect.bottom ) < Point->y ) {
 
-				ChildWindow = ChildWindow->Child;
 				continue;
 			}
 
 			if ( ( Window->Rect.left + ChildWindow->Rect.left ) > Point->x ||
 				( Window->Rect.left + ChildWindow->Rect.right ) < Point->x ) {
 
-				ChildWindow = ChildWindow->Child;
 				continue;
 			}
 
-			//KdCmdMessage( L"pd %s", ChildWindow->Name.Buffer );
+			WindowPoint = ChildWindow;
+		}
+
+		ChildWindow = Window->Child;
+
+		do {
+
+			if ( ( Window->Rect.top + ChildWindow->Rect.top ) > Point->y ||
+				( Window->Rect.top + ChildWindow->Rect.bottom ) < Point->y ) {
+
+				continue;
+			}
+
+			if ( ( Window->Rect.left + ChildWindow->Rect.left ) > Point->x ||
+				( Window->Rect.left + ChildWindow->Rect.right ) < Point->x ) {
+
+				continue;
+			}
 
 			WindowPoint = ChildWindow;
-			ChildWindow = ChildWindow->Child;
-		}
+		} while ( 0 );
 
 		KeReleaseSpinLock( &g_WindowListLock );
 		return WindowPoint;

@@ -109,32 +109,13 @@
     <ClCompile Include="acpi.c" />
     <ClCompile Include="apic.c" />
     <ClCompile Include="bmath.c" />
+    <ClCompile Include="crt.c" />
     <ClCompile Include="dbg.c" />
     <ClCompile Include="dllsup.c" />
     <ClCompile Include="dma.c" />
     <ClCompile Include="initmm.c" />
     <ClCompile Include="mm.c" />
     <ClCompile Include="obdestroy.c" />
-    <ClCompile Include="OldNewMm\mm.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\page_fault.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\page_table.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\physical.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </ClCompile>
-    <ClCompile Include="OldNewMm\virtual.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </ClCompile>
     <ClCompile Include="phys.c" />
     <ClCompile Include="table.c" />
     <ClCompile Include="tlb.c" />
@@ -159,47 +140,6 @@
     <ClCompile Include="virt.c" />
     <None Include="..\bochs\bochsrc.bxrc" />
     <None Include="finalize.bat" />
-    <None Include="OldOb\obcreate.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </None>
-    <None Include="OldOb\obdir.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </None>
-    <None Include="OldOb\obinit.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </None>
-    <None Include="OldOb\obquery.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </None>
-    <None Include="OldMm\mm.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </None>
-    <None Include="OldMm\page_fault.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </None>
-    <None Include="OldMm\page_table.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </None>
-    <None Include="OldMm\physical.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </None>
-    <None Include="OldMm\virtual.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </None>
     <ClCompile Include="pci.c" />
     <ClCompile Include="pesup.c" />
     <ClCompile Include="pic.c" />
@@ -234,17 +174,6 @@
     <ClInclude Include="ldrsup.h" />
     <ClInclude Include="mm.h" />
     <ClInclude Include="ob.h" />
-    <None Include="OldOb\ob.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </None>
-    <None Include="OldMm\mm.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </None>
-    <ClInclude Include="OldNewMm\mm.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-    </ClInclude>
     <ClInclude Include="pesup.h" />
   </ItemGroup>
   <ItemGroup>

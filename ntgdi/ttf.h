@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <carbsup.h>
-
 //https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html
 
 typedef struct _TTF_HEADER {

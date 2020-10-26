@@ -77,8 +77,8 @@ DriverDispatch(
 		NTSTATUS ntStatus;
 		PWCHAR* SplitPath = NULL;
 
-		PWCHAR DirectoryPath = ( PWCHAR )ExAllocatePoolWithTag( Irp->FileObject->FileName->MaximumLength, 'htaP' );
-		_memcpy( ( void* )DirectoryPath, ( void* )Irp->FileObject->FileName->Buffer, ( int )Irp->FileObject->FileName->MaximumLength );
+		PWCHAR DirectoryPath = ( PWCHAR )ExAllocatePoolWithTag( Irp->FileObject->FileName->Size, 'htaP' );
+		_memcpy( ( void* )DirectoryPath, ( void* )Irp->FileObject->FileName->Buffer, ( int )Irp->FileObject->FileName->Size );
 
 		ULONG32 FsDirectoryPathIndex = 0;
 
@@ -149,7 +149,7 @@ DriverDispatch(
 		if ( ( ULONG64 )Irp->StackLocation->Parameters.Read.Length > Irp->FileObject->FileMemorySize )
 			Irp->StackLocation->Parameters.Read.Length = ( ULONG32 )Irp->FileObject->FileMemorySize;
 
-		_memcpy( Irp->SystemBuffer, ( void* )( ( PCHAR )Irp->FileObject->FileMemory + Irp->StackLocation->Parameters.Read.ByteOffset ), Irp->StackLocation->Parameters.Read.Length );
+		_memcpy( Irp->SystemBuffer, ( void* )( ( PCHAR )Irp->FileObject->FileMemory + Irp->StackLocation->Parameters.Read.ByteOffset ), ( int )Irp->StackLocation->Parameters.Read.Length );
 
 		Irp->UserIosb.Information = Irp->StackLocation->Parameters.Read.Length;
 		Irp->UserIosb.Status = STATUS_SUCCESS;

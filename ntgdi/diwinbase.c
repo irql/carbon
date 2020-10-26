@@ -45,15 +45,6 @@ NtGdiDiWindowBaseDrawProc(
 		Window->PrimaryBuffer[ i ] = 0xFFFFFFFF;
 	}
 
-	RECT Rect;
-	Rect.left = WND_TITLE_INDENT_X;
-	Rect.top = WND_TITLE_INDENT_Y;
-	Rect.right = WND_TITLE_INDENT_X + Width - WND_TITLE_INDENT_X;
-	Rect.bottom = WND_TITLE_INDENT_Y + 16;
-	POINT BufferRegion = { Width, Height };
-
-	NtGdiRenderText( Window->PrimaryBuffer, &Window->Name, &Rect, &BufferRegion );
-
 	ULONG32 Cross = 0xFF999999;
 	if ( g_Focus->Parent == Window ) {
 
@@ -79,6 +70,8 @@ NtGdiDiWindowBaseDrawProc(
 	Window->PrimaryBuffer[ Width * ( 17 + 2 ) - 18 - 1 ] = Cross;
 	Window->PrimaryBuffer[ Width * ( 17 + 3 ) - 19 - 1 ] = Cross;
 	Window->PrimaryBuffer[ Width * ( 17 + 4 ) - 20 - 1 ] = Cross;
+
+	g_DefaultFont->Render( g_DefaultFont, Window->Name.Buffer, WND_TITLE_INDENT_X, WND_TITLE_INDENT_Y, Cross, Window->PrimaryBuffer, &Window->Rect );
 
 	ULONG32 Border = 0x80000000;
 

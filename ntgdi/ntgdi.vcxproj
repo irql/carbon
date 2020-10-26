@@ -7,14 +7,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="bitfont.c" />
     <ClCompile Include="console.c" />
     <ClCompile Include="cursor.c" />
     <ClCompile Include="di.c" />
     <ClCompile Include="diconbase.c" />
+    <ClCompile Include="dieditbox.c" />
     <ClCompile Include="diwinbase.c" />
     <ClCompile Include="driver.c" />
     <ClCompile Include="fmem.c" />
     <ClCompile Include="focus.c" />
+    <ClCompile Include="font.c" />
     <ClCompile Include="keyboard.c" />
     <ClCompile Include="mouse.c" />
     <ClCompile Include="renderloop.c" />
@@ -23,15 +26,18 @@
     <ClCompile Include="svga3d.c" />
     <ClCompile Include="ttf.c" />
     <ClCompile Include="ttf_render.c" />
+    <ClCompile Include="typing.c" />
     <ClCompile Include="winlist.c" />
     <ClCompile Include="wndcomposite.c" />
     <ClCompile Include="wndcreate.c" />
     <ClCompile Include="wndproc.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bitfont.h" />
     <ClInclude Include="bmp.h" />
     <ClInclude Include="di.h" />
     <ClInclude Include="driver.h" />
+    <ClInclude Include="font.h" />
     <ClInclude Include="i8042.h" />
     <ClInclude Include="svga.h" />
     <ClInclude Include="svga3d.h" />

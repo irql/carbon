@@ -3,6 +3,7 @@
 
 #include "driver.h"
 #include "i8042.h"
+#include "wnd.h"
 
 //https://gist.github.com/davazp/d2fde634503b2a5bc664
 
@@ -101,12 +102,16 @@ NtSendKeyboardPacket(
 	KeyboardPacket.State = State;
 	KeyboardPacket.Flags = Flags;
 
-#if 0
-	if ( FocusedObject->EventProcedure ) {
+	if ( KeyboardPacket.State != KeyStatePress ) {
 
-		FocusedObject->EventProcedure( FocusedObject, EVT_KEY_PRESS, &KeyboardPacket, NULL );
+		return;
 	}
-#endif
+
+	if ( g_Focus != NULL ) {
+
+
+		g_Focus->Class->WndProc( g_Focus, WM_KEY_PRESS, ( ULONG32 )KeyboardPacket.Character, 0 );
+	}
 }
 
 WCHAR
