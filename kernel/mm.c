@@ -4,33 +4,28 @@
 #include <carbsup.h>
 #include "mm.h"
 
-PVOID
-MmAllocateMemory(
+PVOID MmAllocateMemory(
 	__in ULONG64 ByteCount,
 	__in ULONG64 Flags
-)
-{
-
+) {
 	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
 
 	ULONG64 EntryFlags = MiFlagsToEntryFlags( Flags );
-	ULONG64 PageCount = ROUND_TO_PAGES( ByteCount ) / 0x1000;
+	ULONG64 Pages = ROUND_TO_PAGES( ByteCount ) / PAGE_SIZE;
 
-	ULONG64 Address = MiAllocateVirtual( PageCount, Flags );
+	ULONG64 Address = MiAllocateVirtual( Pages, Flags );
+	USHORT	Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
 
-	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
+	while ( Pages-- ) {
+		MiVirtualToIndex( Address + Pages * PAGE_SIZE, &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
 
-	for ( ULONG64 i = 0; i < PageCount; i++ ) {
-
-		MiVirtualToIndex( Address + ( i * 0x1000 ), &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
-
-		ULONG64* Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
+		ULONG64 *Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
 		AddressSpace->BaseVirtual[ Pml4tIndex ] |= EntryFlags;
 
-		ULONG64* Pdt = MiPageTableToVirtual( &Pdpt[ PdptIndex ] );
+		ULONG64 *Pdt = MiPageTableToVirtual( &Pdpt[ PdptIndex ] );
 		Pdpt[ PdptIndex ] |= EntryFlags;
 
-		ULONG64* Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
+		ULONG64 *Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
 		Pdt[ PdtIndex ] |= EntryFlags;
 
 		Pt[ PtIndex ] = MiAllocatePhysical( 1 ) | EntryFlags;
@@ -39,26 +34,21 @@ MmAllocateMemory(
 	return ( PVOID )Address;
 }
 
-PVOID
-MmAllocateMemoryAtPhysical(
+PVOID MmAllocateMemoryAtPhysical(
 	__in ULONG64 Physical,
 	__in ULONG64 ByteCount,
 	__in ULONG64 Flags
-)
-{
-
+) {
 	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
 
 	ULONG64 EntryFlags = MiFlagsToEntryFlags( Flags );
-	ULONG64 PageCount = ROUND_TO_PAGES( ByteCount ) / 0x1000;
+	ULONG64 Pages = ROUND_TO_PAGES( ByteCount ) / PAGE_SIZE;
 
-	ULONG64 Address = MiAllocateVirtual( PageCount, Flags );
+	ULONG64 Address = MiAllocateVirtual( Pages, Flags );
+	USHORT	Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
 
-	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
-
-	for ( ULONG64 i = 0; i < PageCount; i++ ) {
-
-		MiVirtualToIndex( Address + ( i * 0x1000 ), &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
+	while ( Pages-- ) {
+		MiVirtualToIndex( Address + Pages * PAGE_SIZE, &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
 
 		ULONG64* Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
 		AddressSpace->BaseVirtual[ Pml4tIndex ] |= EntryFlags;
@@ -69,34 +59,31 @@ MmAllocateMemoryAtPhysical(
 		ULONG64* Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
 		Pdt[ PdtIndex ] |= EntryFlags;
 
-		Pt[ PtIndex ] = ( Physical + ( i * 0x1000 ) ) | EntryFlags;
+		Pt[ PtIndex ] = ( Physical + Pages * PAGE_SIZE) | EntryFlags;
 	}
 
 	return ( PVOID )Address;
 }
 
-PVOID
-MmAllocateMemoryAtVirtual(
+PVOID MmAllocateMemoryAtVirtual(
 	__in ULONG64 Virtual,
 	__in ULONG64 ByteCount,
 	__in ULONG64 Flags
-)
-{
+) {
 	// should this really overwrite?
 	// no it fucking shouldn't
 
 	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
 
 	ULONG64 EntryFlags = MiFlagsToEntryFlags( Flags );
-	ULONG64 PageCount = ROUND_TO_PAGES( ByteCount ) / 0x1000;
-
-	Virtual = MiAllocateVirtualAt( Virtual, PageCount, Flags );
+	ULONG64 Pages = ROUND_TO_PAGES( ByteCount ) / PAGE_SIZE;
 
 	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
 
-	for ( ULONG64 i = 0; i < PageCount; i++ ) {
+	Virtual = MiAllocateVirtualAt(Virtual, Pages, Flags);
 
-		MiVirtualToIndex( Virtual + ( i * 0x1000 ), &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
+	while ( Pages-- ) {
+		MiVirtualToIndex( Virtual + Pages * PAGE_SIZE, &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
 
 		ULONG64* Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
 		AddressSpace->BaseVirtual[ Pml4tIndex ] |= EntryFlags;
@@ -115,25 +102,23 @@ MmAllocateMemoryAtVirtual(
 
 //This could return NTSTATUS, but its kernel mode and can be forced.
 
-VOID
-MmAllocateMemoryAt(
+VOID MmAllocateMemoryAt(
 	__in ULONG64 Virtual,
 	__in ULONG64 Physical,
 	__in ULONG64 ByteCount,
 	__in ULONG64 Flags
-)
-{
+) {
 
 	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
 
 	ULONG64 EntryFlags = MiFlagsToEntryFlags( Flags );
-	ULONG64 PageCount = ROUND_TO_PAGES( ByteCount ) / 0x1000;
+	ULONG64 Pages = ROUND_TO_PAGES( ByteCount ) / 0x1000;
 
 	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
 
-	for ( ULONG64 i = 0; i < PageCount; i++ ) {
+	while ( Pages-- ) {
 
-		MiVirtualToIndex( Virtual + ( i * 0x1000 ), &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
+		MiVirtualToIndex( Virtual + Pages * PAGE_SIZE, &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
 
 		ULONG64* Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
 		AddressSpace->BaseVirtual[ Pml4tIndex ] |= EntryFlags;
@@ -144,56 +129,35 @@ MmAllocateMemoryAt(
 		ULONG64* Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
 		Pdt[ PdtIndex ] |= EntryFlags;
 
-		Pt[ PtIndex ] = ( Physical + ( i * 0x1000 ) ) | EntryFlags;
+		Pt[ PtIndex ] = ( Physical + Pages * PAGE_SIZE ) | EntryFlags;
 	}
 }
 
-VOID
-MmFreeMemory(
+VOID MmFreeMemory(
 	__in ULONG64 Address,
 	__in ULONG64 ByteCount
-)
-{
-
+) {
 	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
 
-	ULONG64 PageCount = ROUND_TO_PAGES( ByteCount ) / 0x1000;
-
+	ULONG64 Pages = ROUND_TO_PAGES( ByteCount ) / PAGE_SIZE;
 	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
 
-	for ( ULONG64 i = 0; i < PageCount; i++ ) {
+	while ( Pages-- ) {
+		MiVirtualToIndex( Address + Pages * PAGE_SIZE, &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
+		if ( ( AddressSpace->BaseVirtual[ Pml4tIndex ] & EntryPresent ) == 0 ) return;
 
-		MiVirtualToIndex( Address + ( i * 0x1000 ), &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
+		ULONG64 *Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
+		if ( ( Pdpt[ PdptIndex ] & EntryPresent ) == 0 ) return;
 
-		if ( !( AddressSpace->BaseVirtual[ Pml4tIndex ] & EntryPresent ) ) {
+		ULONG64 *Pdt = MiPageTableToVirtual( &Pdpt[ PdptIndex ] );
+		if ( ( Pdt[ PdtIndex ] & EntryPresent ) == 0 ) return;
 
-			return;
-		}
+		ULONG64 *Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
+		if ( ( Pt[ PtIndex ] & EntryPresent ) == 0 ) return;
 
-		ULONG64* Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
-
-		if ( !( Pdpt[ PdptIndex ] & EntryPresent ) ) {
-
-			return;
-		}
-
-		ULONG64* Pdt = MiPageTableToVirtual( &Pdpt[ PdptIndex ] );
-
-		if ( !( Pdt[ PdtIndex ] & EntryPresent ) ) {
-
-			return;
-		}
-
-		ULONG64* Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
-
-		if ( !( Pt[ PtIndex ] & EntryPresent ) ) {
-
-			return;
-		}
-
-		MiMarkPhysical( Pt[ PtIndex ] & ~0xfff, 1, FALSE );
+		MiMarkPhysical( Pt[ PtIndex ] & ~0x0FFF, 1, FALSE );
 		Pt[ PtIndex ] = 0;
-		MiInvalidateTlbEntry( Address + ( i * 0x1000 ) );
-	}
 
+		MiInvalidateTlbEntry( Address + Pages * PAGE_SIZE);
+	}
 }
