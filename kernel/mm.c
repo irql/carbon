@@ -82,11 +82,15 @@ MmAllocateMemoryAtVirtual(
 	__in ULONG64 Flags
 )
 {
+	// should this really overwrite?
+	// no it fucking shouldn't
 
 	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
 
 	ULONG64 EntryFlags = MiFlagsToEntryFlags( Flags );
 	ULONG64 PageCount = ROUND_TO_PAGES( ByteCount ) / 0x1000;
+
+	Virtual = MiAllocateVirtualAt( Virtual, PageCount, Flags );
 
 	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
 

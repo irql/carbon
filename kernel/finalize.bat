@@ -12,6 +12,7 @@ cd x64\Release
 
 copy *.sys D:\system\*.sys
 copy *.dll D:\system\*.dll
+copy *.exe D:\system\*.exe
 copy .\symbols\*.pdb D:\system\symbols\*.pdb
 copy ..\..\assets\system\*.* D:\system\*.*
 

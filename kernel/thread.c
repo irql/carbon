@@ -187,8 +187,6 @@ KiCreateThread(
 		return ntStatus;
 	}
 
-	_memset( NewThread, 0, sizeof( KTHREAD ) );
-
 	if ( KernelStackSize == 0 ) {
 
 		NewThread->KernelStackSize = 0x2000;
@@ -216,7 +214,7 @@ KiCreateThread(
 	NewThread->ActiveThreadLinks.Flink = NULL;
 	NewThread->ActiveThreadLinks.Blink = NULL;
 
-	NewThread->ThreadControlBlock.DirectoryTableBase = ( PVOID )__readcr3( );
+	NewThread->ThreadControlBlock.DirectoryTableBase = __readcr3( );
 	NewThread->ThreadControlBlock.ScheduledThreads.Flink = NULL;
 	NewThread->ThreadControlBlock.ScheduledThreads.Blink = NULL;
 	NewThread->ThreadControlBlock.ThreadState = THREAD_STATE_NOT_READY;

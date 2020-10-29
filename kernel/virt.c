@@ -5,6 +5,69 @@
 #include "mm.h"
 
 ULONG64
+MiAllocateVirtualAt(
+	__in ULONG64 Virtual,
+	__in ULONG64 PageCount,
+	__in ULONG64 Flags
+)
+{
+	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
+
+	KeAcquireSpinLock( &AddressSpace->TableLock );
+
+	ULONG64 EntryFlags = MiFlagsToEntryFlags( Flags );
+
+	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
+
+	for ( ULONG64 i = 0; i < PageCount; i++ ) {
+
+		MiVirtualToIndex( Virtual + ( i * 0x1000 ), &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
+
+		if ( AddressSpace->BaseVirtual[ Pml4tIndex ] & EntryPresent ) {
+
+			ULONG64* Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
+			if ( Pdpt[ PdptIndex ] & EntryPresent ) {
+
+				ULONG64* Pdt = MiPageTableToVirtual( &Pdpt[ PdptIndex ] );
+				if ( Pdt[ PdtIndex ] & EntryPresent ) {
+
+					ULONG64* Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
+
+					if ( Pt[ PtIndex ] & EntryPresent ) {
+
+						ULONG64 NewVirtual = MiAllocateVirtual( PageCount, Flags );
+
+						return NewVirtual;
+					}
+					else {
+
+						i++;
+					}
+				}
+				else {
+
+					i += ( 512 );
+				}
+			}
+			else {
+
+				i += ( 512 * 512 );
+			}
+		}
+		else {
+
+			i += ( 512 * 512 * 512 );
+		}
+	}
+
+	MiMarkVirtual( Virtual, PageCount, EntryFlags );
+
+	KeReleaseSpinLock( &AddressSpace->TableLock );
+
+	return Virtual;
+}
+
+ULONG64
 MiAllocateVirtual(
 	__in ULONG64 PageCount,
 	__in ULONG64 Flags
@@ -18,6 +81,8 @@ MiAllocateVirtual(
 
 	ULONG64 FoundCount = PageCount;
 	ULONG64 FoundVirtual = 0;
+
+	ULONG64 EntryFlags = MiFlagsToEntryFlags( Flags );
 
 	for ( USHORT i = !( Flags & PAGE_USER ) * 256; i < 512; i++ ) {
 
@@ -55,7 +120,7 @@ MiAllocateVirtual(
 
 									if ( FoundCount == 0 ) {
 
-										MiMarkVirtual( FoundVirtual, PageCount, Flags );
+										MiMarkVirtual( FoundVirtual, PageCount, EntryFlags );
 
 										KeReleaseSpinLock( &AddressSpace->TableLock );
 
@@ -73,7 +138,7 @@ MiAllocateVirtual(
 
 							if ( FoundCount <= ( 512 ) ) {
 
-								MiMarkVirtual( FoundVirtual, PageCount, Flags );
+								MiMarkVirtual( FoundVirtual, PageCount, EntryFlags );
 
 								KeReleaseSpinLock( &AddressSpace->TableLock );
 
@@ -95,7 +160,7 @@ MiAllocateVirtual(
 
 					if ( FoundCount <= ( 512 * 512 ) ) {
 
-						MiMarkVirtual( FoundVirtual, PageCount, Flags );
+						MiMarkVirtual( FoundVirtual, PageCount, EntryFlags );
 
 						KeReleaseSpinLock( &AddressSpace->TableLock );
 
@@ -117,7 +182,7 @@ MiAllocateVirtual(
 
 			if ( FoundCount <= ( 512 * 512 * 512 ) ) {
 
-				MiMarkVirtual( FoundVirtual, PageCount, Flags );
+				MiMarkVirtual( FoundVirtual, PageCount, EntryFlags );
 
 				KeReleaseSpinLock( &AddressSpace->TableLock );
 

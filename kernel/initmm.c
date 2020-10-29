@@ -11,7 +11,7 @@ EXTERN KLOCKED_LIST AddressSpaceHead;
 
 EXTERN ADDRESS_SPACE_DESCRIPTOR KernelPageTable;
 
-#define NEW_ADDRESS( x ) ( ( ULONG64 )x ) += ( 0xFFFF'8000'0000'0000 - 0x20'0000 )
+#define NEW_ADDRESS( x ) ( ( ULONG64 )( x ) ) += ( 0xFFFF'8000'0000'0000 - 0x20'0000 )
 #define REGION_LENGTH_TO_BITMAP_SIZE( x ) ( (( ( x ) + ( 0x1000 * 0x40 - 1) ) / ( 0x1000 * 0x40 )) * 8 )
 
 ULONG64
@@ -196,31 +196,31 @@ MiInitMemoryManager(
 	ULONG64 *NewPdptVirtualLo = MiPageTableToVirtual( &NewPml4tVirtual[ 0 ] );
 	ULONG64 *NewPdptVirtualHi = MiPageTableToVirtual( &NewPml4tVirtual[ 256 ] );
 
-	NewPml4tVirtual[ 0 ] |= EntryPresent | EntryWriteable;
-	NewPml4tVirtual[ 256 ] |= EntryPresent | EntryWriteable;
+	NewPml4tVirtual[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
+	NewPml4tVirtual[ 256 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
 
 	ULONG64 *NewPdtVirtualLo = MiPageTableToVirtual( &NewPdptVirtualLo[ 0 ] );
 	ULONG64 *NewPdtVirtualHi = MiPageTableToVirtual( &NewPdptVirtualHi[ 0 ] );
 
-	NewPdptVirtualLo[ 0 ] |= EntryPresent | EntryWriteable;
-	NewPdptVirtualHi[ 0 ] |= EntryPresent | EntryWriteable;
+	NewPdptVirtualLo[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
+	NewPdptVirtualHi[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
 
 	ULONG64 *NewPtVirtualLo = MiPageTableToVirtual( &NewPdtVirtualLo[ 0 ] );
 	ULONG64 *NewPtVirtualHi = MiPageTableToVirtual( &NewPdtVirtualHi[ 0 ] );
 
-	NewPdtVirtualLo[ 0 ] |= EntryPresent | EntryWriteable;
-	NewPdtVirtualHi[ 0 ] |= EntryPresent | EntryWriteable;
+	NewPdtVirtualLo[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
+	NewPdtVirtualHi[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
 
 	for ( ULONG32 i = 0; i < 512; i++ ) {
 
-		NewPtVirtualLo[ i ] = ( i * 0x1000 ) | EntryPresent | EntryWriteable;
+		NewPtVirtualLo[ i ] = ( i * 0x1000 ) | EntryPresent | EntryWriteable | EntryCpuGlobal;
 	}
 
 	MiMarkPhysical( 0, 512, TRUE );
 
 	for ( ULONG32 i = 0; i < 512; i++ ) {
 
-		NewPtVirtualHi[ i ] = ( 0x20'0000 + i * 0x1000 ) | EntryPresent | EntryWriteable;
+		NewPtVirtualHi[ i ] = ( 0x20'0000 + i * 0x1000 ) | EntryPresent | EntryWriteable | EntryCpuGlobal;
 	}
 
 	MiMarkPhysical( 0x20'0000, 512, TRUE );
@@ -234,11 +234,11 @@ MiInitMemoryManager(
 	Index /= 0x20'0000;
 
 	ULONG64 *NewPtVirtual1 = MiPageTableToVirtual( &NewPdtVirtualHi[ Index ] );
-	NewPdtVirtualHi[ Index ] |= EntryPresent | EntryWriteable;
+	NewPdtVirtualHi[ Index ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
 
 	for ( ULONG32 i = 0; i < 512; i++ ) {
 
-		NewPtVirtual1[ i ] = ( PageTableAlloc->BasePhysical + i * 0x1000 ) | EntryPresent | EntryWriteable;
+		NewPtVirtual1[ i ] = ( PageTableAlloc->BasePhysical + i * 0x1000 ) | EntryPresent | EntryWriteable | EntryCpuGlobal;
 	}
 
 	MiMarkPhysical( PageTableAlloc->BasePhysical, 512, TRUE );

@@ -108,6 +108,7 @@
   <ItemGroup>
     <ClCompile Include="acpi.c" />
     <ClCompile Include="apic.c" />
+    <ClCompile Include="asd.c" />
     <ClCompile Include="bmath.c" />
     <ClCompile Include="crt.c" />
     <ClCompile Include="dbg.c" />
@@ -140,6 +141,7 @@
     <ClCompile Include="obcreate.c" />
     <ClCompile Include="obinit.c" />
     <ClCompile Include="obquery.c" />
+    <ClCompile Include="vad.c" />
     <ClCompile Include="virt.c" />
     <None Include="..\bochs\bochsrc.bxrc" />
     <None Include="finalize.bat" />

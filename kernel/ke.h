@@ -136,3 +136,7 @@ KiBspBootBugcheck(
 	__in ULONG64 Arg4
 );
 
+ULONG32
+KiAcquireLowestWorkProcessor(
+
+);

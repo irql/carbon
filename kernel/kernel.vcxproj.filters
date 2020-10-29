@@ -252,6 +252,12 @@
     <ClCompile Include="ldrusr.c">
       <Filter>Ldr</Filter>
     </ClCompile>
+    <ClCompile Include="vad.c">
+      <Filter>Ps</Filter>
+    </ClCompile>
+    <ClCompile Include="asd.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <NASM Include="arch.asm">

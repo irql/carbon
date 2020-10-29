@@ -97,7 +97,7 @@ VOID RtlAllocateAndInitUnicodeString(
 	__inout PUNICODE_STRING	AllocatedUnicodeString, // Allocated unicode string.
 	__in	PWSTR			SourceString			// Source string.
 ) {
-	if ( !NT_SUCCESS( RtlUnicodeStringValidate( AllocatedUnicodeString ) ) ) return; // pog 
+	//if ( !NT_SUCCESS( RtlUnicodeStringValidate( AllocatedUnicodeString ) ) ) return; // pog 
 
 	AllocatedUnicodeString->Length = RtlStringLength( SourceString );
 	AllocatedUnicodeString->Size = ( ( ( ( ( AllocatedUnicodeString->Length + 1 ) * sizeof( WCHAR ) ) + 63 ) / 64 ) * 64 );

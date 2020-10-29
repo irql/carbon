@@ -4,9 +4,6 @@
 #include <carbsup.h>
 #include "mm.h"
 
-KLOCKED_LIST AddressSpaceHead = { 0 };
-ADDRESS_SPACE_DESCRIPTOR KernelPageTable = { 0 };
-
 PVOID
 MiPageTableToVirtual(
 	__in PULONG64 PageTable
@@ -206,74 +203,6 @@ MiPageTableToVirtual(
 
 		return ( PVOID )VirtualAddress;
 	}
-}
-
-PADDRESS_SPACE_DESCRIPTOR
-MiGetAddressSpace(
-
-)
-{
-
-	ULONG64 BasePhysical = __readcr3( );
-
-	if ( BasePhysical == KernelPageTable.BasePhysical ) {
-
-		return &KernelPageTable;
-	}
-
-	MiSetAddressSpace( &KernelPageTable );
-
-	KeAcquireSpinLock( &AddressSpaceHead.Lock );
-
-	PLIST_ENTRY Flink = AddressSpaceHead.List;
-	do {
-		PADDRESS_SPACE_DESCRIPTOR AddressSpace = CONTAINING_RECORD( Flink, ADDRESS_SPACE_DESCRIPTOR, TableLinks );
-
-		if ( AddressSpace->BasePhysical == BasePhysical ) {
-
-			KeReleaseSpinLock( &AddressSpaceHead.Lock );
-
-			MiSetAddressSpace( AddressSpace );
-			return AddressSpace;
-		}
-
-		Flink = Flink->Flink;
-	} while ( Flink != AddressSpaceHead.List );
-
-	/* explode. */
-
-	return NULL;
-}
-
-VOID
-MiSetAddressSpace(
-	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
-)
-{
-
-	__writecr3( AddressSpace->BasePhysical ); // this reminds me, make the kernel global or you can just page fault here.
-
-}
-
-VOID
-MiEnterKernelSpace(
-	__out PADDRESS_SPACE_DESCRIPTOR *PreviousAddressSpace
-)
-{
-
-	*PreviousAddressSpace = MiGetAddressSpace( );
-
-	MiSetAddressSpace( &KernelPageTable );
-
-}
-
-VOID
-MiLeaveKernelSpace(
-	__in PADDRESS_SPACE_DESCRIPTOR PreviousAddressSpace
-)
-{
-
-	MiSetAddressSpace( PreviousAddressSpace );
 }
 
 ULONG64

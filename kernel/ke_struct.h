@@ -11,23 +11,27 @@
 #define THREAD_STATE_TERMINATED		0x10
 #define THREAD_STATE_WAITING		0x20
 
+#include "mm.h"
+
 typedef struct _KPROCESS {
 	ULONG32 ActiveProcessId;
 	PUNICODE_STRING ProcessName;
-
 	PKMODULE ModuleObject;
 
 	ULONG32 ActiveThreads;
-
 	LIST_ENTRY ActiveProcessLinks;
 
 	HANDLE_TABLE ProcessHandleTable;
+
+	VAD VadTree;
+	ADDRESS_SPACE_DESCRIPTOR AddressSpace;
 
 } KPROCESS, *PKPROCESS;
 
 typedef VOID WAIT_PROCEDURE(
 	__in PKTHREAD
 );
+
 typedef WAIT_PROCEDURE* PWAIT_PROCEDURE;
 
 typedef struct _WAIT_OBJECT_HEADER {
@@ -50,7 +54,7 @@ typedef struct _WAIT_OBJECT_SPINLOCK {
 
 typedef struct _KTCB {
 	KTRAP_FRAME Registers;
-	PVOID DirectoryTableBase;
+	ULONG64 DirectoryTableBase;
 
 	ULONG32 LogicalProcessor;
 

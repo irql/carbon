@@ -85,3 +85,6 @@ MmAllocateContiguousMemory(
 	__in ULONG64 ByteCount,
 	__in ULONG64 Flags
 );
+
+typedef struct _ADDRESS_SPACE_DESCRIPTOR *PADDRESS_SPACE_DESCRIPTOR;
+

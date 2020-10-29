@@ -33,9 +33,7 @@ typedef struct _PHYSICAL_REGION_DESCRIPTOR {
 	ULONG64 RegionBase;
 	ULONG64 RegionLength;
 
-#pragma warning(disable:4200)
 	ULONG64 Bitmap[ 0 ];
-#pragma warning(default:4200)
 
 } PHYSICAL_REGION_DESCRIPTOR, *PPHYSICAL_REGION_DESCRIPTOR;
 
@@ -53,7 +51,7 @@ typedef struct _ADDRESS_SPACE_DESCRIPTOR {
 	LIST_ENTRY TableLinks;
 	KSPIN_LOCK TableLock;
 
-	ULONG64 *BaseVirtual;
+	ULONG64* BaseVirtual;
 	ULONG64 BasePhysical;
 
 	ULONG64 MemoryUsage;
@@ -153,6 +151,9 @@ MiFlagsToEntryFlags(
 	if ( Flags & PAGE_USER )
 		PteFlags |= EntryUser;
 
+	if ( Flags & PAGE_GLOBAL )
+		PteFlags |= EntryCpuGlobal;
+
 	return PteFlags;
 }
 
@@ -177,6 +178,18 @@ MiPageTableToVirtual(
 	__in PULONG64 PageTable
 );
 
+/* ads.c */
+
+VOID
+MiAllocateAddressSpace(
+	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
+);
+
+VOID
+MiFreeAddressSpace(
+	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
+);
+
 PADDRESS_SPACE_DESCRIPTOR
 MiGetAddressSpace(
 
@@ -197,7 +210,24 @@ MiLeaveKernelSpace(
 	__in PADDRESS_SPACE_DESCRIPTOR PreviousAddressSpace
 );
 
+VOID
+MiInsertAddressSpace(
+	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
+);
+
+VOID
+MiRemoveAddressSpace(
+	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
+);
+
 /* virt.c */
+
+ULONG64
+MiAllocateVirtualAt(
+	__in ULONG64 Virtual,
+	__in ULONG64 PageCount,
+	__in ULONG64 Flags
+);
 
 ULONG64
 MiAllocateVirtual(

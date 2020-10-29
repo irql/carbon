@@ -31,7 +31,8 @@ LdrLoadDll(
 );
 
 typedef struct _VAD {
-	PLDR_INFO_BLOCK Range;
+	LDR_INFO_BLOCK Range;
+	UNICODE_STRING RangeName;
 
-	struct _VAD* Next;
+	struct _VAD*   Next;
 } VAD, *PVAD;

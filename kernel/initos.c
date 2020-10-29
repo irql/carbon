@@ -76,9 +76,14 @@ KiSystemThread(
 	Load = IoLoadDriver( &FilePath1 );
 
 	printf( "%x\n", Load );
-
-	while ( 1 )
-		__halt( );
+#if 0
+	HANDLE ProcessHandle;
+	UNICODE_STRING UserFile = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\userinit.exe" );
+	PsCreateUserProcess(
+		&ProcessHandle,
+		&UserFile
+	);
+#endif
 }
 
 VOID

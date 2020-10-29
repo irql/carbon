@@ -141,6 +141,7 @@ ObpCreateObject(
 		ObjectType->ObjectLength + sizeof( OBJECT_ENTRY_HEADER ),
 		ObjectType->PoolTag );
 	ObjectType->PoolUsage += ObjectType->ObjectLength + sizeof( OBJECT_ENTRY_HEADER );
+	_memset( ObjectHeader, 0, sizeof( OBJECT_ENTRY_HEADER ) + ObjectType->ObjectLength );
 
 	*ObjectPointer = OB_HEADER2OBJ( ObjectHeader );
 

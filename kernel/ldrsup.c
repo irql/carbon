@@ -290,7 +290,7 @@ LdrSupLoadSupervisorModule(
 
 			if ( !NT_SUCCESS( ntStatus ) ) {
 
-				ExFreePoolWithTag( ModuleFileNameBuffer, 'eliF' );
+				ExFreePoolWithTag( ModuleFileNameBuffer, TAGEX_FILE );
 				MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
 				MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
 				return ntStatus;
@@ -299,7 +299,7 @@ LdrSupLoadSupervisorModule(
 			iat++;
 		}
 
-		ExFreePoolWithTag( ModuleFileNameBuffer, 'eliF' );
+		ExFreePoolWithTag( ModuleFileNameBuffer, TAGEX_FILE );
 #else
 		ntStatus = PeSupResolveImportDescriptorSingle( ModuleBase, ( PVOID )KERNEL_IMAGE_BASE, iat );
 
@@ -309,11 +309,11 @@ LdrSupLoadSupervisorModule(
 			MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
 			MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
 			return ntStatus;
-	}
+		}
 #endif
-}
+	}
 
 	MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
 
 	return STATUS_SUCCESS;
-	}
+}

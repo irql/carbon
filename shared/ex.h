@@ -43,6 +43,7 @@ Abstract:
 #define TAGEX_FILE		'ELIF'
 #define TAGEX_PATH		'HTAP'
 #define TAGEX_CMD		' DMC'
+#define TAGEX_VAD	    ' DAV'
 
 NTSYSAPI PVOID ExAllocatePoolWithTag(
 	__in ULONG NumberOfBytes,

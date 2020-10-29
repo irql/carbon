@@ -62,7 +62,7 @@ Return Value:
 
 	HalIdtInitialize(
 		( PINTERRUPT_DESCRIPTOR_TABLE )
-		MmAllocateMemory( sizeof( INTERRUPT_DESCRIPTOR_TABLE[ 256 ] ), PAGE_READ | PAGE_WRITE ),
+		MmAllocateMemory( sizeof( INTERRUPT_DESCRIPTOR_TABLE[ 256 ] ), PAGE_READ | PAGE_WRITE | PAGE_GLOBAL ),
 		&Processor->Idtr );
 
 	for ( UCHAR i = 0; i < 32; i++ )
@@ -100,12 +100,12 @@ Return Value:
 	HalGdtAddEntry( &Processor->Gdtr, &UserCode64 );
 	HalGdtAddEntry( &Processor->Gdtr, &UserData );
 
-	PTSS TaskStateSegment = ( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), TAGEX_TSS );
+	PTSS TaskStateSegment = ( PTSS )MmAllocateMemory( sizeof( TSS ), PAGE_READ | PAGE_WRITE | PAGE_GLOBAL );//( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), TAGEX_TSS );
 	_memset( ( void* )TaskStateSegment, 0, sizeof( TSS ) );
 
 	TaskStateSegment->Rsp0 = 0;
-	TaskStateSegment->Ist1 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
-	TaskStateSegment->Ist2 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
+	TaskStateSegment->Ist1 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE | PAGE_GLOBAL ) + KERNEL_STACK_SIZE;
+	TaskStateSegment->Ist2 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE | PAGE_GLOBAL ) + KERNEL_STACK_SIZE;
 	TaskStateSegment->IopbOffset = sizeof( TSS );
 
 	Processor->TaskStateDescriptor = HalGdtAddTss( &Processor->Gdtr, TaskStateSegment, sizeof( TSS ) );
@@ -250,7 +250,7 @@ HalSmpEnableCpuFeatures(
 		printf( "pogs %p\n", HalSimdSaveRegion );
 		__halt( );
 
-}
+	}
 #endif
 
 	__fninit( );

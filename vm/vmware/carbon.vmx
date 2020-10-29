@@ -65,7 +65,7 @@ softPowerOff = "FALSE"
 ide1:0.startConnected = "FALSE"
 serial0.fileName = "\\.\pipe\KdPipe"
 serial0.present = "TRUE"
-toolsInstallManager.updateCounter = "33"
+toolsInstallManager.updateCounter = "34"
 mks.enable3d = "TRUE"
 
 vhv.enable = "TRUE"
