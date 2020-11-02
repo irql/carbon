@@ -31,7 +31,7 @@ DriverEntry(
 
 	DriverObject->DriverUnload = DriverUnload;
 
-	PGDI_INFO GdiInfo = VbeGetInfo( );
+	//PBASIC_DRAW_INFO GdiInfo = VbeGetBasicInfo( );
 
 	SvDriverInitialize( );
 	SvSetMode( 1280, 720, 32 );
@@ -40,9 +40,9 @@ DriverEntry(
 	g_Basic.Height = 720;
 	g_Basic.Framebuffer = g_SVGA.FramebufferBase;
 
-	GdiInfo->Width = 1280;
-	GdiInfo->Height = 720;
-	GdiInfo->Framebuffer = g_Basic.Framebuffer;
+	//GdiInfo->Width = 1280;
+	//GdiInfo->Height = 720;
+	//GdiInfo->Framebuffer = g_Basic.Framebuffer;
 
 	g_Basic.Doublebuffer = ( ULONG32* )MmAllocateMemory( g_Basic.Height * g_Basic.Width * 4, PAGE_READ | PAGE_WRITE );
 
@@ -129,6 +129,8 @@ DriverEntry(
 	ZwClose( SystemProcess );
 #endif
 
+	__debugbreak( );
+
 	return STATUS_SUCCESS;
 }
 
@@ -141,10 +143,21 @@ DriverUnload(
 	//
 	//	this is called when the system crashes and any graphics cards should be disabled.
 	//
+	/*
+	PBASIC_DRAW_INFO GdiInfo = VbeGetBasicInfo( );
 
-	//g_Basic.Framebuffer[ 0 ] = 0xFFFF0000;
+	SvSetMode( 640, 480, 32 );
 
-	SvUpdate( 0, 0, 1280, 720 );
+	GdiInfo->Width = 640;
+	GdiInfo->Height = 480;
+
+	for ( ULONG32 i = 0; i < ( 640 * 480 ); i++ ) {
+
+		GdiInfo->Framebuffer[ i ] = 0xFF0000FF;
+	}
+
+	SvUpdate( 0, 0, 640, 480 );
+	*/
 	SvWriteRegister( SVGA_REG_ENABLE, FALSE );
 
 	DriverObject;

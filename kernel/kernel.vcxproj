@@ -114,9 +114,11 @@
     <ClCompile Include="dbg.c" />
     <ClCompile Include="dllsup.c" />
     <ClCompile Include="dma.c" />
+    <ClCompile Include="exception.c" />
     <ClCompile Include="initmm.c" />
     <ClCompile Include="ldrusr.c" />
     <ClCompile Include="mm.c" />
+    <ClCompile Include="nt.c" />
     <ClCompile Include="obdestroy.c" />
     <ClCompile Include="phys.c" />
     <ClCompile Include="process_list.c" />
@@ -186,6 +188,7 @@
     <ClInclude Include="ldrpsup.h" />
     <ClInclude Include="ldrpusr.h" />
     <ClInclude Include="mi.h" />
+    <ClInclude Include="nt.h" />
     <ClInclude Include="obp.h" />
     <ClInclude Include="pesup.h" />
     <ClInclude Include="psp.h" />

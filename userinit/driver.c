@@ -13,7 +13,7 @@ EntryPoint(
 )
 {
 	poggers( );
-
+	__debugbreak( );
 	while ( 1 )
 		;
 }

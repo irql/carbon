@@ -45,28 +45,32 @@ HalHandleInterrupt(
 	__in PKTRAP_FRAME TrapFrame
 )
 {
-	/*
-		interruts 32 - 48 should not fire,
-		the 8259a is mapped to these.
-	*/
 
-	/*
-	if (TrapFrame->Interrupt >= (40) && TrapFrame->Interrupt < 48)
-		__outbyte(PIC_SLAVE_IOPORT_COMMAND, PIC_EOI_COMMAND);
-	__outbyte(PIC_MASTER_IOPORT_COMMAND, PIC_EOI_COMMAND);
-	*/
-
-	PKPCR Processor = ( PKPCR )__readmsr( MSR_GS_KERNEL_BASE );
+	PKPCR Processor = KeQueryCurrentProcessor( );
 
 	if ( Processor ) {
 
 		HalLocalApicWrite( LOCAL_APIC_END_OF_INTERRUPT_REGISTER, 0 );
 	}
 
-	//DbgPrint("cpu%d - stack at: %#P\n", Processor->AcpiId, TrapFrame + 1);
+	if ( HalInterruptHandlers[ TrapFrame->Interrupt ] ) {
 
-	if ( HalInterruptHandlers[ TrapFrame->Interrupt ] )
+		//
+		//	exceptions are handled with the timer disabled.
+		//
+
+		if ( TrapFrame->Interrupt < 32 ) {
+
+			//HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) | LOCAL_APIC_CR0_DEST_DISABLE );
+		}
+
 		HalInterruptHandlers[ TrapFrame->Interrupt ]( TrapFrame, Processor );
+
+		if ( TrapFrame->Interrupt < 32 ) {
+
+			//HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) & ~LOCAL_APIC_CR0_DEST_DISABLE );
+		}
+	}
 }
 
 VOID

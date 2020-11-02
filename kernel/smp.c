@@ -66,7 +66,7 @@ Return Value:
 		&Processor->Idtr );
 
 	for ( UCHAR i = 0; i < 32; i++ )
-		HalIdtInstallHandler( i, KiBugCheckTrap );
+		HalIdtInstallHandler( i, KiExceptionTrap );
 	//HalIdtInstallHandler(14, MmpPageFaultTrap);
 	HalIdtInstallHandler( 0x80, KiThreadDispatcher );
 

@@ -177,4 +177,22 @@ KeBugCheckEx(
 	__in ULONG64 Arg4
 );
 
+NTSYSAPI
+VOID
+KeProbeForRead(
+	__in PVOID Address,
+	__in ULONG Length
+);
 
+NTSYSAPI
+VOID
+KeProbeForWrite(
+	__in PVOID Address,
+	__in ULONG Length
+);
+
+NTSYSAPI
+VOID
+KeRaiseException(
+	__in NTSTATUS Exception
+);

@@ -59,7 +59,7 @@ PVOID MmAllocateMemoryAtPhysical(
 		ULONG64* Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
 		Pdt[ PdtIndex ] |= EntryFlags;
 
-		Pt[ PtIndex ] = ( Physical + Pages * PAGE_SIZE) | EntryFlags;
+		Pt[ PtIndex ] = ( Physical + Pages * PAGE_SIZE ) | EntryFlags;
 	}
 
 	return ( PVOID )Address;
@@ -80,7 +80,7 @@ PVOID MmAllocateMemoryAtVirtual(
 
 	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
 
-	Virtual = MiAllocateVirtualAt(Virtual, Pages, Flags);
+	Virtual = MiAllocateVirtualAt( Virtual, Pages, Flags );
 
 	while ( Pages-- ) {
 		MiVirtualToIndex( Virtual + Pages * PAGE_SIZE, &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
@@ -158,6 +158,48 @@ VOID MmFreeMemory(
 		MiMarkPhysical( Pt[ PtIndex ] & ~0x0FFF, 1, FALSE );
 		Pt[ PtIndex ] = 0;
 
-		MiInvalidateTlbEntry( Address + Pages * PAGE_SIZE);
+		MiInvalidateTlbEntry( Address + Pages * PAGE_SIZE );
 	}
 }
+
+BOOLEAN MmIsAddressRangeValid(
+	__in PVOID   VirtualAddress,
+	__in ULONG64 ByteCount
+) {
+	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
+
+	ULONG64 PageCount = ROUND_TO_PAGES( ByteCount ) / PAGE_SIZE;
+	USHORT Pml4tIndex, PdptIndex, PdtIndex, PtIndex;
+
+	ULONG64 Address = ( ULONG64 )VirtualAddress;
+
+	while ( PageCount-- ) {
+		MiVirtualToIndex( Address + PageCount * PAGE_SIZE, &Pml4tIndex, &PdptIndex, &PdtIndex, &PtIndex );
+		if ( ( AddressSpace->BaseVirtual[ Pml4tIndex ] & EntryPresent ) == 0 ) {
+
+			return FALSE;
+		}
+
+		ULONG64 *Pdpt = MiPageTableToVirtual( &AddressSpace->BaseVirtual[ Pml4tIndex ] );
+		if ( ( Pdpt[ PdptIndex ] & EntryPresent ) == 0 ) {
+
+			return FALSE;
+		}
+
+		ULONG64 *Pdt = MiPageTableToVirtual( &Pdpt[ PdptIndex ] );
+		if ( ( Pdt[ PdtIndex ] & EntryPresent ) == 0 ) {
+
+			return FALSE;
+		}
+
+		ULONG64 *Pt = MiPageTableToVirtual( &Pdt[ PdtIndex ] );
+		if ( ( Pt[ PtIndex ] & EntryPresent ) == 0 ) {
+
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+//should change ULONG64's for PVOID's.

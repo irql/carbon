@@ -65,15 +65,11 @@ KiSystemThread(
 	UNICODE_STRING FilePath = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\serial.sys" );
 	NTSTATUS Load = IoLoadDriver( &FilePath );
 
-	printf( "%x\n", Load );
-
 	UNICODE_STRING FilePath2 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\kdcom.dll" );
 	Load = LdrLoadDll( &FilePath2 );
 
-	printf( "%x\n", Load );
-
-	//UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
-	//Load = IoLoadDriver( &FilePath1 );
+	UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
+	Load = IoLoadDriver( &FilePath1 );
 
 	//printf( "%x\n", Load );
 #if 1
@@ -86,6 +82,7 @@ KiSystemThread(
 
 	printf( "result: %x\n", ntStatus );
 #endif
+
 }
 
 VOID
@@ -133,12 +130,10 @@ Return Value:
 	HalPic8259aSetIrqMasks( 0xff, 0xff );
 	HalPic8259aRemapVectorOffsets( 32, 40 );
 
-	EXTERN ULONG64 Framebuffer;
-	EXTERN USHORT XResolution;
-	EXTERN USHORT YResolution;
-	XResolution = VbeInfo->Width;
-	YResolution = VbeInfo->Height;
-	Framebuffer = 0xA0000;
+	EXTERN BASIC_DRAW_INFO g_Basic;
+	g_Basic.Width = VbeInfo->Width;
+	g_Basic.Height = VbeInfo->Height;
+	g_Basic.Framebuffer = ( ULONG32* )0xA0000;
 
 
 	IDTR BspIdtr;

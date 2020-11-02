@@ -16,9 +16,9 @@ Abstract:
 #include "hal.h"
 
 VOID
-KiBugCheckTrap(
+KiExceptionTrap(
 	__inout PKTRAP_FRAME TrapFrame,
-	__in PKPCR Processor
+	__in    PKPCR        Processor
 );
 
 NTSTATUS
@@ -114,18 +114,6 @@ KeQueryCurrentThread(
 );
 
 EXTERN ULONG32 KiLogicalProcessorsInstalled;
-
-NTSTATUS
-KeProbeForRead(
-	__in PVOID Address,
-	__in ULONG Length
-);
-
-NTSTATUS
-KeProbeForWrite(
-	__in PVOID Address,
-	__in ULONG Length
-);
 
 VOID
 KiBspBootBugcheck(

@@ -294,18 +294,6 @@ HalPciWrite32(
 	__in ULONG Value
 );
 
-typedef struct _GDO_INFO {
-	ULONG32* Framebuffer;
-	USHORT Width;
-	USHORT Height;
-} GDI_INFO, *PGDI_INFO;
-
-NTSYSAPI
-PGDI_INFO
-VbeGetInfo(
-
-);
-
 NTSYSAPI
 ULONG32
 HalIoApicRead(
@@ -444,4 +432,18 @@ VOID
 HalLocalApicSendIpi(
 	__in ULONG32 CpuApciId,
 	__in ULONG32 Cr0Flags
+);
+
+typedef struct _BASIC_DRAW_INFO {
+	ULONG32  Width;
+	ULONG32  Height;
+	ULONG32  Bpp;
+	ULONG32* Framebuffer;
+
+} BASIC_DRAW_INFO, *PBASIC_DRAW_INFO;
+
+NTSYSAPI
+PBASIC_DRAW_INFO
+VbeGetBasicInfo(
+
 );

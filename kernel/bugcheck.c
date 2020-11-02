@@ -52,11 +52,6 @@ KiBugCheckTrap(
 )
 {
 
-	HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, LOCAL_APIC_CR0_DEST_DISABLE );
-	HalClearInterruptFlag( );
-
-#if 1
-
 	static char* Exception[ ] = {
 		"div by zero",
 		"debug",
@@ -116,8 +111,6 @@ KiBugCheckTrap(
 		__readcr0( ), __readcr2( ), TrapFrame->Cr3, __readcr4( )
 	);
 
-	( ( void( *)( ) )KeServiceDescriptorTable[ 0 ] )( );
-
 	HalIdtInstallHandler( 0xFE, KiProcessorHaltInterrupt );
 	for ( ULONG32 i = 0; i < KiLogicalProcessorsInstalled; i++ ) {
 
@@ -135,7 +128,6 @@ KiBugCheckTrap(
 		;
 
 	printf( "performing ObjectTypeModule dump.\n" );
-#endif
 
 	PLIST_ENTRY Flink = ObjectTypeModule->ObjectList.List;
 
@@ -258,9 +250,6 @@ KeBugCheckEx(
 	Arg3;
 	Arg4;
 
-	//call ntgdi unload.
-	__debugbreak( );
-
 	KeEnterCriticalRegion( );
 
 	PKPCR Processor = KeQueryCurrentProcessor( );
@@ -283,7 +272,93 @@ KeBugCheckEx(
 	while ( KiProcessorShutdown != ( KiLogicalProcessorsInstalled - 1 ) )
 		;
 
-	printf( "uncorrectable error." );
+	PLIST_ENTRY Flink = ObjectTypeModule->ObjectList.List;
+
+	UNICODE_STRING GraphicsDriver = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
+
+	do {
+		POBJECT_ENTRY_HEADER Module = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
+		PKMODULE ModuleObject = ( PKMODULE )( Module + 1 );
+
+		if ( RtlUnicodeStringCompare( &GraphicsDriver, &ModuleObject->ImageName ) == 0 ) {
+
+			PLIST_ENTRY Flink1 = ObjectTypeDriver->ObjectList.List;
+
+			do {
+				POBJECT_ENTRY_HEADER Driver = CONTAINING_RECORD( Flink1, OBJECT_ENTRY_HEADER, ObjectList );
+				PDRIVER_OBJECT DriverObject = OB_HEADER2OBJ( Driver );
+
+				if ( DriverObject->DriverModule == ModuleObject ) {
+
+					DriverObject->DriverUnload( DriverObject );
+				}
+
+				Flink1 = Flink1->Flink;
+			} while ( Flink1 != ObjectTypeDriver->ObjectList.List );
+		}
+
+		Flink = Flink->Flink;
+	} while ( Flink != ObjectTypeModule->ObjectList.List );
+
+	_memset( VbeGetBasicInfo( )->Framebuffer, 0, VbeGetBasicInfo( )->Height * VbeGetBasicInfo( )->Width * 4 );
+
+	CHAR ExceptionBuffer[ 256 ];
+
+	sprintfA(
+		ExceptionBuffer,
+
+		"BUGCHECK CPU%d\n\n"
+
+		"%#.8X (%P, %P, %P, %p)",
+
+		Processor->CpuIndex,
+
+		ExceptionCode, Arg1, Arg2, Arg3, Arg4 );
+
+	HalpDrawString( ExceptionBuffer, 0, 0, 0xFFFFFFFF );
+
+	for ( ULONG32 i = 0; ExceptionBuffer[ i ]; i++ ) {
+
+		( ( USHORT* )0xB8000 )[ i ] = ExceptionBuffer[ i ] | 0xF0;
+	}
+
+	ULONG32 y = 16 * 4;
+
+	do {
+		POBJECT_ENTRY_HEADER Module = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
+		PKMODULE ModuleObject = ( PKMODULE )( Module + 1 );
+
+		sprintfA( ExceptionBuffer,
+			"%w [%#.16P %#.16P %#.16P]\n",
+			ModuleObject->ImageName.Buffer,
+			ModuleObject->LoaderInfoBlock.ModuleStart,
+			ModuleObject->LoaderInfoBlock.ModuleEnd,
+			( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleEnd - ( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleStart );
+
+		HalpDrawString( ExceptionBuffer, 0, y, 0xFFFFFFFF );
+
+		y += 16;
+
+
+		if ( RtlUnicodeStringCompare( &GraphicsDriver, &ModuleObject->ImageName ) == 0 ) {
+
+			PLIST_ENTRY Flink1 = ObjectTypeDriver->ObjectList.List;
+
+			do {
+				POBJECT_ENTRY_HEADER Driver = CONTAINING_RECORD( Flink1, OBJECT_ENTRY_HEADER, ObjectList );
+				PDRIVER_OBJECT DriverObject = OB_HEADER2OBJ( Driver );
+
+				if ( DriverObject->DriverModule == ModuleObject ) {
+
+					DriverObject->DriverUnload( DriverObject );
+				}
+
+				Flink1 = Flink1->Flink;
+			} while ( Flink1 != ObjectTypeDriver->ObjectList.List );
+		}
+
+		Flink = Flink->Flink;
+	} while ( Flink != ObjectTypeModule->ObjectList.List );
 
 	__halt( );
 }

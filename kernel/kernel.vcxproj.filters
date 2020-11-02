@@ -117,6 +117,9 @@
     <ClInclude Include="exp.h">
       <Filter>Ex</Filter>
     </ClInclude>
+    <ClInclude Include="nt.h">
+      <Filter>Zw</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="string.c">
@@ -269,6 +272,12 @@
     </ClCompile>
     <ClCompile Include="virtual.c">
       <Filter>Zw</Filter>
+    </ClCompile>
+    <ClCompile Include="nt.c">
+      <Filter>Zw</Filter>
+    </ClCompile>
+    <ClCompile Include="exception.c">
+      <Filter>Ke</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

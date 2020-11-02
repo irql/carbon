@@ -69,3 +69,8 @@ NTSYSAPI PVOID MmAllocateContiguousMemory(
 	__in ULONG64 ByteCount,
 	__in ULONG64 Flags
 );
+
+NTSYSAPI BOOLEAN MmIsAddressRangeValid(
+	__in PVOID   VirtualAddress,
+	__in ULONG64 ByteCount
+);

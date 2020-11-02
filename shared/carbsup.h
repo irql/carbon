@@ -65,6 +65,8 @@ typedef void*				PVOID;
 typedef float				FLOAT;
 typedef double				DOUBLE;
 
+typedef unsigned long long	SIZE_T, *PSIZE_T;
+
 #define FIELD_OFFSET(type, field) ((ULONG64_PTR)&(((type*)0)->field))
 
 #ifdef __KERNEL_INTERNAL__

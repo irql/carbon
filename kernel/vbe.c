@@ -270,27 +270,18 @@ UCHAR Font8x16[ 4096 ] = {
 #endif
 };
 
-USHORT XResolution = 0;
-USHORT YResolution = 0;
-
-ULONG64 Framebuffer = 0;
+BASIC_DRAW_INFO g_Basic;
 
 VOID
 VbeSetDisplay(
 	__in PVBE_INFO Info
 )
 {
-	XResolution = Info->Width;
-	YResolution = Info->Height;
+	g_Basic.Width = Info->Width;
+	g_Basic.Height = Info->Height;
+	g_Basic.Bpp = 32;
 
-	//Framebuffer = MmpFindFreeVirtual( ( ULONG64 )XResolution * ( ULONG64 )YResolution * 4i64, PAGE_READ | PAGE_WRITE );
-	/*if (!NT_SUCCESS(MmAllocateMemoryAtPhysical((ULONG64)Info->Framebuffer, Framebuffer, (ULONG64)XResolution * (ULONG64)YResolution * 4i64, PAGE_READ | PAGE_WRITE))) {
-
-		HalClearInterruptFlag();
-		__halt();
-	}*/
-
-	Framebuffer = ( ULONG64 )MmAllocateMemoryAtPhysical( Info->Framebuffer, ( ULONG64 )XResolution * ( ULONG64 )YResolution * 4i64, PAGE_READ | PAGE_WRITE );
+	g_Basic.Framebuffer = ( ULONG32* )MmAllocateMemoryAtPhysical( Info->Framebuffer, ( ULONG64 )g_Basic.Width * ( ULONG64 )g_Basic.Height * 4i64, PAGE_READ | PAGE_WRITE );
 
 	//BOCHS PHYSICAL: 0xE0000000.
 	//QEMU PHYSICAL: 0xFD000000.
@@ -318,18 +309,13 @@ VbeSetDisplay(
 
 }
 
-PGDI_INFO
-VbeGetInfo(
+PBASIC_DRAW_INFO
+VbeGetBasicInfo(
 
 )
 {
-	PGDI_INFO Info = ExAllocatePoolWithTag( sizeof( GDI_INFO ), TAGEX_VBE );
 
-	Info->Framebuffer = ( ULONG32* )Framebuffer;
-	Info->Height = YResolution;
-	Info->Width = XResolution;
-
-	return Info;
+	return &g_Basic;
 }
 
 VOID
@@ -341,9 +327,9 @@ HalpDrawGlyph(
 )
 {
 
-	if ( x >= XResolution )
+	if ( x >= g_Basic.Width )
 		return;
-	if ( y >= YResolution )
+	if ( y >= g_Basic.Height )
 		return;
 
 	for ( UCHAR i = 0; i < 16; i++ ) {
@@ -351,7 +337,8 @@ HalpDrawGlyph(
 
 		for ( UCHAR j = 0; j <= 8; j++ ) {
 			if ( ( Line >> ( 8 - j - 1 ) ) & 1 ) {
-				( ( ULONG* )Framebuffer )[ ( ( y + ( ULONG )i )*( ( ULONG )XResolution ) ) + ( x + ( ULONG )j ) ] = Foreground;
+
+				g_Basic.Framebuffer[ ( ( y + ( ULONG )i ) * g_Basic.Width ) + ( x + ( ULONG )j ) ] = Foreground;
 			}
 		}
 	}
@@ -367,6 +354,7 @@ HalpDrawString(
 {
 
 	for ( ULONG i = 0; String[ i ] != 0; i++ ) {
+
 		switch ( String[ i ] ) {
 		case '\n':
 			y += 16;
@@ -374,7 +362,9 @@ HalpDrawString(
 			x = 0;
 			break;
 		case '\t':
-			x += ( 8 * 3 ) + ( 4 - ( x % 4 ) );
+			//x += (8 * 4);
+			//x += (8 * 3) + (4 - (x % 4));
+			x += ( 32 - ( x % 32 ) );
 			break;
 		case ' ':
 			x += 8;
