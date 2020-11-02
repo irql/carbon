@@ -67,7 +67,7 @@ PspFindVad(
 
 	while ( CurrentVad != NULL ) {
 
-		if ( RtlStringCompare( RangeName, ( PCWSTR )&CurrentVad->RangeName.Buffer ) == 0 ) {
+		if ( lstrcmpW( RangeName, ( PCWSTR )&CurrentVad->RangeName.Buffer ) == 0 ) {
 
 			return CurrentVad;
 		}

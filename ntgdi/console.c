@@ -238,7 +238,7 @@ NtGdiReadConsole(
 		__halt( );
 	}
 
-	RtlStringCopy( Buffer, &EditboxWindow->Child->Name.Buffer[ OriginalLength ] );
+	lstrcpyW( Buffer, &EditboxWindow->Child->Name.Buffer[ OriginalLength ] );
 
 	return STATUS_SUCCESS;
 }

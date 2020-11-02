@@ -279,7 +279,7 @@ LdrSupLoadSupervisorModule(
 					continue;
 				}
 
-				if ( RtlStringCompare( ModuleFileNameBuffer, LdrpNameFromPath( ModuleObject->ImageName.Buffer ) ) == 0 ) {
+				if ( lstrcmpW( ModuleFileNameBuffer, LdrpNameFromPath( ModuleObject->ImageName.Buffer ) ) == 0 ) {
 
 					ntStatus = PeSupResolveImportDescriptorSingle( ModuleBase, ModuleObject->LoaderInfoBlock.ModuleStart, iat );
 					break;

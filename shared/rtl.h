@@ -12,12 +12,14 @@ Abstract:
 
 #pragma once
 
-
 #define stack_size			sizeof(void*)
 #define va_size(type)		((sizeof(type)+stack_size-1)&~(stack_size-1))
 #define va_start(ap, la)	(ap=((va_list)(&(la))+va_size(la)))
 #define va_end(ap)			(ap=(va_list)0)
 #define va_arg(ap, type)	(ap+=va_size(type),*((type*)(ap-va_size(type))))
+
+#define tolower(v)			((v) >= 'A' && (v) <= 'Z' ? (v) + ' ' : (v))
+#define toupper(v)			((v) >= 'a' && (v) <= 'z' ? (v) - ' ' : (v))
 
 #define RTL_CONSTANT_UNICODE_STRING(s) {(sizeof(s)-2)/sizeof(wchar_t), sizeof(s), s}
 
@@ -31,30 +33,72 @@ typedef struct _UNICODE_STRING {
 
 typedef CONST UNICODE_STRING *PCUNICODE_STRING;
 
-NTSYSAPI ULONG RtlStringLength(
+NTSYSAPI ULONG lstrlenW(
 	__in PCWSTR String
 );
 
-NTSYSAPI VOID RtlStringCopy(
+NTSYSAPI LONG lstrcmpW(
+	__in PCWSTR String1,
+	__in PCWSTR String2
+);
+
+NTSYSAPI LONG lstrcmpiW(
+	__in PCWSTR String1,
+	__in PCWSTR String2
+);
+
+NTSYSAPI LONG lstrncmpW(
+	__in PCWSTR String1,
+	__in PCWSTR String2,
+	__in ULONG	Characters
+);
+
+NTSYSAPI LONG lstrncmpiW(
+	__in PCWSTR String1,
+	__in PCWSTR String2,
+	__in ULONG	Characters
+);
+
+NTSYSAPI VOID lstrcpyW(
 	__inout PWSTR DestinationString,
 	__in	PWSTR SourceString
 );
 
-NTSYSAPI VOID RtlStringCopyLength(
+NTSYSAPI VOID lstrncpyW(
 	__inout PWSTR DestinationString,
 	__in	PWSTR SourceString,
 	__in	ULONG Characters
 );
 
-NTSYSAPI LONG RtlStringCompare(
-	__in PCWSTR String1,
-	__in PCWSTR String2
+NTSYSAPI VOID lstrcatW(
+	__in PWSTR	DestinationString,
+	__in PCWSTR SourceString
 );
 
-NTSYSAPI LONG RtlStringCompareLength(
-	__in PCWSTR String1,
-	__in PCWSTR String2,
+NTSYSAPI VOID lstrncatW(
+	__in PWSTR	DestinationString,
+	__in PCWSTR SourceString,
 	__in ULONG	Characters
+);
+
+NTSYSAPI PWSTR lstrchrW(
+	__in PWSTR String,
+	__in WCHAR Character
+);
+
+NTSYSAPI PWSTR lstrchriW(
+	__in PWSTR String,
+	__in WCHAR Character
+);
+
+NTSYSAPI PWSTR lstrstrW(
+	__in PWSTR String,
+	__in PWSTR Substring
+);
+
+NTSYSAPI PWSTR lstrstriW(
+	__in PWSTR String,
+	__in PWSTR Substring
 );
 
 NTSYSAPI NTSTATUS RtlUnicodeStringValidate(
