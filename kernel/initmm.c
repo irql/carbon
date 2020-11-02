@@ -2,14 +2,16 @@
 
 
 #include <carbsup.h>
-#include "mm.h"
+#include "mi.h"
 #include "ldrsup.h"
 #include "ke.h"
 
-EXTERN PLIST_ENTRY PhysicalRegionHead;
-EXTERN KLOCKED_LIST AddressSpaceHead;
+EXTERN PLIST_ENTRY g_PhysicalRegionHead;
+EXTERN KLOCKED_LIST g_AddressSpaceHead;
 
-EXTERN ADDRESS_SPACE_DESCRIPTOR KernelPageTable;
+EXTERN ADDRESS_SPACE_DESCRIPTOR g_KernelPageTable;
+
+EXTERN PLIST_ENTRY g_PageTableAllocationHead;
 
 #define NEW_ADDRESS( x ) ( ( ULONG64 )( x ) ) += ( 0xFFFF'8000'0000'0000 - 0x20'0000 )
 #define REGION_LENGTH_TO_BITMAP_SIZE( x ) ( (( ( x ) + ( 0x1000 * 0x40 - 1) ) / ( 0x1000 * 0x40 )) * 8 )
@@ -66,14 +68,14 @@ MiInitRegionDescriptor(
 	__in PPHYSICAL_REGION_DESCRIPTOR RegionDescriptor
 )
 {
-	if ( PhysicalRegionHead == NULL ) {
+	if ( g_PhysicalRegionHead == NULL ) {
 
 		KeInitializeListHead( &RegionDescriptor->RegionLinks );
-		PhysicalRegionHead = &RegionDescriptor->RegionLinks;
+		g_PhysicalRegionHead = &RegionDescriptor->RegionLinks;
 	}
 	else {
 
-		KeInsertListEntry( PhysicalRegionHead, &RegionDescriptor->RegionLinks );
+		KeInsertListEntry( g_PhysicalRegionHead, &RegionDescriptor->RegionLinks );
 	}
 
 	_memset( &RegionDescriptor->Bitmap[ 0 ], 0, REGION_LENGTH_TO_BITMAP_SIZE( Entry->RegionLength ) );
@@ -160,7 +162,7 @@ MiInitMemoryManager(
 
 	//KiBspBootBugcheck( ( ULONG32 )RegionDescriptorsPhysicalBase, ( ULONG32 )RegionDescriptorsSize, 0, 0, 0 );
 
-	PhysicalRegionHead = NULL;
+	g_PhysicalRegionHead = NULL;
 
 	for ( ULONG64 i = 0, TemporaryPhysicalBase = RegionDescriptorsPhysicalBase; i < MemoryMap->EntryCount; i++ ) {
 
@@ -174,14 +176,14 @@ MiInitMemoryManager(
 	//0000000000215010
 	//000000000021503b
 
-	KernelPageTable.BasePhysical = ( ULONG64 )0x10000;
-	KernelPageTable.BaseVirtual = ( ULONG64* )0x10000;
+	g_KernelPageTable.BasePhysical = ( ULONG64 )0x10000;
+	g_KernelPageTable.BaseVirtual = ( ULONG64* )0x10000;
 
 	PPAGE_TABLE_ALLOCATION_ENTRY PageTableAlloc = ( PPAGE_TABLE_ALLOCATION_ENTRY )
 		MiBspBootMapIdentity( ( ( RegionDescriptorsPhysicalBase + RegionDescriptorsSize + 0x1F'FFFF ) / 0x20'0000 ) * 0x20'0000, 0x20'0000 );
 
 	KeInitializeListHead( &PageTableAlloc->AllocationLinks );
-	KernelPageTable.PageTableAllocationHead = &PageTableAlloc->AllocationLinks;
+	g_PageTableAllocationHead = &PageTableAlloc->AllocationLinks;
 
 	PageTableAlloc->AllocationLock.ThreadLocked = 0;
 	PageTableAlloc->BasePhysical = ( ULONG64 )PageTableAlloc;
@@ -196,24 +198,24 @@ MiInitMemoryManager(
 	ULONG64 *NewPdptVirtualLo = MiPageTableToVirtual( &NewPml4tVirtual[ 0 ] );
 	ULONG64 *NewPdptVirtualHi = MiPageTableToVirtual( &NewPml4tVirtual[ 256 ] );
 
-	NewPml4tVirtual[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
-	NewPml4tVirtual[ 256 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
+	NewPml4tVirtual[ 0 ] |= EntryPresent | EntryWriteable;
+	NewPml4tVirtual[ 256 ] |= EntryPresent | EntryWriteable;
 
 	ULONG64 *NewPdtVirtualLo = MiPageTableToVirtual( &NewPdptVirtualLo[ 0 ] );
 	ULONG64 *NewPdtVirtualHi = MiPageTableToVirtual( &NewPdptVirtualHi[ 0 ] );
 
-	NewPdptVirtualLo[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
-	NewPdptVirtualHi[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
+	NewPdptVirtualLo[ 0 ] |= EntryPresent | EntryWriteable;
+	NewPdptVirtualHi[ 0 ] |= EntryPresent | EntryWriteable;
 
 	ULONG64 *NewPtVirtualLo = MiPageTableToVirtual( &NewPdtVirtualLo[ 0 ] );
 	ULONG64 *NewPtVirtualHi = MiPageTableToVirtual( &NewPdtVirtualHi[ 0 ] );
 
-	NewPdtVirtualLo[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
-	NewPdtVirtualHi[ 0 ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
+	NewPdtVirtualLo[ 0 ] |= EntryPresent | EntryWriteable;
+	NewPdtVirtualHi[ 0 ] |= EntryPresent | EntryWriteable;
 
 	for ( ULONG32 i = 0; i < 512; i++ ) {
 
-		NewPtVirtualLo[ i ] = ( i * 0x1000 ) | EntryPresent | EntryWriteable | EntryCpuGlobal;
+		NewPtVirtualLo[ i ] = ( i * 0x1000 ) | EntryPresent | EntryWriteable;
 	}
 
 	MiMarkPhysical( 0, 512, TRUE );
@@ -234,11 +236,11 @@ MiInitMemoryManager(
 	Index /= 0x20'0000;
 
 	ULONG64 *NewPtVirtual1 = MiPageTableToVirtual( &NewPdtVirtualHi[ Index ] );
-	NewPdtVirtualHi[ Index ] |= EntryPresent | EntryWriteable | EntryCpuGlobal;
+	NewPdtVirtualHi[ Index ] |= EntryPresent | EntryWriteable;
 
 	for ( ULONG32 i = 0; i < 512; i++ ) {
 
-		NewPtVirtual1[ i ] = ( PageTableAlloc->BasePhysical + i * 0x1000 ) | EntryPresent | EntryWriteable | EntryCpuGlobal;
+		NewPtVirtual1[ i ] = ( PageTableAlloc->BasePhysical + i * 0x1000 ) | EntryPresent | EntryWriteable;
 	}
 
 	MiMarkPhysical( PageTableAlloc->BasePhysical, 512, TRUE );
@@ -251,33 +253,32 @@ MiInitMemoryManager(
 	//PageTableAlloc->BaseVirtual += 0xFFFF'8000'0000'0000;
 	NEW_ADDRESS( PageTableAlloc->BaseVirtual );
 
-	KernelPageTable.BasePhysical = NewPml4tPhysical;
-	KernelPageTable.BaseVirtual = ( ULONG64* )( ( ( ULONG64 )NewPml4tVirtual ) + ( 0xFFFF'8000'0000'0000 - 0x20'0000 ) );
-	KernelPageTable.Process = NULL;
-	KernelPageTable.Flags = 0;
-	KernelPageTable.PageTableAllocationHead = &PageTableAlloc->AllocationLinks;
+	g_KernelPageTable.BasePhysical = NewPml4tPhysical;
+	g_KernelPageTable.BaseVirtual = ( ULONG64* )( ( ( ULONG64 )NewPml4tVirtual ) + ( 0xFFFF'8000'0000'0000 - 0x20'0000 ) );
+	g_KernelPageTable.Process = NULL;
+	g_KernelPageTable.Flags = 0;
 
-	AddressSpaceHead.List = &KernelPageTable.TableLinks;
-	KeInitializeListHead( AddressSpaceHead.List );
+	g_AddressSpaceHead.List = &g_KernelPageTable.TableLinks;
+	KeInitializeListHead( g_AddressSpaceHead.List );
 
-	KernelPageTable.TableLock.ThreadLocked = 0;
+	g_KernelPageTable.TableLock.ThreadLocked = 0;
 
-	MiSetAddressSpace( &KernelPageTable );
+	MiSetAddressSpace( &g_KernelPageTable );
 
-	NEW_ADDRESS( KernelPageTable.PageTableAllocationHead );
-	NEW_ADDRESS( KernelPageTable.PageTableAllocationHead->Flink );
-	NEW_ADDRESS( KernelPageTable.PageTableAllocationHead->Blink );
+	NEW_ADDRESS( g_PageTableAllocationHead );
+	NEW_ADDRESS( g_PageTableAllocationHead->Flink );
+	NEW_ADDRESS( g_PageTableAllocationHead->Blink );
 
-	NEW_ADDRESS( PhysicalRegionHead );
+	NEW_ADDRESS( g_PhysicalRegionHead );
 
-	PLIST_ENTRY Flink = PhysicalRegionHead;
+	PLIST_ENTRY Flink = g_PhysicalRegionHead;
 	do {
 
 		NEW_ADDRESS( Flink->Flink );
 		NEW_ADDRESS( Flink->Blink );
 
 		Flink = Flink->Flink;
-	} while ( Flink != PhysicalRegionHead );
+	} while ( Flink != g_PhysicalRegionHead );
 
 	MiMarkPhysical( RegionDescriptorsPhysicalBase, RegionDescriptorsSize, TRUE );
 

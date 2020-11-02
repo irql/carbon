@@ -19,6 +19,8 @@ Abstract:
 
 VOLATILE ULONG32 KiProcessorShutdown = 0;
 
+EXTERN PVOID KeServiceDescriptorTable[ ];
+
 VOID
 printf(
 	__in CHAR* Format,
@@ -91,9 +93,10 @@ KiBugCheckTrap(
 
 	printf(
 		"bugcheck on cpu%d\n"
-		"type: %#.2X (%s), err: %#b\n",
+		"type: %#.2X (%s), err: %#b, tid: %d\n",
 		Processor->CpuIndex,
-		TrapFrame->Interrupt, Exception[ TrapFrame->Interrupt ], TrapFrame->Error
+		TrapFrame->Interrupt, Exception[ TrapFrame->Interrupt ], TrapFrame->Error,
+		Processor->ThreadQueue->ActiveThreadId
 	);
 
 	printf(
@@ -101,17 +104,19 @@ KiBugCheckTrap(
 		"RSI: %#.16P RDI: %#.16P RBP: %#.16P RSP: %#.16P\n"
 		"R8 : %#.16P R9 : %#.16P R10: %#.16P R11: %#.16P\n"
 		"R12: %#.16P R13: %#.16P R14: %#.16P R15: %#.16P\n"
-		"RIP: %#.16P RFL: %#.8X\n"
+		"RIP: %#.16P RFL: %#.8X CS : %#.4X\n"
 		"CR0: %#.8X CR2: %#.16P CR3: %#.16P CR4: %#.8X\n",
 
 		TrapFrame->Rax, TrapFrame->Rbx, TrapFrame->Rcx, TrapFrame->Rdx,
 		TrapFrame->Rsi, TrapFrame->Rdi, TrapFrame->Rbp, TrapFrame->Rsp,
 		TrapFrame->R8, TrapFrame->R9, TrapFrame->R10, TrapFrame->R11,
 		TrapFrame->R12, TrapFrame->R13, TrapFrame->R14, TrapFrame->R15,
-		TrapFrame->Rip, TrapFrame->Rflags,
+		TrapFrame->Rip, TrapFrame->Rflags, TrapFrame->CodeSegment,
 
-		__readcr0( ), __readcr2( ), __readcr3( ), __readcr4( )
+		__readcr0( ), __readcr2( ), TrapFrame->Cr3, __readcr4( )
 	);
+
+	( ( void( *)( ) )KeServiceDescriptorTable[ 0 ] )( );
 
 	HalIdtInstallHandler( 0xFE, KiProcessorHaltInterrupt );
 	for ( ULONG32 i = 0; i < KiLogicalProcessorsInstalled; i++ ) {
@@ -235,5 +240,50 @@ KiBspBootBugcheck(
 	printf( "KiBspBootBugcheck: %.8X (%P, %P, %P, %P)", ExceptionCode, Arg1, Arg2, Arg3, Arg4 );
 
 	HalClearInterruptFlag( );
+	__halt( );
+}
+
+VOID
+KeBugCheckEx(
+	__in ULONG32 ExceptionCode,
+	__in ULONG64 Arg1,
+	__in ULONG64 Arg2,
+	__in ULONG64 Arg3,
+	__in ULONG64 Arg4
+)
+{
+	ExceptionCode;
+	Arg1;
+	Arg2;
+	Arg3;
+	Arg4;
+
+	//call ntgdi unload.
+	__debugbreak( );
+
+	KeEnterCriticalRegion( );
+
+	PKPCR Processor = KeQueryCurrentProcessor( );
+
+	HalIdtInstallHandler( 0xFE, KiProcessorHaltInterrupt );
+	for ( ULONG32 i = 0; i < KiLogicalProcessorsInstalled; i++ ) {
+
+		if ( i == Processor->CpuIndex ) {
+
+			continue;
+		}
+
+		PKPCR CurrentProcessor;
+		KeQueryLogicalProcessor( i, &CurrentProcessor );
+
+		HalLocalApicSendIpi( CurrentProcessor->AcpiId, LOCAL_APIC_CR0_DEST_NORMAL | 0xFE );
+
+	}
+
+	while ( KiProcessorShutdown != ( KiLogicalProcessorsInstalled - 1 ) )
+		;
+
+	printf( "uncorrectable error." );
+
 	__halt( );
 }

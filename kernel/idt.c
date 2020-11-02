@@ -30,9 +30,9 @@ HalIdtInitialize(
 		DescriptorTable[ i ].Offset0 = ( USHORT )( HalInterruptHandlerTable[ i ] );
 		DescriptorTable[ i ].Offset1 = ( USHORT )( HalInterruptHandlerTable[ i ] >> 16 );
 		DescriptorTable[ i ].Offset2 = ( ULONG32 )( HalInterruptHandlerTable[ i ] >> 32 );
-		DescriptorTable[ i ].InterruptStackTable = i == 0x80 ? 1 : ( i < 32 ? 2 : 0 );
+		DescriptorTable[ i ].InterruptStackTable = i == 0x80 ? 1 : ( i < 32 ? 2 : 3 );
 		DescriptorTable[ i ].Zero = 0;
-		DescriptorTable[ i ].CodeSelector = 8;
+		DescriptorTable[ i ].CodeSelector = GDT_KERNEL_CODE64;
 		DescriptorTable[ i ].TypeAttribute = 0x80 | ( i < 32 ? IDT_GATE_TYPE_TRAP32 : IDT_GATE_TYPE_INTERRUPT32 );
 	}
 

@@ -56,8 +56,6 @@ typedef struct _ADDRESS_SPACE_DESCRIPTOR {
 
 	ULONG64 MemoryUsage;
 
-	PLIST_ENTRY PageTableAllocationHead;
-
 	ULONG64 Flags;
 	PKPROCESS Process;
 

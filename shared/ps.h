@@ -18,6 +18,5 @@ PsCreateUserThread(
 	__in     PKSTART_ROUTINE ThreadStart,
 	__in     PVOID           ThreadContext,
 	__in     ULONG32         ThreadFlags,
-	__in_opt ULONG32         UserStackSize,
-	__in_opt ULONG32         KernelStackSize
+	__in_opt ULONG32         UserStackSize
 );

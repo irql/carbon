@@ -120,6 +120,7 @@
     <ClCompile Include="obdestroy.c" />
     <ClCompile Include="phys.c" />
     <ClCompile Include="process_list.c" />
+    <ClCompile Include="syscall.c" />
     <ClCompile Include="table.c" />
     <ClCompile Include="tlb.c" />
     <ClCompile Include="user.c" />
@@ -143,7 +144,8 @@
     <ClCompile Include="obquery.c" />
     <ClCompile Include="vad.c" />
     <ClCompile Include="virt.c" />
-    <None Include="..\bochs\bochsrc.bxrc" />
+    <ClCompile Include="virtual.c" />
+    <None Include="..\vm\bochs\bochsrc.bxrc" />
     <None Include="finalize.bat" />
     <ClCompile Include="pci.c" />
     <ClCompile Include="pesup.c" />
@@ -156,7 +158,9 @@
     <ClCompile Include="smp.c" />
     <ClCompile Include="spinlock.c" />
     <ClCompile Include="string.c" />
-    <ClCompile Include="thread.c" />
+    <ClCompile Include="thread.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\carbsup.h" />
@@ -171,6 +175,7 @@
     <ClInclude Include="..\shared\ob.h" />
     <ClInclude Include="..\shared\ps.h" />
     <ClInclude Include="..\shared\rtl.h" />
+    <ClInclude Include="..\shared\zw.h" />
     <ClInclude Include="acpi.h" />
     <ClInclude Include="ex.h" />
     <ClInclude Include="hal.h" />
@@ -180,7 +185,7 @@
     <ClInclude Include="ldr.h" />
     <ClInclude Include="ldrsup.h" />
     <ClInclude Include="ldrusr.h" />
-    <ClInclude Include="mm.h" />
+    <ClInclude Include="mi.h" />
     <ClInclude Include="ob.h" />
     <ClInclude Include="pesup.h" />
     <ClInclude Include="psp.h" />
@@ -190,6 +195,7 @@
     <NASM Include="idle.asm" />
     <NASM Include="idt_transition.asm" />
     <NASM Include="smp_trampoline.asm" />
+    <NASM Include="syscall_stub.asm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.bat" />

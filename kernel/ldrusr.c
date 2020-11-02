@@ -33,6 +33,11 @@ LdrpUsrLoadModule(
 		return ntStatus;
 	}
 
+	if ( !NT_SUCCESS( Iosb.Status ) ) {
+
+		return ntStatus;
+	}
+
 	FILE_BASIC_INFORMATION BasicInfo;
 
 	ntStatus = ZwQueryInformationFile( FileHandle, &Iosb, &BasicInfo, sizeof( FILE_BASIC_INFORMATION ), FileBasicInformation );

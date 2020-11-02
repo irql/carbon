@@ -140,3 +140,8 @@ ULONG32
 KiAcquireLowestWorkProcessor(
 
 );
+
+VOID
+KiInitializeSyscalls(
+
+);

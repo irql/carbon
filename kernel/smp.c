@@ -62,7 +62,7 @@ Return Value:
 
 	HalIdtInitialize(
 		( PINTERRUPT_DESCRIPTOR_TABLE )
-		MmAllocateMemory( sizeof( INTERRUPT_DESCRIPTOR_TABLE[ 256 ] ), PAGE_READ | PAGE_WRITE | PAGE_GLOBAL ),
+		MmAllocateMemory( sizeof( INTERRUPT_DESCRIPTOR_TABLE[ 256 ] ), PAGE_READ | PAGE_WRITE ),
 		&Processor->Idtr );
 
 	for ( UCHAR i = 0; i < 32; i++ )
@@ -97,15 +97,16 @@ Return Value:
 
 	HalGdtAddEntry( &Processor->Gdtr, &KernelCode64 );
 	HalGdtAddEntry( &Processor->Gdtr, &KernelData );
-	HalGdtAddEntry( &Processor->Gdtr, &UserCode64 );
 	HalGdtAddEntry( &Processor->Gdtr, &UserData );
+	HalGdtAddEntry( &Processor->Gdtr, &UserCode64 );
 
-	PTSS TaskStateSegment = ( PTSS )MmAllocateMemory( sizeof( TSS ), PAGE_READ | PAGE_WRITE | PAGE_GLOBAL );//( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), TAGEX_TSS );
+	PTSS TaskStateSegment = ( PTSS )ExAllocatePoolWithTag( sizeof( TSS ), TAGEX_TSS );
 	_memset( ( void* )TaskStateSegment, 0, sizeof( TSS ) );
 
 	TaskStateSegment->Rsp0 = 0;
-	TaskStateSegment->Ist1 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE | PAGE_GLOBAL ) + KERNEL_STACK_SIZE;
-	TaskStateSegment->Ist2 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE | PAGE_GLOBAL ) + KERNEL_STACK_SIZE;
+	TaskStateSegment->Ist1 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
+	TaskStateSegment->Ist2 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
+	TaskStateSegment->Ist3 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
 	TaskStateSegment->IopbOffset = sizeof( TSS );
 
 	Processor->TaskStateDescriptor = HalGdtAddTss( &Processor->Gdtr, TaskStateSegment, sizeof( TSS ) );
@@ -116,6 +117,7 @@ Return Value:
 	__writemsr( MSR_GS_BASE, ( ULONG64 )Processor );
 	__writemsr( MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
 
+	KiInitializeSyscalls( );
 }
 
 EXTERN INTERRUPT_DESCRIPTOR_TABLE BspBootDescriptor[ 256 ];
@@ -185,6 +187,7 @@ Return Value:
 	TaskStateSegment->Rsp0 = 0;
 	TaskStateSegment->Ist1 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
 	TaskStateSegment->Ist2 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
+	TaskStateSegment->Ist3 = ( ULONG64 )MmAllocateMemory( KERNEL_STACK_SIZE, PAGE_READ | PAGE_WRITE ) + KERNEL_STACK_SIZE;
 	TaskStateSegment->IopbOffset = sizeof( TSS );
 
 	Processor->TaskStateDescriptor = HalGdtAddTss( &Processor->Gdtr, TaskStateSegment, sizeof( TSS ) );
@@ -194,6 +197,8 @@ Return Value:
 
 	__writemsr( MSR_GS_BASE, ( ULONG64 )Processor );
 	__writemsr( MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
+
+	KiInitializeSyscalls( );
 
 	HalLocalApicEnable( );
 

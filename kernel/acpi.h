@@ -16,9 +16,9 @@ Abstract:
 #define MADT_TABLES_MAX		0x20
 
 typedef struct _RSDP_DESCRIPTOR1_0 {
-	CHAR		RsdpSignature[8];
+	CHAR		RsdpSignature[ 8 ];
 	UCHAR		Checksum;
-	CHAR		OemId[6];
+	CHAR		OemId[ 6 ];
 	UCHAR		Revision;
 	ULONG		RsdtAddress;
 } RSDP_DESCRIPTOR1_0, *PRSDP_DESCRIPTOR1_0;
@@ -29,16 +29,16 @@ typedef struct _RSDP_DESCRIPTOR2_0 {
 	ULONG				Length;
 	ULONG64				XsdtAddress;
 	UCHAR				ExtendedChecksum;
-	UCHAR				Reserved[3];
+	UCHAR				Reserved[ 3 ];
 } RSDP_DESCRIPTOR2_0, *PRSDP_DESCRIPTOR2_0;
 
 typedef struct _SDT_HEADER {
-	CHAR		Signature[4];
+	CHAR		Signature[ 4 ];
 	ULONG		Length;
 	UCHAR		Revision;
 	UCHAR		Checksum;
-	CHAR		OemIdentifier[6];
-	CHAR		OemTableId[8];
+	CHAR		OemIdentifier[ 6 ];
+	CHAR		OemTableId[ 8 ];
 	ULONG		OemRevision;
 	ULONG		CreatorId;
 	ULONG		CreatorRevision;
@@ -46,12 +46,12 @@ typedef struct _SDT_HEADER {
 
 typedef struct _XSDT_DESCRIPTOR {
 	SDT_HEADER	Header;
-	ULONG64		SdtPointers[1];
+	ULONG64		SdtPointers[ 1 ];
 } XSDT_DESCRIPTOR, *PXSDT_DESCRIPTOR;
 
 typedef struct _RSDT_DESCRIPTOR {
 	SDT_HEADER	Header;
-	ULONG32		SdtPointers[1];
+	ULONG32		SdtPointers[ 1 ];
 } RSDT_DESCRIPTOR, *PRSDT_DESCRIPTOR;
 
 #define ACPI_MADT_TYPE_PROCESSOR_LOCAL_APIC				0
@@ -125,13 +125,16 @@ EXTERN ULONG									MadtNonMaskableInterruptApicCount;
 
 EXTERN PMADT_LOCAL_APIC_ADDRESS_OVERRIDE		MadtLocalApicAddressOverride;
 
+EXTERN ULONG64                                  MadtLocalApic;
+EXTERN ULONG64                                  MadtIoApic0;
+
 VOID
 HalInitializeAcpi(
 
-	);
+);
 
 
 PSDT_HEADER
 HalAcpiFindSdt(
 	__in PCHAR Signature
-	);
+);

@@ -34,6 +34,9 @@
     <Filter Include="Ps">
       <UniqueIdentifier>{40809707-dc22-4af8-8b16-a99a8df429de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Zw">
+      <UniqueIdentifier>{882124f9-e3f1-42da-a4ae-5bfb838db3e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\carbsup.h">
@@ -93,9 +96,6 @@
     <ClInclude Include="..\shared\mm.h">
       <Filter>shared</Filter>
     </ClInclude>
-    <ClInclude Include="mm.h">
-      <Filter>Mm</Filter>
-    </ClInclude>
     <ClInclude Include="ke_struct.h">
       <Filter>Ke</Filter>
     </ClInclude>
@@ -110,6 +110,12 @@
     </ClInclude>
     <ClInclude Include="ldr.h">
       <Filter>Ldr</Filter>
+    </ClInclude>
+    <ClInclude Include="mi.h">
+      <Filter>Mm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\zw.h">
+      <Filter>shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -258,6 +264,12 @@
     <ClCompile Include="asd.c">
       <Filter>Mm</Filter>
     </ClCompile>
+    <ClCompile Include="syscall.c">
+      <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="virtual.c">
+      <Filter>Zw</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <NASM Include="arch.asm">
@@ -272,10 +284,13 @@
     <NASM Include="idle.asm">
       <Filter>Ke</Filter>
     </NASM>
+    <NASM Include="syscall_stub.asm">
+      <Filter>Ke</Filter>
+    </NASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.bat" />
-    <None Include="..\bochs\bochsrc.bxrc" />
     <None Include="finalize.bat" />
+    <None Include="..\vm\bochs\bochsrc.bxrc" />
   </ItemGroup>
 </Project>

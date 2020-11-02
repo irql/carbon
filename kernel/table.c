@@ -2,7 +2,9 @@
 
 
 #include <carbsup.h>
-#include "mm.h"
+#include "mi.h"
+
+PLIST_ENTRY g_PageTableAllocationHead;
 
 PVOID
 MiPageTableToVirtual(
@@ -20,7 +22,7 @@ MiPageTableToVirtual(
 
 		ULONG64 PageTableFrame = *PageTable & EntryFrame;
 
-		PLIST_ENTRY Flink = AddressSpace->PageTableAllocationHead;
+		PLIST_ENTRY Flink = g_PageTableAllocationHead;
 		do {
 			PPAGE_TABLE_ALLOCATION_ENTRY AllocationEntry = CONTAINING_RECORD( Flink, PAGE_TABLE_ALLOCATION_ENTRY, AllocationLinks );
 
@@ -33,6 +35,7 @@ MiPageTableToVirtual(
 				VirtualAddress += AllocationEntry->BaseVirtual;
 
 				KeReleaseSpinLock( &AllocationEntry->AllocationLock );
+				MiSetAddressSpace( AddressSpace );
 
 				return ( PVOID )VirtualAddress;
 			}
@@ -40,8 +43,7 @@ MiPageTableToVirtual(
 			KeReleaseSpinLock( &AllocationEntry->AllocationLock );
 
 			Flink = Flink->Flink;
-		} while ( Flink != AddressSpace->PageTableAllocationHead );
-
+		} while ( Flink != g_PageTableAllocationHead );
 
 		//Check The BUG.
 
@@ -49,7 +51,7 @@ MiPageTableToVirtual(
 	}
 	else {
 
-		PLIST_ENTRY Flink = AddressSpace->PageTableAllocationHead;
+		PLIST_ENTRY Flink = g_PageTableAllocationHead;
 		do {
 			PPAGE_TABLE_ALLOCATION_ENTRY AllocationEntry = CONTAINING_RECORD( Flink, PAGE_TABLE_ALLOCATION_ENTRY, AllocationLinks );
 
@@ -85,17 +87,17 @@ MiPageTableToVirtual(
 			}
 
 			Flink = Flink->Flink;
-		} while ( Flink != AddressSpace->PageTableAllocationHead );
+		} while ( Flink != g_PageTableAllocationHead );
 
 		/*
 			this checks how many more page tables we can allocate,
 			this is so that if we need more, we allocate a new one using the remaining.
 
 			counts the bits remaining (1 bit = 0x1000)
-			if its == to 4 then we should create a new one.
+			if its == to 3 then we should create a new one.
 		*/
 
-		PPAGE_TABLE_ALLOCATION_ENTRY AllocationEntry = CONTAINING_RECORD( AddressSpace->PageTableAllocationHead->Blink, PAGE_TABLE_ALLOCATION_ENTRY, AllocationLinks );
+		PPAGE_TABLE_ALLOCATION_ENTRY AllocationEntry = CONTAINING_RECORD( g_PageTableAllocationHead->Blink, PAGE_TABLE_ALLOCATION_ENTRY, AllocationLinks );
 		ULONG32 BitCount = 0;
 
 		ULONG32 BitPositions[ 3 ] = { 0, 0, 0 };
@@ -197,10 +199,12 @@ MiPageTableToVirtual(
 			}
 
 			KeReleaseSpinLock( &AddressSpace->TableLock );
+			MiSetAddressSpace( AddressSpace );
 
 			return ( PVOID )VirtualAddress;
 		}
 
+		MiSetAddressSpace( AddressSpace );
 		return ( PVOID )VirtualAddress;
 	}
 }

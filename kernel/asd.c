@@ -2,10 +2,11 @@
 
 
 #include <carbsup.h>
-#include "mm.h"
+#include "mi.h"
+#include "ke_struct.h"
 
-KLOCKED_LIST AddressSpaceHead = { 0 };
-ADDRESS_SPACE_DESCRIPTOR KernelPageTable = { 0 };
+KLOCKED_LIST g_AddressSpaceHead = { 0 };
+ADDRESS_SPACE_DESCRIPTOR g_KernelPageTable = { 0 };
 
 VOID
 MiAllocateAddressSpace(
@@ -13,21 +14,13 @@ MiAllocateAddressSpace(
 )
 {
 
-	//change the shit for page_table_allocation_entries.
+	AddressSpace->BaseVirtual = MmAllocateMemory( 0x1000, PAGE_READ | PAGE_WRITE );
+	AddressSpace->BasePhysical = MmPhysicalMapping( ( ULONG64 )AddressSpace->BaseVirtual );
 
-	AddressSpace->BaseVirtual = ( ULONG64* )MmAllocateMemory( 0x1000, PAGE_READ | PAGE_WRITE );
-	AddressSpace->BasePhysical = ( ULONG64 )MmPhysicalMapping( ( ULONG64 )AddressSpace->BaseVirtual );
+	printf( "addr space alloc: %.16P, %.16P\n", AddressSpace->BasePhysical, AddressSpace->BaseVirtual );
 
-	PPAGE_TABLE_ALLOCATION_ENTRY PageTableAlloc = MmAllocateMemory( 0x200000, PAGE_READ | PAGE_WRITE );
-
-	KeInitializeListHead( &PageTableAlloc->AllocationLinks );
-	AddressSpace->PageTableAllocationHead = &PageTableAlloc->AllocationLinks;
-
-	PageTableAlloc->AllocationLock.ThreadLocked = 0;
-	PageTableAlloc->BaseVirtual = ( ULONG64 )MmAllocateMemory( 0x1000, PAGE_READ | PAGE_WRITE );
-	PageTableAlloc->BasePhysical = ( ULONG64 )MmPhysicalMapping( ( ULONG64 )AddressSpace->BaseVirtual );
-
-	_memset( &PageTableAlloc->Bitmap[ 0 ], 0, sizeof( PageTableAlloc->Bitmap ) );
+	_memset( AddressSpace->BaseVirtual, 0, 0x800 );
+	_memcpy( &AddressSpace->BaseVirtual[ 256 ], &g_KernelPageTable.BaseVirtual[ 256 ], 0x800 );
 }
 
 VOID
@@ -44,11 +37,11 @@ MiInsertAddressSpace(
 	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
 )
 {
-	KeAcquireSpinLock( &AddressSpaceHead.Lock );
+	KeAcquireSpinLock( &g_AddressSpaceHead.Lock );
 
-	KeInsertListEntry( AddressSpaceHead.List, &AddressSpace->TableLinks );
+	KeInsertListEntry( g_AddressSpaceHead.List, &AddressSpace->TableLinks );
 
-	KeReleaseSpinLock( &AddressSpaceHead.Lock );
+	KeReleaseSpinLock( &g_AddressSpaceHead.Lock );
 }
 
 VOID
@@ -56,11 +49,11 @@ MiRemoveAddressSpace(
 	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
 )
 {
-	KeAcquireSpinLock( &AddressSpaceHead.Lock );
+	KeAcquireSpinLock( &g_AddressSpaceHead.Lock );
 
 	KeRemoveListEntry( &AddressSpace->TableLinks );
 
-	KeReleaseSpinLock( &AddressSpaceHead.Lock );
+	KeReleaseSpinLock( &g_AddressSpaceHead.Lock );
 }
 
 PADDRESS_SPACE_DESCRIPTOR
@@ -71,29 +64,29 @@ MiGetAddressSpace(
 
 	ULONG64 BasePhysical = __readcr3( );
 
-	if ( BasePhysical == KernelPageTable.BasePhysical ) {
+	if ( BasePhysical == g_KernelPageTable.BasePhysical ) {
 
-		return &KernelPageTable;
+		return &g_KernelPageTable;
 	}
 
-	MiSetAddressSpace( &KernelPageTable );
+	MiSetAddressSpace( &g_KernelPageTable );
 
-	KeAcquireSpinLock( &AddressSpaceHead.Lock );
+	KeAcquireSpinLock( &g_AddressSpaceHead.Lock );
 
-	PLIST_ENTRY Flink = AddressSpaceHead.List;
+	PLIST_ENTRY Flink = g_AddressSpaceHead.List;
 	do {
 		PADDRESS_SPACE_DESCRIPTOR AddressSpace = CONTAINING_RECORD( Flink, ADDRESS_SPACE_DESCRIPTOR, TableLinks );
 
 		if ( AddressSpace->BasePhysical == BasePhysical ) {
 
-			KeReleaseSpinLock( &AddressSpaceHead.Lock );
+			KeReleaseSpinLock( &g_AddressSpaceHead.Lock );
 
 			MiSetAddressSpace( AddressSpace );
 			return AddressSpace;
 		}
 
 		Flink = Flink->Flink;
-	} while ( Flink != AddressSpaceHead.List );
+	} while ( Flink != g_AddressSpaceHead.List );
 
 	/* explode. */
 
@@ -105,9 +98,18 @@ MiSetAddressSpace(
 	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
 )
 {
+	PKPCR Processor = KeQueryCurrentProcessor( );
 
-	__writecr3( AddressSpace->BasePhysical ); // this reminds me, make the kernel global or you can just page fault here.
+	if ( Processor != NULL ) {
 
+		if ( Processor->ThreadQueueLength != 0 &&
+			Processor->ThreadQueue != NULL ) {
+
+			Processor->ThreadQueue->ThreadControlBlock.AddressSpace = AddressSpace;
+		}
+	}
+
+	__writecr3( AddressSpace->BasePhysical );
 }
 
 VOID
@@ -118,7 +120,7 @@ MiEnterKernelSpace(
 
 	*PreviousAddressSpace = MiGetAddressSpace( );
 
-	MiSetAddressSpace( &KernelPageTable );
+	MiSetAddressSpace( &g_KernelPageTable );
 
 }
 

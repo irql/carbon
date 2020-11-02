@@ -13,6 +13,11 @@
   <ItemGroup>
     <ClCompile Include="driver.c" />
   </ItemGroup>
+  <ItemGroup>
+    <NASM Include="syscalltest.asm">
+      <FileType>Document</FileType>
+    </NASM>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{52045f4b-9c86-4e9f-bd16-a5553af14be8}</ProjectGuid>
@@ -40,6 +45,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\nasm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -58,6 +64,7 @@
     <LibraryWPath />
     <SourcePath>$(VC_SourcePath);</SourcePath>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>user1</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -119,5 +126,6 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\nasm.targets" />
   </ImportGroup>
 </Project>

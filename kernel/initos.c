@@ -72,17 +72,19 @@ KiSystemThread(
 
 	printf( "%x\n", Load );
 
-	UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
-	Load = IoLoadDriver( &FilePath1 );
+	//UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
+	//Load = IoLoadDriver( &FilePath1 );
 
-	printf( "%x\n", Load );
-#if 0
+	//printf( "%x\n", Load );
+#if 1
 	HANDLE ProcessHandle;
-	UNICODE_STRING UserFile = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\userinit.exe" );
-	PsCreateUserProcess(
+	UNICODE_STRING UserFile = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\user1.exe" );
+	ntStatus = PsCreateUserProcess(
 		&ProcessHandle,
 		&UserFile
 	);
+
+	printf( "result: %x\n", ntStatus );
 #endif
 }
 
@@ -239,6 +241,8 @@ Return Value:
 
 	PKPROCESS KernelProcess;
 	KiCreateProcess( &KernelProcess, KernelModule, &KernelName );
+
+	//_memcpy( &KernelProcess->AddressSpace, &g_KernelPageTable, sizeof( ADDRESS_SPACE_DESCRIPTOR ) );
 
 	PKTHREAD KernelThread;
 	KiInitializeDispatcher( KernelProcess );

@@ -2,9 +2,9 @@
 
 
 #include <carbsup.h>
-#include "mm.h"
+#include "mi.h"
 
-EXTERN PLIST_ENTRY PhysicalRegionHead;
+EXTERN PLIST_ENTRY g_PhysicalRegionHead;
 
 VOID
 MmAllocateDmaMemory(
@@ -13,7 +13,7 @@ MmAllocateDmaMemory(
 {
 	PADDRESS_SPACE_DESCRIPTOR AddressSpace = MiGetAddressSpace( );
 
-	PLIST_ENTRY Flink = PhysicalRegionHead;
+	PLIST_ENTRY Flink = g_PhysicalRegionHead;
 	do {
 		PPHYSICAL_REGION_DESCRIPTOR RegionDescriptor = CONTAINING_RECORD( Flink, PHYSICAL_REGION_DESCRIPTOR, RegionLinks );
 
@@ -69,7 +69,7 @@ MmAllocateDmaMemory(
 		KeReleaseSpinLock( &RegionDescriptor->RegionLock );
 
 		Flink = Flink->Flink;
-	} while ( Flink != PhysicalRegionHead );
+	} while ( Flink != g_PhysicalRegionHead );
 
 	/* panic. */
 

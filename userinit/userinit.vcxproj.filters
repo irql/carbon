@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="driver.c" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="syscalltest.asm" />
+  </ItemGroup>
 </Project>

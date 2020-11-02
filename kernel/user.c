@@ -33,10 +33,16 @@ PsCreateUserProcess(
 	MiAllocateAddressSpace( &ProcessObject->AddressSpace );
 	MiInsertAddressSpace( &ProcessObject->AddressSpace );
 
+	printf( " Champ Of Pogs. %.16P\n", _AddressOfReturnAddress( ) );
+
 	PreviousAddressSpace = MiGetAddressSpace( );
 	MiSetAddressSpace( &ProcessObject->AddressSpace );
 
+	printf( "starting user module load...\n" );
+
 	ntStatus = LdrpUsrLoadModule( ProcessObject, FileName );
+
+	printf( "user module load: %.8x\n", ntStatus );
 
 	if ( !NT_SUCCESS( ntStatus ) ) {
 
@@ -59,6 +65,8 @@ PsCreateUserProcess(
 		return ntStatus;
 	}
 
+	printf( "Creating THE Thread.\n" );
+
 	HANDLE FirstThread;
 	ntStatus = PsCreateUserThread(
 		&FirstThread,
@@ -66,7 +74,6 @@ PsCreateUserProcess(
 		( PKSTART_ROUTINE )ProcessObject->VadTree.Range.ModuleEntry,
 		NULL,
 		0,
-		0x4000,
 		0x4000
 	);
 
@@ -91,8 +98,7 @@ PsCreateUserThread(
 	__in     PKSTART_ROUTINE ThreadStart,
 	__in     PVOID           ThreadContext,
 	__in     ULONG32         ThreadFlags,
-	__in_opt ULONG32         UserStackSize,
-	__in_opt ULONG32         KernelStackSize
+	__in_opt ULONG32         UserStackSize
 )
 {
 	ThreadHandle;
@@ -101,7 +107,6 @@ PsCreateUserThread(
 	ThreadContext;
 	ThreadFlags;
 	UserStackSize;
-	KernelStackSize;
 
 	//
 	// implement some ThreadFlags, for starting a thread suspended or other shit i guess.
@@ -132,11 +137,25 @@ PsCreateUserThread(
 		return ntStatus;
 	}
 
-	ThreadObject->KernelStackSize = KernelStackSize == 0 ? 0x4000 : KernelStackSize;
+	ntStatus = ObCreateHandle( ThreadHandle, ThreadObject );
+
+	if ( !NT_SUCCESS( ntStatus ) ) {
+
+		ObDestroyObject( ThreadObject );
+		return ntStatus;
+	}
+
+	ThreadObject->ApicStackSize = 0x4000;
+	ThreadObject->KernelStackSize = 0x4000;
 	ThreadObject->UserStackSize = UserStackSize == 0 ? 0x4000 : UserStackSize;
 
+	PADDRESS_SPACE_DESCRIPTOR PreviousAddressSpace = MiGetAddressSpace( );
+
+	MiSetAddressSpace( &ProcessObject->AddressSpace );
+	ThreadObject->ApicStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->ApicStackSize, PAGE_READ | PAGE_WRITE );
 	ThreadObject->KernelStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->KernelStackSize, PAGE_READ | PAGE_WRITE );
-	ThreadObject->UserStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->UserStackSize, PAGE_READ | PAGE_WRITE );
+	ThreadObject->UserStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->UserStackSize, PAGE_READ | PAGE_WRITE | PAGE_USER );
+	MiSetAddressSpace( PreviousAddressSpace );
 
 	ThreadObject->ActiveThreadId = KiGetUniqueIdentifier( );
 	ThreadObject->Process = ProcessObject;
@@ -145,7 +164,7 @@ PsCreateUserThread(
 	ThreadObject->ActiveThreadLinks.Flink = NULL;
 	ThreadObject->ActiveThreadLinks.Blink = NULL;
 
-	ThreadObject->ThreadControlBlock.DirectoryTableBase = ProcessObject->AddressSpace.BasePhysical;
+	ThreadObject->ThreadControlBlock.AddressSpace = &ProcessObject->AddressSpace;
 	ThreadObject->ThreadControlBlock.ScheduledThreads.Flink = NULL;
 	ThreadObject->ThreadControlBlock.ScheduledThreads.Blink = NULL;
 	ThreadObject->ThreadControlBlock.ThreadState = 0;
@@ -154,14 +173,21 @@ PsCreateUserThread(
 	ThreadObject->ThreadControlBlock.Registers.Rcx = ( ULONG64 )ThreadContext;
 	ThreadObject->ThreadControlBlock.Registers.Rbp = ThreadObject->UserStackBase + ( ULONG64 )ThreadObject->UserStackSize;
 	ThreadObject->ThreadControlBlock.Registers.Rsp = ThreadObject->ThreadControlBlock.Registers.Rbp - 48;
-	*( ULONG64* )ThreadObject->ThreadControlBlock.Registers.Rsp = ( ULONG64 )KeExitThread;
+	*( ULONG64* )ThreadObject->ThreadControlBlock.Registers.Rsp = ( ULONG64 )KeExitThread; // write ntdll.dll
 
-	ThreadObject->ThreadControlBlock.Registers.CodeSegment = GDT_USER_CODE64;
-	ThreadObject->ThreadControlBlock.Registers.DataSegment = GDT_USER_DATA;
-	ThreadObject->ThreadControlBlock.Registers.StackSegment = GDT_USER_DATA;
-
+	ThreadObject->ThreadControlBlock.Registers.Rflags = 0x203202;
 	ThreadObject->ThreadControlBlock.Registers.Rip = ( ULONG64 )ThreadStart;
 	ThreadObject->ThreadControlBlock.LogicalProcessor = KiAcquireLowestWorkProcessor( );
+
+	ThreadObject->ThreadControlBlock.Registers.CodeSegment = GDT_USER_CODE64 | 0x3;
+	ThreadObject->ThreadControlBlock.Registers.DataSegment = GDT_USER_DATA | 0x3;
+	ThreadObject->ThreadControlBlock.Registers.StackSegment = GDT_USER_DATA | 0x3;
+	ThreadObject->ThreadControlBlock.Registers.Cr3 = ProcessObject->AddressSpace.BasePhysical;
+
+	ThreadObject->ThreadControlBlock.PrivilegeLevel = 3;
+
+	printf( "new thread with id: %d\n", ThreadObject->ActiveThreadId );
+	KiStartThread( ThreadObject );
 
 	return STATUS_SUCCESS;
 }

@@ -2,7 +2,7 @@
 
 
 #include <carbsup.h>
-#include "mm.h"
+#include "mi.h"
 
 PVOID
 MmAllocateMemory(

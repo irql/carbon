@@ -14,6 +14,9 @@ Abstract:
 #include "hal.h"
 #include "ke.h"
 #include "ob.h"
+#include "mi.h"
+
+EXTERN ADDRESS_SPACE_DESCRIPTOR g_KernelPageTable;
 
 ULONG64 KiThreadDispatcherCounter = 0;
 
@@ -37,7 +40,7 @@ KiThreadDispatcher(
 		return;
 	}
 
-	KeEnterCriticalRegion( );
+	HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) | LOCAL_APIC_CR0_DEST_DISABLE );
 
 	if ( Processor->ThreadQueue->ThreadControlBlock.ThreadState != THREAD_STATE_READY &&
 		Processor->ThreadQueue->ThreadControlBlock.ThreadState != THREAD_STATE_IDLE ) {
@@ -91,8 +94,16 @@ KiThreadDispatcher(
 
 	_memcpy( TrapFrame, &Processor->ThreadQueue->ThreadControlBlock.Registers, sizeof( KTRAP_FRAME ) );
 	Processor->TaskState.Rsp0 = Processor->ThreadQueue->KernelStackBase + Processor->ThreadQueue->KernelStackSize;
+	Processor->TaskState.Ist3 = Processor->ThreadQueue->ApicStackBase + Processor->ThreadQueue->ApicStackSize;
+	Processor->ThreadQueue->ThreadControlBlock.Registers.Cr3 = Processor->ThreadQueue->ThreadControlBlock.AddressSpace->BasePhysical;
 
-	KeLeaveCriticalRegion( );
+	//( ( PGDT_ENTRY_TSS )( ( char* )Processor->Gdtr.Base + Processor->TaskStateDescriptor ) )->AccessByte = 0x89;
+	//__ltr( Processor->TaskStateDescriptor | Processor->ThreadQueue->ThreadControlBlock.PrivilegeLevel );
+
+	//( ( PGDT_ENTRY_TSS )( ( char* )Processor->Gdtr.Base + Processor->TaskStateDescriptor ) )->AccessByte = 0x89;
+	//__ltr( Processor->TaskStateDescriptor );
+
+	HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) & ~LOCAL_APIC_CR0_DEST_DISABLE );
 }
 
 EXTERN ULONG64 KiDispatcherSpinlocks;
@@ -159,7 +170,7 @@ KiAcquireLowestWorkProcessor(
 
 		if ( LowestWork > Processor->ThreadQueueLength ) {
 			LowestWork = Processor->ThreadQueueLength;
-			LowestWorkProcessor = Processor->CpuIndex;
+			LowestWorkProcessor = i;
 		}
 	}
 
@@ -179,68 +190,59 @@ KiCreateThread(
 	STATIC OBJECT_ATTRIBUTES DefaultAttributes = { 0, NULL };
 	NTSTATUS ntStatus;
 
-	PKTHREAD NewThread;
-	ntStatus = ObpCreateObject( ( PVOID* )&NewThread, &DefaultAttributes, ObjectTypeThread );
+	PKTHREAD ThreadObject;
+	ntStatus = ObpCreateObject( ( PVOID* )&ThreadObject, &DefaultAttributes, ObjectTypeThread );
 
 	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
-	if ( KernelStackSize == 0 ) {
+	ThreadObject->ApicStackSize = 0x4000;
+	ThreadObject->KernelStackSize = KernelStackSize == 0 ? 0x4000 : KernelStackSize;
+	ThreadObject->UserStackSize = UserStackSize == 0 ? 0x4000 : UserStackSize;
 
-		NewThread->KernelStackSize = 0x2000;
-	}
-	else {
-		NewThread->KernelStackSize = KernelStackSize;
+	ThreadObject->ApicStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->ApicStackSize, PAGE_READ | PAGE_WRITE );
+	ThreadObject->KernelStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->KernelStackSize, PAGE_READ | PAGE_WRITE );
+	ThreadObject->UserStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->UserStackSize, PAGE_READ | PAGE_WRITE );
 
-	}
-	NewThread->KernelStackBase = ( ULONG64 )MmAllocateMemory( ( ULONG64 )NewThread->KernelStackSize, PAGE_READ | PAGE_WRITE );
-
-	if ( UserStackSize == 0 ) {
-
-		NewThread->UserStackSize = 0x2000;
-	}
-	else {
-
-		NewThread->UserStackSize = UserStackSize;
-	}
-	NewThread->UserStackBase = ( ULONG64 )MmAllocateMemory( ( ULONG64 )NewThread->UserStackSize, PAGE_READ | PAGE_WRITE );
-
-	NewThread->ActiveThreadId = KiGetUniqueIdentifier( );
-	NewThread->Process = ThreadProcess;
+	ThreadObject->ActiveThreadId = KiGetUniqueIdentifier( );
+	ThreadObject->Process = ThreadProcess;
 	ObReferenceObject( ThreadProcess );
 
-	NewThread->ActiveThreadLinks.Flink = NULL;
-	NewThread->ActiveThreadLinks.Blink = NULL;
+	ThreadObject->ActiveThreadLinks.Flink = NULL;
+	ThreadObject->ActiveThreadLinks.Blink = NULL;
 
-	NewThread->ThreadControlBlock.DirectoryTableBase = __readcr3( );
-	NewThread->ThreadControlBlock.ScheduledThreads.Flink = NULL;
-	NewThread->ThreadControlBlock.ScheduledThreads.Blink = NULL;
-	NewThread->ThreadControlBlock.ThreadState = THREAD_STATE_NOT_READY;
+	ThreadObject->ThreadControlBlock.AddressSpace = &g_KernelPageTable;
+	ThreadObject->ThreadControlBlock.ScheduledThreads.Flink = NULL;
+	ThreadObject->ThreadControlBlock.ScheduledThreads.Blink = NULL;
+	ThreadObject->ThreadControlBlock.ThreadState = THREAD_STATE_NOT_READY;
 
-	NewThread->ThreadControlBlock.Registers.Rcx = ( ULONG64 )StartContext;
+	ThreadObject->ThreadControlBlock.Registers.Rcx = ( ULONG64 )StartContext;
 
-	NewThread->ThreadControlBlock.Registers.Rbp = ( ULONG64 )( ( PUCHAR )NewThread->UserStackBase + NewThread->UserStackSize );
+	ThreadObject->ThreadControlBlock.Registers.Rbp = ( ULONG64 )( ( PUCHAR )ThreadObject->UserStackBase + ThreadObject->UserStackSize );
 #if 0
-	NewThread->ThreadControlBlock.Registers.Rsp = NewThread->ThreadControlBlock.Registers.Rbp - 40;
+	ThreadObject->ThreadControlBlock.Registers.Rsp = ThreadObject->ThreadControlBlock.Registers.Rbp - 40;
 #else
-	NewThread->ThreadControlBlock.Registers.Rsp = NewThread->ThreadControlBlock.Registers.Rbp - 48;
-	*( ULONG64* )NewThread->ThreadControlBlock.Registers.Rsp = ( ULONG64 )KeExitThread; //rsp -> rbp 9/4/2020 - untested?
+	ThreadObject->ThreadControlBlock.Registers.Rsp = ThreadObject->ThreadControlBlock.Registers.Rbp - 48;
+	*( ULONG64* )ThreadObject->ThreadControlBlock.Registers.Rsp = ( ULONG64 )KeExitThread; //rsp -> rbp 9/4/2020 - untested?
 
 #endif
 
-	NewThread->ThreadControlBlock.Registers.Rflags = __readeflags( ) | 0x200;
+	ThreadObject->ThreadControlBlock.Registers.Rflags = 0x200202;
 
-	NewThread->ThreadControlBlock.Registers.CodeSegment = 8;
-	NewThread->ThreadControlBlock.Registers.StackSegment = 16;
-	NewThread->ThreadControlBlock.Registers.DataSegment = 16;
+	ThreadObject->ThreadControlBlock.Registers.Rip = ( ULONG64 )StartRoutine;
 
-	NewThread->ThreadControlBlock.Registers.Rip = ( ULONG64 )StartRoutine;
+	ThreadObject->ThreadControlBlock.LogicalProcessor = KiAcquireLowestWorkProcessor( );
 
-	NewThread->ThreadControlBlock.LogicalProcessor = KiAcquireLowestWorkProcessor( );
+	ThreadObject->ThreadControlBlock.Registers.CodeSegment = 8;
+	ThreadObject->ThreadControlBlock.Registers.StackSegment = 16;
+	ThreadObject->ThreadControlBlock.Registers.DataSegment = 16;
+	ThreadObject->ThreadControlBlock.Registers.Cr3 = g_KernelPageTable.BasePhysical;
 
-	*NewThreadHandle = NewThread;
+	ThreadObject->ThreadControlBlock.PrivilegeLevel = 0;
+
+	*NewThreadHandle = ThreadObject;
 
 	return STATUS_SUCCESS;
 }

@@ -2,9 +2,9 @@
 
 
 #include <carbsup.h>
-#include "mm.h"
+#include "mi.h"
 
-PLIST_ENTRY PhysicalRegionHead = NULL;
+PLIST_ENTRY g_PhysicalRegionHead = NULL;
 
 ULONG64
 MiAllocatePhysical(
@@ -12,7 +12,7 @@ MiAllocatePhysical(
 )
 {
 
-	PLIST_ENTRY Flink = PhysicalRegionHead;
+	PLIST_ENTRY Flink = g_PhysicalRegionHead;
 	do {
 		PPHYSICAL_REGION_DESCRIPTOR RegionDescriptor = CONTAINING_RECORD( Flink, PHYSICAL_REGION_DESCRIPTOR, RegionLinks );
 
@@ -74,7 +74,7 @@ MiAllocatePhysical(
 		KeReleaseSpinLock( &RegionDescriptor->RegionLock );
 
 		Flink = Flink->Flink;
-	} while ( Flink != PhysicalRegionHead );
+	} while ( Flink != g_PhysicalRegionHead );
 
 	/* panic. */
 
@@ -94,7 +94,7 @@ MiMarkPhysical(
 	ULONG64 PagesLeft = PageCount;
 
 	ULONG64 SearchAddress = Address + ( PageCount - PagesLeft ) * 0x1000;
-	PLIST_ENTRY Flink = PhysicalRegionHead;
+	PLIST_ENTRY Flink = g_PhysicalRegionHead;
 
 	do {
 		PPHYSICAL_REGION_DESCRIPTOR RegionDescriptor = CONTAINING_RECORD( Flink, PHYSICAL_REGION_DESCRIPTOR, RegionLinks );
@@ -151,7 +151,7 @@ MiMarkPhysical(
 		KeReleaseSpinLock( &RegionDescriptor->RegionLock );
 
 		Flink = Flink->Flink;
-	} while ( Flink != PhysicalRegionHead );
+	} while ( Flink != g_PhysicalRegionHead );
 	//breaks because if the FUcking address is not in range it quits.
 
 #endif

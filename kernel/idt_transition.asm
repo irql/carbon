@@ -21,6 +21,7 @@ extern HalHandleInterrupt
 
 extern HalXsave
 extern HalSimdSaveRegion
+extern g_KernelPageTable
 
 HalInitTrapFrame:
 	push rax
@@ -46,6 +47,15 @@ HalInitTrapFrame:
 	mov fs, rax
 	mov gs, rax
 	mov es, rax
+
+	push qword 0x200202
+	popfq
+
+	mov rax, cr3
+	push rax
+	mov rax, g_KernelPageTable
+	mov rax, qword [rax + 32]
+	mov cr3, rax
 
 	mov rdi, rsp
 
@@ -81,6 +91,9 @@ HalInitTrapFrame:
 	fxrstor [rsp]
 	.fp_restored:
 	mov rsp, rdi
+
+	pop rax
+	mov cr3, rax
 
 	pop rax
 	mov ds, rax

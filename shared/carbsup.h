@@ -93,6 +93,7 @@ typedef struct _KPCR *PKPCR;
 #include "io.h"
 #include "dbg.h"
 #include "ps.h"
+#include "zw.h"
 
 NTSYSAPI
 VOID

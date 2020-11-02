@@ -13,7 +13,7 @@ Abstract:
 #include <carbsup.h>
 #include "pesup.h"
 #include "ldrsup.h"
-#include "mm.h"
+#include "mi.h"
 #include "ldr.h"
 
 NTSTATUS

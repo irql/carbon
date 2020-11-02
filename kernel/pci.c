@@ -154,7 +154,7 @@ HalPciEnumerate(
 					*( ( char* )&HalPciDeviceList.PciDevices[ HalPciDeviceList.DeviceCount ].PciHeader + i ) = HalPciRead8( &HalPciDeviceList.PciDevices[ HalPciDeviceList.DeviceCount ], i );
 				}
 
-#if 1
+#if 0
 				DbgPrint( L"pci: class_code: %x, sub_class: %x, prog_if: %x, device_id: %x, vendor_id: %x, (bus%d, dev%d, slot%d)\n",
 					HalPciDeviceList.PciDevices[ HalPciDeviceList.DeviceCount ].PciHeader.ClassCode,
 					HalPciDeviceList.PciDevices[ HalPciDeviceList.DeviceCount ].PciHeader.SubClass,

@@ -11,7 +11,7 @@
 #define THREAD_STATE_TERMINATED		0x10
 #define THREAD_STATE_WAITING		0x20
 
-#include "mm.h"
+#include "mi.h"
 
 typedef struct _KPROCESS {
 	ULONG32 ActiveProcessId;
@@ -54,9 +54,10 @@ typedef struct _WAIT_OBJECT_SPINLOCK {
 
 typedef struct _KTCB {
 	KTRAP_FRAME Registers;
-	ULONG64 DirectoryTableBase;
+	PADDRESS_SPACE_DESCRIPTOR AddressSpace;
 
 	ULONG32 LogicalProcessor;
+	UCHAR PrivilegeLevel;
 
 	ULONG32 ThreadState;
 	ULONG32 ThreadExitCode;
@@ -67,6 +68,17 @@ typedef struct _KTCB {
 } KTCB, *PKTCB;
 
 typedef struct _KTHREAD {
+
+	struct {
+		ULONG32 CallIndex;
+		ULONG32 PreviousFlags;
+		ULONG64 PreviousIp;
+		ULONG64 PreviousStack;
+	} SYSCALL;
+
+	ULONG64 KernelStackBase;
+	ULONG32 KernelStackSize;
+
 	KTCB ThreadControlBlock;
 	ULONG32 ActiveThreadId;
 	LIST_ENTRY ActiveThreadLinks;
@@ -74,8 +86,8 @@ typedef struct _KTHREAD {
 	ULONG64 UserStackBase;
 	ULONG32 UserStackSize;
 
-	ULONG64 KernelStackBase;
-	ULONG32 KernelStackSize;
+	ULONG64 ApicStackBase;
+	ULONG32 ApicStackSize;
 
 	//add locks.
 

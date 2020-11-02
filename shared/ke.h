@@ -27,6 +27,10 @@ typedef struct _KLOCKED_LIST {
 } KLOCKED_LIST, *PKLOCKED_LIST;
 
 typedef struct _KPCR {
+	ULONG32 ThreadQueueLength;
+	PKTHREAD ThreadQueue;
+	KSPIN_LOCK ThreadQueueLock;
+
 	ULONG32 CpuIndex;
 	ULONG32 AcpiId;
 
@@ -36,9 +40,6 @@ typedef struct _KPCR {
 	TSS TaskState;
 	USHORT TaskStateDescriptor;
 
-	ULONG32 ThreadQueueLength;
-	PKTHREAD ThreadQueue;
-	KSPIN_LOCK ThreadQueueLock;
 } KPCR, *PKPCR;
 
 NTSYSAPI
@@ -165,3 +166,15 @@ VOID
 KeExitThread(
 
 );
+
+NTSYSAPI
+VOID
+KeBugCheckEx(
+	__in ULONG32 ExceptionCode,
+	__in ULONG64 Arg1,
+	__in ULONG64 Arg2,
+	__in ULONG64 Arg3,
+	__in ULONG64 Arg4
+);
+
+
