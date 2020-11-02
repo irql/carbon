@@ -12,7 +12,7 @@ Abstract:
 
 #include <carbsup.h>
 #include "hal.h"
-#include "ke.h"
+#include "ki.h"
 #include "acpi.h"
 
 /*

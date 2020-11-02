@@ -13,7 +13,7 @@ Abstract:
 #include <carbsup.h>
 #include "hal.h"
 #include "acpi.h"
-#include "mm.h"
+#include "mi.h"
 
 ULONG64 MadtLocalApic;
 ULONG64 MadtIoApic0;

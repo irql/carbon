@@ -11,8 +11,8 @@ Abstract:
 --*/
 
 #include <carbsup.h>
-#include "ke.h"
-#include "ob.h"
+#include "ki.h"
+#include "obp.h"
 #include "psp.h"
 
 PKPROCESS KiSystemProcess = 0;

@@ -12,9 +12,9 @@ Abstract:
 
 
 #include <carbsup.h>
-#include "ob.h"
-#include "io.h"
-#include "ke.h"
+#include "obp.h"
+#include "iop.h"
+#include "ki.h"
 
 NTSTATUS
 IoInitializeIocb(

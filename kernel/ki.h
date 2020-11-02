@@ -12,7 +12,7 @@ Abstract:
 
 #pragma once
 
-#include "ldrsup.h"
+#include "ldrpsup.h"
 #include "hal.h"
 
 VOID
@@ -27,7 +27,7 @@ KiCreateKpcr(
 	__out PKPCR* Kpcr
 );
 
-#include "ke_struct.h"
+#include "ki_struct.h"
 
 ULONG32
 KiGetUniqueIdentifier(

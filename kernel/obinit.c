@@ -11,10 +11,10 @@ Abstract:
 --*/
 
 #include <carbsup.h>
-#include "ob.h"
-#include "ldrsup.h"
-#include "ke.h"
-#include "io.h"
+#include "obp.h"
+#include "ldrpsup.h"
+#include "ki.h"
+#include "iop.h"
 
 POBJECT_TYPE_DESCRIPTOR ObjectTypeThread = 0;
 POBJECT_TYPE_DESCRIPTOR ObjectTypeDevice = 0;

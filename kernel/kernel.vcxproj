@@ -177,16 +177,16 @@
     <ClInclude Include="..\shared\rtl.h" />
     <ClInclude Include="..\shared\zw.h" />
     <ClInclude Include="acpi.h" />
-    <ClInclude Include="ex.h" />
+    <ClInclude Include="exp.h" />
     <ClInclude Include="hal.h" />
-    <ClInclude Include="io.h" />
-    <ClInclude Include="ke.h" />
-    <ClInclude Include="ke_struct.h" />
-    <ClInclude Include="ldr.h" />
-    <ClInclude Include="ldrsup.h" />
-    <ClInclude Include="ldrusr.h" />
+    <ClInclude Include="iop.h" />
+    <ClInclude Include="ki.h" />
+    <ClInclude Include="ki_struct.h" />
+    <ClInclude Include="ldrp.h" />
+    <ClInclude Include="ldrpsup.h" />
+    <ClInclude Include="ldrpusr.h" />
     <ClInclude Include="mi.h" />
-    <ClInclude Include="ob.h" />
+    <ClInclude Include="obp.h" />
     <ClInclude Include="pesup.h" />
     <ClInclude Include="psp.h" />
   </ItemGroup>

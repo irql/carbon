@@ -11,7 +11,7 @@ Abstract:
 --*/
 
 #include <carbsup.h>
-#include "ex.h"
+#include "exp.h"
 
 
 POOL_HEADER PoolHeader;

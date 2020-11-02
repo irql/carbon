@@ -2,7 +2,7 @@
 
 
 #include <carbsup.h>
-#include "ldrsup.h"
+#include "ldrpsup.h"
 
 NTSTATUS
 LdrLoadDll(

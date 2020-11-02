@@ -13,12 +13,12 @@ Abstract:
 #include <carbsup.h>
 #include "hal.h"
 #include "acpi.h"
-#include "mm.h"
-#include "ldrsup.h"
-#include "ob.h"
-#include "ex.h"
-#include "ke.h"
-#include "io.h"
+#include "mi.h"
+#include "ldrpsup.h"
+#include "obp.h"
+#include "exp.h"
+#include "ki.h"
+#include "iop.h"
 
 EXTERN VOLATILE ULONG32 KiCurrentCpuInitializing;
 EXTERN ULONG32 KiDispatcherSpinlocks;

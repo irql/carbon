@@ -12,7 +12,7 @@ Abstract:
 
 #include <carbsup.h>
 #include "hal.h"
-#include "mm.h"
+#include "mi.h"
 
 /*
 	these api's assume you wont use over a page of gdt entries,

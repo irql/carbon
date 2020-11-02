@@ -12,8 +12,8 @@ Abstract:
 
 #include <carbsup.h>
 #include "hal.h"
-#include "ke.h"
-#include "ob.h"
+#include "ki.h"
+#include "obp.h"
 #include "mi.h"
 
 EXTERN ADDRESS_SPACE_DESCRIPTOR g_KernelPageTable;

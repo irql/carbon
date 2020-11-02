@@ -3,11 +3,11 @@
 
 #include <carbsup.h>
 #include "psp.h"
-#include "ke.h"
-#include "mm.h"
-#include "ldr.h"
-#include "ldrsup.h"
-#include "ldrusr.h"
+#include "ki.h"
+#include "mi.h"
+#include "ldrp.h"
+#include "ldrpsup.h"
+#include "ldrpusr.h"
 
 NTSTATUS
 PsCreateUserProcess(

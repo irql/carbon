@@ -14,7 +14,7 @@ Abstract:
 #include <carbsup.h>
 #include "hal.h"
 #include "acpi.h"
-#include "ke.h"
+#include "ki.h"
 
 VOID( *HalInterruptHandlers[ 256 ] )( PKTRAP_FRAME, PKPCR );
 

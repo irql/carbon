@@ -11,7 +11,7 @@ Abstract:
 --*/
 
 #include <carbsup.h>
-#include "ob.h"
+#include "obp.h"
 
 HANDLE
 ObpSupplyHandleIdentifier(

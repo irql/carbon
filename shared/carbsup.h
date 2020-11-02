@@ -16,6 +16,7 @@ Abstract:
 #pragma warning (disable : 4200)
 #pragma warning (disable : 4201)
 #pragma warning (disable : 4204)
+#pragma warning (disable : 4152)
 #pragma warning (disable : 4214)
 #pragma warning (disable : 4366)
 #pragma warning (disable : 4213)

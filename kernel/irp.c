@@ -12,26 +12,26 @@ Abstract:
 
 
 #include <carbsup.h>
-#include "ob.h"
-#include "io.h"
-#include "ke.h"
+#include "obp.h"
+#include "iop.h"
+#include "ki.h"
 
 PIO_STACK_LOCATION
 IoAllocateIrpStack(
 
-	)
+)
 {
 
 
-	return ExAllocatePoolWithTag(sizeof(IO_STACK_LOCATION), TAGEX_IO);
+	return ExAllocatePoolWithTag( sizeof( IO_STACK_LOCATION ), TAGEX_IO );
 }
 
 VOID
 IoFreeIrpStack(
 	__in PIO_STACK_LOCATION IrpStack
-	)
+)
 {
-	ExFreePoolWithTag(IrpStack, '  oI');
+	ExFreePoolWithTag( IrpStack, '  oI' );
 
 	return;
 }
@@ -41,7 +41,7 @@ IoFreeIrp(
 	__in PIRP Irp
 )
 {
-	ExFreePoolWithTag(Irp, ' prI');
+	ExFreePoolWithTag( Irp, ' prI' );
 
 	return;
 }
@@ -49,10 +49,10 @@ IoFreeIrp(
 PIRP
 IoAllocateIrp(
 
-	)
+)
 {
 
-	return ExAllocatePoolWithTag(sizeof(IRP), TAGEX_IRP);
+	return ExAllocatePoolWithTag( sizeof( IRP ), TAGEX_IRP );
 }
 
 PIRP
@@ -62,20 +62,20 @@ IoBuildDeviceIoControlRequest(
 	__in ULONG InputBufferLength,
 	__in PVOID OutputBuffer,
 	__in ULONG OutputBufferLength
-	)
+)
 {
-	PIRP NewIrp = IoAllocateIrp();
+	PIRP NewIrp = IoAllocateIrp( );
 
 	NewIrp->FileObject = NULL;
-	
-	NewIrp->StackLocation = IoAllocateIrpStack();
+
+	NewIrp->StackLocation = IoAllocateIrpStack( );
 	NewIrp->RequestorMode = KernelMode;
 
-	NewIrp->Thread = KiQueryCurrentThread();
-	ObDereferenceObject(NewIrp->Thread);
+	NewIrp->Thread = KiQueryCurrentThread( );
+	ObDereferenceObject( NewIrp->Thread );
 
-	NewIrp->IssuingProcess = KiQueryCurrentProcess();
-	ObDereferenceObject(NewIrp->IssuingProcess);
+	NewIrp->IssuingProcess = KiQueryCurrentProcess( );
+	ObDereferenceObject( NewIrp->IssuingProcess );
 
 	NewIrp->StackLocation->MajorFunction = IRP_MJ_CONTROL;
 	NewIrp->StackLocation->MinorFunction = 0;
@@ -94,12 +94,12 @@ NTSTATUS
 IoCallDevice(
 	__in PDEVICE_OBJECT DeviceObject,
 	__in PIRP Irp
-	)
+)
 {
 
-	if (DeviceObject->MajorFunction[Irp->StackLocation->MajorFunction] != NULL) {
+	if ( DeviceObject->MajorFunction[ Irp->StackLocation->MajorFunction ] != NULL ) {
 
-		return DeviceObject->MajorFunction[Irp->StackLocation->MajorFunction](DeviceObject, Irp);
+		return DeviceObject->MajorFunction[ Irp->StackLocation->MajorFunction ]( DeviceObject, Irp );
 	}
 
 	return STATUS_SUCCESS;

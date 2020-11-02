@@ -12,27 +12,27 @@ Abstract:
 
 
 #include <carbsup.h>
-#include "ob.h"
-#include "io.h"
-#include "ke.h"
+#include "obp.h"
+#include "iop.h"
+#include "ki.h"
 
 PFILE_OBJECT
 IoAllocateFileObject(
 
-	)
+)
 {
-	
-	return ExAllocatePoolWithTag(sizeof(FILE_OBJECT), TAGEX_FILE );
+
+	return ExAllocatePoolWithTag( sizeof( FILE_OBJECT ), TAGEX_FILE );
 }
 
 VOID
 IoFreeFileObject(
 	__in PFILE_OBJECT FileObject
-	)
+)
 {
-	
-	ExFreePoolWithTag(FileObject, TAGEX_FILE);
-	
+
+	ExFreePoolWithTag( FileObject, TAGEX_FILE );
+
 	return;
 }
 

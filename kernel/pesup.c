@@ -12,9 +12,9 @@ Abstract:
 
 #include <carbsup.h>
 #include "pesup.h"
-#include "mm.h"
-#include "ob.h"
-#include "ldrsup.h"
+#include "mi.h"
+#include "obp.h"
+#include "ldrpsup.h"
 
 NTSTATUS
 PeSupGetProcedureAddressByName(

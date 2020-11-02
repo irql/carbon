@@ -11,8 +11,8 @@ Abstract:
 --*/
 
 #include <carbsup.h>
-#include "ob.h"
-#include "ke.h"
+#include "obp.h"
+#include "ki.h"
 
 PHANDLE_TABLE
 ObpQueryCurrentHandleTable(

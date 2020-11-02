@@ -2,11 +2,11 @@
 
 
 #include <carbsup.h>
-#include "ldr.h"
+#include "ldrp.h"
 #include "pesup.h"
-#include "ldrusr.h"
-#include "ldrsup.h"
-#include "ke_struct.h"
+#include "ldrpusr.h"
+#include "ldrpsup.h"
+#include "ki_struct.h"
 #include "psp.h"
 
 NTSTATUS

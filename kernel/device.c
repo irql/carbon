@@ -12,8 +12,8 @@ Abstract:
 
 
 #include <carbsup.h>
-#include "ob.h"
-#include "io.h"
+#include "obp.h"
+#include "iop.h"
 
 
 
@@ -22,7 +22,7 @@ IoCreateDevice(
 	__in PDRIVER_OBJECT DriverObject,
 	__in PUNICODE_STRING DeviceName,
 	__out PDEVICE_OBJECT* DeviceObject
-	)
+)
 {
 	NTSTATUS ntStatus;
 	OBJECT_ATTRIBUTES ObjectAttributes;
@@ -30,14 +30,14 @@ IoCreateDevice(
 	ObjectAttributes.Attributes = OBJ_PERMANENT;//hm.
 	ObjectAttributes.ObjectName = DeviceName;
 
-	ntStatus = ObpCreateObject(DeviceObject, &ObjectAttributes, ObjectTypeDevice);
+	ntStatus = ObpCreateObject( DeviceObject, &ObjectAttributes, ObjectTypeDevice );
 
-	if (!NT_SUCCESS(ntStatus)) {
+	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		return ntStatus;
 	}
 
-	(*DeviceObject)->DriverObject = DriverObject;
+	( *DeviceObject )->DriverObject = DriverObject;
 
 	return STATUS_SUCCESS;
 }

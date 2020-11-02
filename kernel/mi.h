@@ -52,8 +52,6 @@ typedef struct _ADDRESS_SPACE_DESCRIPTOR {
 
 	ULONG64		MemoryUsage;
 
-	PLIST_ENTRY PageTableAllocationHead;
-
 	ULONG64		Flags;
 	PKPROCESS	Process;
 
@@ -82,7 +80,7 @@ VOID FORCEINLINE MiVirtualToIndex(
 	Pt = ( USHORT )( Virtual / PAGE_SIZE );
 	Virtual -= ( ( ULONG64 )Pt * PAGE_SIZE );
 
-	if ( Pml4tIndex ) *Pml4tIndex = Pml4;	
+	if ( Pml4tIndex ) *Pml4tIndex = Pml4;
 	if ( PdptIndex ) *PdptIndex = Pdpt;
 	if ( PdtIndex ) *PdtIndex = Pdt;
 	if ( PtIndex ) *PtIndex = Pt;
@@ -106,8 +104,8 @@ ULONG64 FORCEINLINE MiIndexToVirtual(
 	return Virtual;
 }
 
-PULONG64 FORCEINLINE MiCurrentDirectory() {
-	
+PULONG64 FORCEINLINE MiCurrentDirectory( ) {
+
 	//obsolete.
 	return ( ULONG64* )__readcr3( );
 }
@@ -118,15 +116,15 @@ ULONG64 FORCEINLINE MiFlagsToEntryFlags(
 	ULONG64 PteFlags = EntryPresent;
 
 	if ( Flags & PAGE_EXECUTE );
-	
+
 	if ( Flags & PAGE_READ );
-	
+
 	if ( Flags & PAGE_WRITE )
 		PteFlags |= EntryWriteable;
-	
+
 	if ( Flags & PAGE_USER )
 		PteFlags |= EntryUser;
-	
+
 	if ( Flags & PAGE_GLOBAL )
 		PteFlags |= EntryCpuGlobal;
 
@@ -161,7 +159,7 @@ VOID MiFreeAddressSpace(
 	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace
 );
 
-PADDRESS_SPACE_DESCRIPTOR MiGetAddressSpace();
+PADDRESS_SPACE_DESCRIPTOR MiGetAddressSpace( );
 
 VOID MiSetAddressSpace(
 	__in PADDRESS_SPACE_DESCRIPTOR AddressSpace

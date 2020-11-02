@@ -7,7 +7,7 @@
 //	internal ke header for PKTHREAD.
 //
 
-#include "../kernel/ke_struct.h" 
+#include "../kernel/ki_struct.h" 
 
 
 VOID

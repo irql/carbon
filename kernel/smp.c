@@ -12,8 +12,8 @@ Abstract:
 
 #include <carbsup.h>
 #include "hal.h"
-#include "ke.h"
-#include "mm.h"
+#include "ki.h"
+#include "mi.h"
 #include "acpi.h"
 
 ULONG64 HalXsave = 0;

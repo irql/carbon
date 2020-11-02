@@ -3,7 +3,7 @@
 
 #include <carbsup.h>
 #include "mi.h"
-#include "ke_struct.h"
+#include "ki_struct.h"
 
 KLOCKED_LIST g_AddressSpaceHead = { 0 };
 ADDRESS_SPACE_DESCRIPTOR g_KernelPageTable = { 0 };

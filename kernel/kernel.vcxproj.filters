@@ -63,29 +63,14 @@
     <ClInclude Include="..\shared\ke.h">
       <Filter>shared</Filter>
     </ClInclude>
-    <ClInclude Include="ex.h">
-      <Filter>Ex</Filter>
-    </ClInclude>
     <ClInclude Include="..\shared\ex.h">
       <Filter>shared</Filter>
-    </ClInclude>
-    <ClInclude Include="ob.h">
-      <Filter>Ob</Filter>
-    </ClInclude>
-    <ClInclude Include="ldrsup.h">
-      <Filter>Ldr</Filter>
-    </ClInclude>
-    <ClInclude Include="ke.h">
-      <Filter>Ke</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\ldrsup.h">
       <Filter>shared</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\ob.h">
       <Filter>shared</Filter>
-    </ClInclude>
-    <ClInclude Include="io.h">
-      <Filter>Io</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\io.h">
       <Filter>shared</Filter>
@@ -96,26 +81,41 @@
     <ClInclude Include="..\shared\mm.h">
       <Filter>shared</Filter>
     </ClInclude>
-    <ClInclude Include="ke_struct.h">
-      <Filter>Ke</Filter>
-    </ClInclude>
     <ClInclude Include="psp.h">
       <Filter>Ps</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\ps.h">
       <Filter>shared</Filter>
     </ClInclude>
-    <ClInclude Include="ldrusr.h">
-      <Filter>Ldr</Filter>
-    </ClInclude>
-    <ClInclude Include="ldr.h">
-      <Filter>Ldr</Filter>
-    </ClInclude>
     <ClInclude Include="mi.h">
       <Filter>Mm</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\zw.h">
       <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="obp.h">
+      <Filter>Ob</Filter>
+    </ClInclude>
+    <ClInclude Include="ldrp.h">
+      <Filter>Ldr</Filter>
+    </ClInclude>
+    <ClInclude Include="ldrpsup.h">
+      <Filter>Ldr</Filter>
+    </ClInclude>
+    <ClInclude Include="ldrpusr.h">
+      <Filter>Ldr</Filter>
+    </ClInclude>
+    <ClInclude Include="ki.h">
+      <Filter>Ke</Filter>
+    </ClInclude>
+    <ClInclude Include="ki_struct.h">
+      <Filter>Ke</Filter>
+    </ClInclude>
+    <ClInclude Include="iop.h">
+      <Filter>Io</Filter>
+    </ClInclude>
+    <ClInclude Include="exp.h">
+      <Filter>Ex</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

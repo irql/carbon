@@ -11,7 +11,7 @@ Abstract:
 --*/
 
 #include <carbsup.h>
-#include "ke.h"
+#include "ki.h"
 
 ULONG32
 KiGetUniqueIdentifier(

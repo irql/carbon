@@ -1,8 +1,8 @@
 
 
 #include <carbsup.h>
-#include "ob.h"
-#include "ke.h"
+#include "obp.h"
+#include "ki.h"
 
 NTSTATUS
 ObDestroyObject(

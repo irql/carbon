@@ -3,8 +3,8 @@
 
 #include <carbsup.h>
 #include "mi.h"
-#include "ldrsup.h"
-#include "ke.h"
+#include "ldrpsup.h"
+#include "ki.h"
 
 EXTERN PLIST_ENTRY g_PhysicalRegionHead;
 EXTERN KLOCKED_LIST g_AddressSpaceHead;

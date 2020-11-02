@@ -2,7 +2,7 @@
 
 
 #include <carbsup.h>
-#include "ke_struct.h"
+#include "ki_struct.h"
 
 PVAD
 PspAllocateVad(

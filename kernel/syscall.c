@@ -2,7 +2,7 @@
 
 
 #include <carbsup.h>
-#include "ke.h"
+#include "ki.h"
 
 #define IA32_MSR_EFER   0xC0000080
 #define IA32_MSR_STAR   0xC0000081
@@ -19,8 +19,6 @@ SyscallTest(
 	printf( "syscall: %x, %x, %.16P, %.16P, %.16P\n", i->SYSCALL.CallIndex, i->SYSCALL.PreviousFlags, i->SYSCALL.PreviousIp, i->SYSCALL.PreviousStack, __readmsr( IA32_MSR_LSTAR ) );
 
 }
-
-#pragma warning ( disable : 4152 )
 
 PVOID KeServiceDescriptorTable[ ] = {
 	[0] = 0,

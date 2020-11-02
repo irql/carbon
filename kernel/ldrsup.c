@@ -12,9 +12,9 @@ Abstract:
 
 #include <carbsup.h>
 #include "pesup.h"
-#include "ldrsup.h"
+#include "ldrpsup.h"
 #include "mi.h"
-#include "ldr.h"
+#include "ldrp.h"
 
 NTSTATUS
 LdrpSupGetInfoBlock(

@@ -2,7 +2,7 @@
 
 
 #include <carbsup.h>
-#include "ke.h"
+#include "ki.h"
 #include "psp.h"
 
 EXTERN PKPROCESS KiSystemProcess;

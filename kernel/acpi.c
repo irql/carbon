@@ -13,7 +13,7 @@ Abstract:
 #include <carbsup.h>
 #include "hal.h"
 #include "acpi.h"
-#include "mm.h"
+#include "mi.h"
 
 PRSDP_DESCRIPTOR2_0						Rsdp;
 PRSDT_DESCRIPTOR						Rsdt;
