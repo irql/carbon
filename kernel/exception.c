@@ -41,13 +41,15 @@ KiExceptionTrap(
 		break;
 	case UserMode:
 
+		KeBugCheckEx( STATUS_UNHANDLED_SYSTEM_EXCEPTION, TrapFrame->Interrupt, TrapFrame->Rip, ( ULONG64 )TrapFrame, ( ULONG64 )ExceptionThread );
 
-		KeRaiseException( ( ULONG32 )STATUS_ACCESS_VIOLATION );
+		//KeRaiseException( ( ULONG32 )STATUS_ACCESS_VIOLATION );
 
 		break;
 	}
 }
 
+DECLSPEC( noreturn )
 VOID
 KeRaiseException(
 	__in ULONG32 ExceptionCode

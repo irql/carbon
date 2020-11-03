@@ -18,7 +18,7 @@ ULONG lstrlenW(
 ) {
 	ULONG Length = 0;
 
-	while (String[Length++] != 0);
+	while ( String[ Length++ ] != 0 );
 	return Length - 1; // Return the length excluding a null terminator.
 }
 
@@ -27,10 +27,10 @@ LONG lstrcmpW(
 	__in PCWSTR String1,	// String 1.
 	__in PCWSTR String2		// String 2.
 ) {
-	while (*String1++ == *String2++) 
-		if (*String1 == 0) return 0;		// Return  0 if strings are the same.
+	while ( *String1++ == *String2++ )
+		if ( *String1 == 0 ) return 0;		// Return  0 if strings are the same.
 
-	if (*--String1 > *--String2) return 1;	// Return  1 if String1 is bigger.
+	if ( *--String1 > *--String2 ) return 1;	// Return  1 if String1 is bigger.
 	else return -1;							// Return -1 if String2 is bigger.
 }
 
@@ -39,10 +39,10 @@ LONG lstrcmpiW(
 	__in PCWSTR String1,	// String 1.
 	__in PCWSTR String2		// String 2.
 ) {
-	while (toupper(*String1) == toupper(*String2))
-		if (*String1++ == 0 || *String2++ == 0) return 0;	// Return  0 if strings are the same.
+	while ( toupper( *String1 ) == toupper( *String2 ) )
+		if ( *String1++ == 0 || *String2++ == 0 ) return 0;	// Return  0 if strings are the same.
 
-	if (toupper(*String1) > toupper(*String2)) return 1;	// Return  1 if String1 is bigger.
+	if ( toupper( *String1 ) > toupper( *String2 ) ) return 1;	// Return  1 if String1 is bigger.
 	else return -1;											// Return -1 if String2 is bigger.
 }
 
@@ -52,8 +52,8 @@ LONG lstrncmpW(
 	__in PCWSTR String2,	// String 2.
 	__in ULONG	Characters	// Characters to compare.
 ) {
-	while (*String1++ == *String2++ && --Characters)
-		if (*String1 == 0) return 0; // Return 0 if characters are the same.
+	while ( *String1++ == *String2++ && --Characters )
+		if ( *String1 == 0 ) return 0; // Return 0 if characters are the same.
 
 	return Characters; // Return the amount of different characters.
 }
@@ -64,8 +64,8 @@ LONG lstrncmpiW(
 	__in PCWSTR String2,	// String 2.
 	__in ULONG	Characters	// Characters to compare.
 ) {
-	while (toupper(*String1) == toupper(*String2) && --Characters)
-		if (*String1++ == 0 || *String2++ == 0) return 0; // Return 0 if characters are the same.
+	while ( toupper( *String1 ) == toupper( *String2 ) && --Characters )
+		if ( *String1++ == 0 || *String2++ == 0 ) return 0; // Return 0 if characters are the same.
 
 	return Characters; // Return the amount of different characters.
 }
@@ -75,7 +75,7 @@ VOID lstrcpyW(
 	__inout PWSTR	DestinationString,	// Destination string.
 	__in	PWSTR	SourceString		// Source string.
 ) {
-	while (*SourceString != 0)
+	while ( *SourceString != 0 )
 		*DestinationString++ = *SourceString++;
 
 	*DestinationString = 0;
@@ -87,7 +87,7 @@ VOID lstrncpyW(
 	__in	PWSTR SourceString,			// Source string.
 	__in	ULONG Characters			// Characters to copy.
 ) {
-	while (*SourceString != 0 && Characters--)
+	while ( *SourceString != 0 && Characters-- )
 		*DestinationString++ = *SourceString++;
 
 	*DestinationString = 0;
@@ -98,8 +98,8 @@ VOID lstrcatW(
 	__in PWSTR	DestinationString,	// Destination string.
 	__in PCWSTR SourceString		// Source string.
 ) {
-	while (*++DestinationString != 0);
-	while (*SourceString != 0) *DestinationString++ = *SourceString++;
+	while ( *++DestinationString != 0 );
+	while ( *SourceString != 0 ) *DestinationString++ = *SourceString++;
 
 	*DestinationString = 0;
 }
@@ -110,8 +110,8 @@ VOID lstrncatW(
 	__in PCWSTR SourceString,		// Source string.
 	__in ULONG	Characters			// Characters to concatenate.
 ) {
-	while (*++DestinationString != 0);
-	while (*SourceString != 0 && Characters--) *DestinationString++ = *SourceString++;
+	while ( *++DestinationString != 0 );
+	while ( *SourceString != 0 && Characters-- ) *DestinationString++ = *SourceString++;
 
 	*DestinationString = 0;
 }
@@ -121,8 +121,8 @@ PWSTR lstrchrW(
 	__in PWSTR String,		// String.
 	__in WCHAR Character	// Character.
 ) {
-	while (*String++ != 0)
-		if (*String == Character) return String; // Return pointer to the first occurence.
+	while ( *String++ != 0 )
+		if ( *String == Character ) return String; // Return pointer to the first occurence.
 
 	return NULL; // Return NULL pointer if no matches.
 }
@@ -132,8 +132,8 @@ PWSTR lstrchriW(
 	__in PWSTR String,		// String.
 	__in WCHAR Character	// Character.
 ) {
-	while (*String++ != 0)
-		if (toupper(*String) == toupper(Character)) return String; // Return pointer to the first occurence.
+	while ( *String++ != 0 )
+		if ( toupper( *String ) == toupper( Character ) ) return String; // Return pointer to the first occurence.
 
 	return NULL; // Return NULL pointer if no matches.
 }
@@ -146,9 +146,9 @@ PWSTR lstrstrW(
 	do {
 		PWSTR SubstringAddress = Substring;
 
-		while (*String++ == *SubstringAddress++)
-			if (*SubstringAddress == 0) return String - SubstringAddress + Substring; // Return pointer to the first occurence.
-	} while (*String != 0);
+		while ( *String++ == *SubstringAddress++ )
+			if ( *SubstringAddress == 0 ) return String - SubstringAddress + Substring; // Return pointer to the first occurence.
+	} while ( *String != 0 );
 
 	return NULL; // Return NULL pointer if no matches.
 }
@@ -161,11 +161,11 @@ PWSTR lstrstriW(
 	do {
 		PWSTR SubstringAddress = Substring;
 
-		while (toupper(*String) == toupper(*SubstringAddress)) {
-			if (*SubstringAddress++ == 0) return String - SubstringAddress + Substring; // Return pointer to the first occurence.
+		while ( toupper( *String ) == toupper( *SubstringAddress ) ) {
+			if ( *SubstringAddress++ == 0 ) return String - SubstringAddress + Substring; // Return pointer to the first occurence.
 			String++;
 		}
-	} while (*String != 0);
+	} while ( *String != 0 );
 
 	return NULL; // Return NULL pointer if no matches.
 }
@@ -198,7 +198,7 @@ VOID RtlAllocateAndInitUnicodeString(
 	//if ( !NT_SUCCESS( RtlUnicodeStringValidate( AllocatedUnicodeString ) ) ) return; // pog 
 
 	AllocatedUnicodeString->Length = lstrlenW( SourceString );
-	AllocatedUnicodeString->Size = ( ( ( ( ( AllocatedUnicodeString->Length + 1 ) * sizeof( WCHAR ) ) + 63 ) / 64 ) * 64 );
+	AllocatedUnicodeString->Size = ( AllocatedUnicodeString->Length + 1 ) * sizeof( WCHAR );//( ( ( ( ( AllocatedUnicodeString->Length + 1 ) * sizeof( WCHAR ) ) + 63 ) / 64 ) * 64 );
 	AllocatedUnicodeString->Buffer = ExAllocatePoolWithTag( AllocatedUnicodeString->Size, TAGEX_STRING );
 
 	lstrcpyW( AllocatedUnicodeString->Buffer, SourceString );
@@ -231,7 +231,7 @@ NTSTATUS RtlUnicodeStringCopy(
 	__in	PUNICODE_STRING SourceUnicodeString			// Source unicode string.
 ) {
 	if ( !NT_SUCCESS( RtlUnicodeStringValidate( DestinationUnicodeString ) ) ||
-		 !NT_SUCCESS( RtlUnicodeStringValidate( SourceUnicodeString ) ) ) return STATUS_INVALID_PARAMETER;
+		!NT_SUCCESS( RtlUnicodeStringValidate( SourceUnicodeString ) ) ) return STATUS_INVALID_PARAMETER;
 
 	lstrcpyW( DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer );
 
@@ -248,7 +248,7 @@ NTSTATUS RtlUnicodeStringCopyLength(
 	__in	ULONG			Characters					// Characters to copy.
 ) {
 	if ( !NT_SUCCESS( RtlUnicodeStringValidate( DestinationUnicodeString ) ) ||
-		 !NT_SUCCESS( RtlUnicodeStringValidate( SourceUnicodeString ) ) ) return STATUS_INVALID_PARAMETER;
+		!NT_SUCCESS( RtlUnicodeStringValidate( SourceUnicodeString ) ) ) return STATUS_INVALID_PARAMETER;
 
 	lstrncpyW( DestinationUnicodeString->Buffer, SourceUnicodeString->Buffer, Characters );
 
@@ -264,7 +264,7 @@ ULONG RtlUnicodeStringCompare(
 	__in PUNICODE_STRING UnicodeString2		// Unicode string 2.
 ) {
 	if ( !NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString1 ) ) ||
-		 !NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString2 ) ) ) return STATUS_INVALID_PARAMETER;
+		!NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString2 ) ) ) return STATUS_INVALID_PARAMETER;
 
 	return lstrcmpW( UnicodeString1->Buffer, UnicodeString2->Buffer ); // Return the result.
 }
@@ -276,7 +276,7 @@ ULONG RtlUnicodeStringCompareLength(
 	__in ULONG				Characters		// Characters to compare.
 ) {
 	if ( !NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString1 ) ) ||
-		 !NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString2 ) ) ) return STATUS_INVALID_PARAMETER;
+		!NT_SUCCESS( RtlUnicodeStringValidate( UnicodeString2 ) ) ) return STATUS_INVALID_PARAMETER;
 
 	return lstrncmpW( UnicodeString1->Buffer, UnicodeString2->Buffer, Characters ); // Return the result.
 }

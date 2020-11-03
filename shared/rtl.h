@@ -146,6 +146,10 @@ NTSYSAPI ULONG RtlUnicodeStringCompareLength(
 	__in ULONG				Characters
 );
 
+NTSYSAPI VOID __C_specific_handler(
+
+);
+
 /* CRT functions. */
 NTSYSAPI void *_memset( void *m1, unsigned char v, __int64 n );
 NTSYSAPI void *_memcpy( void *dst, void *src, int n );
@@ -170,13 +174,20 @@ NTSYSAPI float _pow( float n, int ex );
 NTSYSAPI char *ftoa( float n, char *str1, unsigned int precision );
 NTSYSAPI wchar_t *ftow( float n, wchar_t *str1, unsigned int precision );
 
-//
-//	non crt shit
-//
-
 NTSYSAPI
 NTSTATUS
 RtlUnwind(
 	__in PKTHREAD Thread,
 	__in PCONTEXT TargetContext
 );
+
+NTSYSAPI
+VOID
+RtlRaiseAssertionFailure(
+
+);
+
+#define NT_ASSERT( expression ) ( !( expression ) ? RtlRaiseAssertionFailure( ) : 0 )
+#define  C_ASSERT static_assert
+
+

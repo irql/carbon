@@ -129,8 +129,6 @@ DriverEntry(
 	ZwClose( SystemProcess );
 #endif
 
-	__debugbreak( );
-
 	return STATUS_SUCCESS;
 }
 

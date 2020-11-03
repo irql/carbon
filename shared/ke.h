@@ -231,6 +231,7 @@ typedef struct _CONTEXT {
 } CONTEXT, *PCONTEXT;
 
 NTSYSAPI
+DECLSPEC( noreturn )
 VOID
 KeRaiseException(
 	__in ULONG32 ExceptionCode

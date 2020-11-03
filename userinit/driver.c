@@ -3,17 +3,18 @@
 
 #include <carbsup.h>
 
-// oh well we cant do anything but we can say pog!
-
-extern void poggers( );
+#define NTSYSCALLAPI DECLSPEC(DLLIMPORT)
+#include "../kernel/nt.h"
 
 VOID
 EntryPoint(
 
 )
 {
-	poggers( );
-	__debugbreak( );
+
+	UNICODE_STRING String = RTL_CONSTANT_UNICODE_STRING( L"LIME_SECURITY." );
+	NtDisplayString( &String );
+
 	while ( 1 )
 		;
 }

@@ -160,7 +160,7 @@ LdrpUsrLoadModule(
 			return STATUS_UNSUCCESSFUL;
 		}
 
-		RtlAllocateAndInitUnicodeString( &ProcessObject->VadTree.RangeName, LdrpNameFromPath( ModuleName->Buffer ) );
+		RtlAllocateAndInitUnicodeString( &Vad->RangeName, LdrpNameFromPath( ModuleName->Buffer ) );
 
 		PspInsertVad( ProcessObject, Vad );
 	}
@@ -201,9 +201,19 @@ LdrpUsrLoadModule(
 			}
 			else {
 
+				UNICODE_STRING NextFileName;
 
-				//RtlStringCopy( LdrpNameFromPath( ModuleName ), ModuleFileNameBuffer );
-				//ntStatus = LdrpUsrLoadModule( ProcessObject, );
+				NextFileName.Size = ( 12 + lstrlenW( ModuleFileNameBuffer ) + 1 ) * sizeof( WCHAR );
+				NextFileName.Buffer = ExAllocatePoolWithTag( NextFileName.Size, TAGEX_STRING );
+
+				lstrcpyW( NextFileName.Buffer, L"\\SystemRoot\\" );
+				lstrcatW( NextFileName.Buffer, ModuleFileNameBuffer );
+
+				NextFileName.Length = lstrlenW( NextFileName.Buffer );
+
+				ntStatus = LdrpUsrLoadModule( ProcessObject, &NextFileName );
+
+				continue;
 			}
 		}
 	}

@@ -218,7 +218,7 @@ RtlpUnwindPrologue(
 	//	we're done, and the return address is ready in rsp.
 	//
 
-	if ( ( UnwindInfo->Flags & UNW_FLAG_CHAININFO ) != 0 ) {
+	if ( UnwindInfo->Flags & UNW_FLAG_CHAININFO ) {
 
 
 		return RtlpUnwindPrologue(

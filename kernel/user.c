@@ -164,8 +164,8 @@ PsCreateUserThread(
 
 	ThreadObject->ThreadControlBlock.Registers.Rcx = ( ULONG64 )ThreadContext;
 	ThreadObject->ThreadControlBlock.Registers.Rbp = ThreadObject->UserStackBase + ( ULONG64 )ThreadObject->UserStackSize;
-	ThreadObject->ThreadControlBlock.Registers.Rsp = ThreadObject->ThreadControlBlock.Registers.Rbp - 48;
-	*( ULONG64* )ThreadObject->ThreadControlBlock.Registers.Rsp = ( ULONG64 )KeExitThread; // write ntdll.dll
+	ThreadObject->ThreadControlBlock.Registers.Rsp = ThreadObject->ThreadControlBlock.Registers.Rbp - 0x28 - 8;
+	*( ULONG64* )ThreadObject->ThreadControlBlock.Registers.Rbp = ( ULONG64 )KeExitThread; // write ntdll.dll
 
 	ThreadObject->ThreadControlBlock.Registers.EFlags = 0x203202;
 	ThreadObject->ThreadControlBlock.Registers.Rip = ( ULONG64 )ThreadStart;
@@ -178,7 +178,6 @@ PsCreateUserThread(
 
 	ThreadObject->ThreadControlBlock.PrivilegeLevel = 3;
 
-	printf( "new thread with id: %d\n", ThreadObject->ActiveThreadId );
 	KiStartThread( ThreadObject );
 
 	return STATUS_SUCCESS;
