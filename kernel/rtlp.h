@@ -19,10 +19,3 @@ RtlpUnwindPrologue(
 	__in PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry
 );
 
-//move after commit.
-NTSYSAPI
-NTSTATUS
-RtlUnwind(
-	__in PKTHREAD Thread,
-	__in PCONTEXT TargetContext
-);;

@@ -169,3 +169,14 @@ NTSYSAPI int wcsncmp( wchar_t *str1, wchar_t *str2, int n );
 NTSYSAPI float _pow( float n, int ex );
 NTSYSAPI char *ftoa( float n, char *str1, unsigned int precision );
 NTSYSAPI wchar_t *ftow( float n, wchar_t *str1, unsigned int precision );
+
+//
+//	non crt shit
+//
+
+NTSYSAPI
+NTSTATUS
+RtlUnwind(
+	__in PKTHREAD Thread,
+	__in PCONTEXT TargetContext
+);

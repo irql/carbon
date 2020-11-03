@@ -84,18 +84,19 @@ typedef unsigned long long	SIZE_T, *PSIZE_T;
 
 typedef ULONG32 HANDLE, *PHANDLE;
 
-#include "ntstatus.h"
-#include "rtl.h"
-
 typedef struct _KTCB *PKTCB;
 typedef struct _KTHREAD *PKTHREAD;
 typedef struct _KPROCESS *PKPROCESS;
 typedef struct _KPCR *PKPCR;
+typedef struct _CONTEXT *PCONTEXT;
+
+#include "ntstatus.h"
+#include "rtl.h"
 
 #include "hal.h"
 #include "mm.h"
-#include "ke.h"
 #include "ex.h"
+#include "ke.h"
 #include "ldrsup.h"
 #include "ob.h"
 #include "io.h"
