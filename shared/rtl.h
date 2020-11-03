@@ -12,18 +12,16 @@ Abstract:
 
 #pragma once
 
-#define stack_size			sizeof(void*)
-#define va_size(type)		((sizeof(type)+stack_size-1)&~(stack_size-1))
-#define va_start(ap, la)	(ap=((va_list)(&(la))+va_size(la)))
-#define va_end(ap)			(ap=(va_list)0)
-#define va_arg(ap, type)	(ap+=va_size(type),*((type*)(ap-va_size(type))))
+#define stack_size			sizeof(void *)
+#define va_size(type)		((sizeof(type) + stack_size - 1) & ~(stack_size - 1))
+#define va_start(ap, la)	(ap = ((va_list)(&(la)) + va_size(la)))
+#define va_end(ap)			(ap = (va_list)0)
+#define va_arg(ap, type)	(ap += va_size(type), *((type *)(ap - va_size(type))))
 
-#define tolower(v)			((v) >= 'A' && (v) <= 'Z' ? (v) + ' ' : (v))
-#define toupper(v)			((v) >= 'a' && (v) <= 'z' ? (v) - ' ' : (v))
+#define tolower(c)			((c) >= 'A' && (c) <= 'Z' ? (c) + ' ' : (c))
+#define toupper(c)			((c) >= 'a' && (c) <= 'z' ? (c) - ' ' : (c))
 
 #define RTL_CONSTANT_UNICODE_STRING(s) {(sizeof(s)-2)/sizeof(wchar_t), sizeof(s), s}
-
-#define UPPER(c)		((c) >= 0x61 && (c) <= 0x7A ? (c) - 0x20 : (c))
 
 typedef struct _UNICODE_STRING {
 	ULONG Length;
@@ -99,6 +97,16 @@ NTSYSAPI PWSTR lstrstrW(
 NTSYSAPI PWSTR lstrstriW(
 	__in PWSTR String,
 	__in PWSTR Substring
+);
+
+PWSTR lstrbrkW(
+	__in PWSTR String,
+	__in WCHAR *Delimiters
+);
+
+PWSTR lstrtokW(
+	__in PWSTR String,
+	__in WCHAR *Delimiters
 );
 
 NTSYSAPI NTSTATUS RtlUnicodeStringValidate(
