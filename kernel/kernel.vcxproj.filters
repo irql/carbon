@@ -285,6 +285,12 @@
     <ClCompile Include="unwind.c">
       <Filter>Rtl</Filter>
     </ClCompile>
+    <ClCompile Include="except.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="assert.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <NASM Include="arch.asm">

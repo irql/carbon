@@ -13,10 +13,15 @@
   <ItemGroup>
     <ClCompile Include="driver.c" />
   </ItemGroup>
+  <ItemGroup>
+    <NASM Include="syscall.asm">
+      <FileType>Document</FileType>
+    </NASM>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{52045f4b-9c86-4e9f-bd16-a5553af14be8}</ProjectGuid>
-    <RootNamespace>userinit</RootNamespace>
+    <ProjectGuid>{7d21a874-e663-485c-a809-6be2209fe88a}</ProjectGuid>
+    <RootNamespace>ntdll</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -27,7 +32,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>
@@ -52,14 +57,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetExt>.exe</TargetExt>
+    <TargetExt>.dll</TargetExt>
     <IncludePath>$(SolutionDir)Shared\;$(VC_IncludePath);</IncludePath>
     <ReferencePath />
-    <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\;</LibraryPath>
+    <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
     <LibraryWPath />
     <SourcePath>$(VC_SourcePath);</SourcePath>
     <GenerateManifest>false</GenerateManifest>
-    <TargetName>user1</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -100,7 +104,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>ntdll.lib</AdditionalDependencies>
+      <AdditionalDependencies />
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ManifestFile />
       <AllowIsolation />
@@ -110,7 +114,7 @@
       <ProgramDatabaseFile>$(OutDir)Symbols\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Native</SubSystem>
       <LargeAddressAware>false</LargeAddressAware>
-      <EntryPointSymbol>EntryPoint</EntryPointSymbol>
+      <EntryPointSymbol>DllMain</EntryPointSymbol>
       <FixedBaseAddress>false</FixedBaseAddress>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <CLRImageType />

@@ -9,8 +9,10 @@ PspAllocateVad(
 
 )
 {
+	PVAD Vad = ExAllocatePoolWithTag( sizeof( VAD ), TAGEX_VAD );
+	Vad->Next = NULL;
 
-	return ExAllocatePoolWithTag( sizeof( VAD ), TAGEX_VAD );
+	return Vad;
 }
 
 VOID
@@ -67,7 +69,7 @@ PspFindVad(
 
 	while ( CurrentVad != NULL ) {
 
-		if ( lstrcmpW( RangeName, ( PCWSTR )&CurrentVad->RangeName.Buffer ) == 0 ) {
+		if ( lstrcmpW( RangeName, ( PCWSTR )CurrentVad->RangeName.Buffer ) == 0 ) {
 
 			return CurrentVad;
 		}

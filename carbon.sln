@@ -36,6 +36,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "win32", "win32", "{689107A1
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "userinit", "userinit\userinit.vcxproj", "{52045F4B-9C86-4E9F-BD16-A5553AF14BE8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ntdll", "ntdll\ntdll.vcxproj", "{7D21A874-E663-485C-A809-6BE2209FE88A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86_64 = Debug|x86_64
@@ -66,6 +68,9 @@ Global
 		{52045F4B-9C86-4E9F-BD16-A5553AF14BE8}.Debug|x86_64.ActiveCfg = Debug|x64
 		{52045F4B-9C86-4E9F-BD16-A5553AF14BE8}.Release|x86_64.ActiveCfg = Release|x64
 		{52045F4B-9C86-4E9F-BD16-A5553AF14BE8}.Release|x86_64.Build.0 = Release|x64
+		{7D21A874-E663-485C-A809-6BE2209FE88A}.Debug|x86_64.ActiveCfg = Debug|x64
+		{7D21A874-E663-485C-A809-6BE2209FE88A}.Release|x86_64.ActiveCfg = Release|x64
+		{7D21A874-E663-485C-A809-6BE2209FE88A}.Release|x86_64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

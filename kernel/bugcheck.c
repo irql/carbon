@@ -335,11 +335,28 @@ KeBugCheckEx(
 	printf(
 		"BUGCHECK CPU%d\n\n"
 
-		"%#.8X (%P, %P, %P, %p)\n",
+		"%#.8X (%P, %P, %P, %p)\n\n",
 
 		Processor->CpuIndex,
 
 		ExceptionCode, Arg1, Arg2, Arg3, Arg4 );
+
+	printf(
+		"RAX: %#.16P RBX: %#.16P RCX: %#.16P RDX: %#.16P\n"
+		"RSI: %#.16P RDI: %#.16P RBP: %#.16P RSP: %#.16P\n"
+		"R8 : %#.16P R9 : %#.16P R10: %#.16P R11: %#.16P\n"
+		"R12: %#.16P R13: %#.16P R14: %#.16P R15: %#.16P\n"
+		"RIP: %#.16P RFL: %#.8X CS : %#.4X\n"
+		"CR3: %#.16P\n\n",
+
+		TrapFrame->Rax, TrapFrame->Rbx, TrapFrame->Rcx, TrapFrame->Rdx,
+		TrapFrame->Rsi, TrapFrame->Rdi, TrapFrame->Rbp, TrapFrame->Rsp,
+		TrapFrame->R8, TrapFrame->R9, TrapFrame->R10, TrapFrame->R11,
+		TrapFrame->R12, TrapFrame->R13, TrapFrame->R14, TrapFrame->R15,
+		TrapFrame->Rip, TrapFrame->EFlags, TrapFrame->CodeSegment,
+
+		TrapFrame->Cr3
+	);
 
 	printf( "unwinding call stack...\nAddress          Frame\n%.16P %.16P\n", TargetContext.Rip, TargetContext.Rsp );
 

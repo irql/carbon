@@ -295,13 +295,6 @@ ZwClose(
 	return ObCloseHandle( Handle );
 }
 
-/*
-#define IRP_MJ_QUERY_DIRECTORY_FILE			0x04
-#define IRP_MJ_QUERY_INFORMATION_FILE	0x05
-#define IRP_MJ_SET_INFORMATION_FILE		0x06
-#define IRP_MJ_CONTROL					0x07
-*/
-
 NTSTATUS
 ZwQueryDirectoryFile(
 	__in HANDLE FileHandle,

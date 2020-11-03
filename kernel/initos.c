@@ -68,8 +68,8 @@ KiSystemThread(
 	UNICODE_STRING FilePath2 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\kdcom.dll" );
 	Load = LdrLoadDll( &FilePath2 );
 
-	UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
-	Load = IoLoadDriver( &FilePath1 );
+	//UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
+	//Load = IoLoadDriver( &FilePath1 );
 
 	//printf( "%x\n", Load );
 #if 1

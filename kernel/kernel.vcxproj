@@ -109,11 +109,13 @@
     <ClCompile Include="acpi.c" />
     <ClCompile Include="apic.c" />
     <ClCompile Include="asd.c" />
+    <ClCompile Include="assert.c" />
     <ClCompile Include="bmath.c" />
     <ClCompile Include="crt.c" />
     <ClCompile Include="dbg.c" />
     <ClCompile Include="dllsup.c" />
     <ClCompile Include="dma.c" />
+    <ClCompile Include="except.c" />
     <ClCompile Include="exception.c" />
     <ClCompile Include="initmm.c" />
     <ClCompile Include="ldrusr.c" />
