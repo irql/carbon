@@ -14,6 +14,7 @@ Abstract:
 #include "hal.h"
 #include "ki.h"
 #include "obp.h"
+#include "rtlp.h"
 
 #include "pesup.h"
 
@@ -106,7 +107,7 @@ KiBugCheckTrap(
 		TrapFrame->Rsi, TrapFrame->Rdi, TrapFrame->Rbp, TrapFrame->Rsp,
 		TrapFrame->R8, TrapFrame->R9, TrapFrame->R10, TrapFrame->R11,
 		TrapFrame->R12, TrapFrame->R13, TrapFrame->R14, TrapFrame->R15,
-		TrapFrame->Rip, TrapFrame->Rflags, TrapFrame->CodeSegment,
+		TrapFrame->Rip, TrapFrame->EFlags, TrapFrame->CodeSegment,
 
 		__readcr0( ), __readcr2( ), TrapFrame->Cr3, __readcr4( )
 	);
@@ -209,7 +210,7 @@ KiBspBootBugCheckTrap(
 		TrapFrame->Rsi, TrapFrame->Rdi, TrapFrame->Rbp, TrapFrame->Rsp,
 		TrapFrame->R8, TrapFrame->R9, TrapFrame->R10, TrapFrame->R11,
 		TrapFrame->R12, TrapFrame->R13, TrapFrame->R14, TrapFrame->R15,
-		TrapFrame->Rip, TrapFrame->Rflags,
+		TrapFrame->Rip, TrapFrame->EFlags,
 
 		__readcr0( ), __readcr2( ), __readcr3( ), __readcr4( )
 	);
@@ -302,42 +303,68 @@ KeBugCheckEx(
 
 	_memset( VbeGetBasicInfo( )->Framebuffer, 0, VbeGetBasicInfo( )->Height * VbeGetBasicInfo( )->Width * 4 );
 
-	CHAR ExceptionBuffer[ 256 ];
+	PKTRAP_FRAME TrapFrame = ( PKTRAP_FRAME )Arg3;
+	CONTEXT TargetContext;
 
-	sprintfA(
-		ExceptionBuffer,
+	TargetContext.CodeSegment = TrapFrame->CodeSegment;
+	TargetContext.StackSegment = TrapFrame->StackSegment;
+	TargetContext.DataSegment = TrapFrame->DataSegment;
 
+	TargetContext.EFlags = TrapFrame->EFlags;
+
+	TargetContext.Rax = TrapFrame->Rax;
+	TargetContext.Rcx = TrapFrame->Rcx;
+	TargetContext.Rdx = TrapFrame->Rdx;
+	TargetContext.Rbx = TrapFrame->Rbx;
+	TargetContext.Rsp = TrapFrame->Rsp;
+	TargetContext.Rbp = TrapFrame->Rbp;
+	TargetContext.Rsi = TrapFrame->Rsi;
+	TargetContext.Rdi = TrapFrame->Rdi;
+	TargetContext.R8 = TrapFrame->R8;
+	TargetContext.R9 = TrapFrame->R9;
+	TargetContext.R10 = TrapFrame->R10;
+	TargetContext.R11 = TrapFrame->R11;
+	TargetContext.R12 = TrapFrame->R12;
+	TargetContext.R13 = TrapFrame->R13;
+	TargetContext.R14 = TrapFrame->R14;
+	TargetContext.R15 = TrapFrame->R15;
+	TargetContext.Rip = TrapFrame->Rip;
+
+
+
+	printf(
 		"BUGCHECK CPU%d\n\n"
 
-		"%#.8X (%P, %P, %P, %p)",
+		"%#.8X (%P, %P, %P, %p)\n",
 
 		Processor->CpuIndex,
 
 		ExceptionCode, Arg1, Arg2, Arg3, Arg4 );
 
-	HalpDrawString( ExceptionBuffer, 0, 0, 0xFFFFFFFF );
+	printf( "unwinding call stack...\nAddress          Frame\n%.16P %.16P\n", TargetContext.Rip, TargetContext.Rsp );
 
-	for ( ULONG32 i = 0; ExceptionBuffer[ i ]; i++ ) {
+	while ( NT_SUCCESS( RtlUnwind( ( PKTHREAD )Arg4, &TargetContext ) ) ) {
 
-		( ( USHORT* )0xB8000 )[ i ] = ExceptionBuffer[ i ] | 0xF0;
+		printf( "%.16P %.16P\n", TargetContext.Rip, TargetContext.Rsp );
+
+		if ( TargetContext.Rsp + 0x28 >= ( ( ( PKTHREAD )Arg4 )->UserStackBase + ( ( PKTHREAD )Arg4 )->UserStackSize ) ) {
+
+			printf( "reached the top of the stack!\n" );
+			break;
+		}
 	}
 
-	ULONG32 y = 16 * 4;
+	printf( "\n" );
 
 	do {
 		POBJECT_ENTRY_HEADER Module = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
 		PKMODULE ModuleObject = ( PKMODULE )( Module + 1 );
 
-		sprintfA( ExceptionBuffer,
-			"%w [%#.16P %#.16P %#.16P]\n",
+		printf( "%w [%#.16P %#.16P %#.16P]\n",
 			ModuleObject->ImageName.Buffer,
 			ModuleObject->LoaderInfoBlock.ModuleStart,
 			ModuleObject->LoaderInfoBlock.ModuleEnd,
 			( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleEnd - ( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleStart );
-
-		HalpDrawString( ExceptionBuffer, 0, y, 0xFFFFFFFF );
-
-		y += 16;
 
 
 		if ( RtlUnicodeStringCompare( &GraphicsDriver, &ModuleObject->ImageName ) == 0 ) {

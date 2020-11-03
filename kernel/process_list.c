@@ -5,8 +5,6 @@
 #include "ki.h"
 #include "psp.h"
 
-EXTERN PKPROCESS KiSystemProcess;
-
 VOID
 PspInsertProcess(
 	__in PKPROCESS Process

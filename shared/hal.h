@@ -237,9 +237,28 @@ typedef struct _KTRAP_FRAME {
 	UCHAR x87save[ 4096 ];
 	ULONG64 Cr3;
 	ULONG64 DataSegment;
-	ULONG64 R15, R14, R13, R12, R11, R10, R9, R8, Rdi, Rsi, Rbp, Rbx, Rdx, Rcx, Rax;
-	ULONG64 Interrupt, Error;
-	ULONG64 Rip, CodeSegment, Rflags, Rsp, StackSegment;
+	ULONG64 R15;
+	ULONG64 R14;
+	ULONG64 R13;
+	ULONG64 R12;
+	ULONG64 R11;
+	ULONG64 R10;
+	ULONG64 R9;
+	ULONG64 R8;
+	ULONG64 Rdi;
+	ULONG64 Rsi;
+	ULONG64 Rbp;
+	ULONG64 Rbx;
+	ULONG64 Rdx;
+	ULONG64 Rcx;
+	ULONG64 Rax;
+	ULONG64 Interrupt;
+	ULONG64 Error;
+	ULONG64 Rip;
+	ULONG64 CodeSegment;
+	ULONG64 EFlags;
+	ULONG64 Rsp;
+	ULONG64 StackSegment;
 } KTRAP_FRAME, *PKTRAP_FRAME;
 
 typedef struct _VBE_INFO {

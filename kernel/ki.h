@@ -133,3 +133,5 @@ VOID
 KiInitializeSyscalls(
 
 );
+
+EXTERN PKPROCESS KiSystemProcess;

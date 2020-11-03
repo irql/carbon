@@ -191,8 +191,47 @@ KeProbeForWrite(
 	__in ULONG Length
 );
 
+// eh.
+#define EXCEPTION_DIV_BY_ZERO			0x00
+#define EXCEPTION_DEBUG					0x01
+#define EXCEPTION_ILLEGAL_INSTRUCTION	0x06
+#define EXCEPTION_ACCESS_VIOLATION		0x0E
+
+typedef struct _EXCEPTION_RECORD {
+	ULONG ExceptionCode;
+	PVOID ExceptionAddress;
+	ULONG ExceptionFlags;
+
+} EXCEPTION_RECORD, *PEXCEPTION_RECORD;
+
+typedef struct _CONTEXT {
+	ULONG64 Rax;
+	ULONG64 Rcx;
+	ULONG64 Rdx;
+	ULONG64 Rbx;
+	ULONG64 Rsp;
+	ULONG64 Rbp;
+	ULONG64 Rsi;
+	ULONG64 Rdi;
+	ULONG64 R8;
+	ULONG64 R9;
+	ULONG64 R10;
+	ULONG64 R11;
+	ULONG64 R12;
+	ULONG64 R13;
+	ULONG64 R14;
+	ULONG64 R15;
+	ULONG64 Rip;
+
+	ULONG64 EFlags;
+
+	ULONG64 CodeSegment;
+	ULONG64 DataSegment;
+	ULONG64 StackSegment;
+} CONTEXT, *PCONTEXT;
+
 NTSYSAPI
 VOID
 KeRaiseException(
-	__in NTSTATUS Exception
+	__in ULONG32 ExceptionCode
 );

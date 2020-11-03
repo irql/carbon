@@ -120,6 +120,9 @@
     <ClInclude Include="nt.h">
       <Filter>Zw</Filter>
     </ClInclude>
+    <ClInclude Include="rtlp.h">
+      <Filter>Rtl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="string.c">
@@ -278,6 +281,9 @@
     </ClCompile>
     <ClCompile Include="exception.c">
       <Filter>Ke</Filter>
+    </ClCompile>
+    <ClCompile Include="unwind.c">
+      <Filter>Rtl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

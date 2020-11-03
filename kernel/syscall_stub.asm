@@ -54,8 +54,8 @@ KiFastSystemCall:
 	mov rsp, qword [r11+16]
 	movsx r11, dword [r11+4]
 	
-	db 0x48
-	db 0x0f
-	db 0x07
+	;db 0x48
+	;db 0x0f
+	;db 0x07
 	;sysretq
-	;o64 sysret
+	o64 sysret

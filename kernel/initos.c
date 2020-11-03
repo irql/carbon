@@ -237,6 +237,8 @@ Return Value:
 	PKPROCESS KernelProcess;
 	KiCreateProcess( &KernelProcess, KernelModule, &KernelName );
 
+	_memcpy( &KernelProcess->VadTree.Range, &KernelModule->LoaderInfoBlock, sizeof( LDR_INFO_BLOCK ) );
+
 	//_memcpy( &KernelProcess->AddressSpace, &g_KernelPageTable, sizeof( ADDRESS_SPACE_DESCRIPTOR ) );
 
 	PKTHREAD KernelThread;

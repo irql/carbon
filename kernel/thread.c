@@ -94,7 +94,7 @@ KiThreadDispatcher(
 
 	_memcpy( TrapFrame, &Processor->ThreadQueue->ThreadControlBlock.Registers, sizeof( KTRAP_FRAME ) );
 	Processor->TaskState.Rsp0 = Processor->ThreadQueue->KernelStackBase + Processor->ThreadQueue->KernelStackSize;
-	Processor->TaskState.Ist3 = Processor->ThreadQueue->ApicStackBase + Processor->ThreadQueue->ApicStackSize;
+	Processor->TaskState.Ist3 = Processor->ThreadQueue->ApicStackBase + Processor->ThreadQueue->ApicStackSize;//fix, redundant.
 	Processor->ThreadQueue->ThreadControlBlock.Registers.Cr3 = Processor->ThreadQueue->ThreadControlBlock.AddressSpace->BasePhysical;
 
 	//( ( PGDT_ENTRY_TSS )( ( char* )Processor->Gdtr.Base + Processor->TaskStateDescriptor ) )->AccessByte = 0x89;
@@ -229,7 +229,7 @@ KiCreateThread(
 
 #endif
 
-	ThreadObject->ThreadControlBlock.Registers.Rflags = 0x200202;
+	ThreadObject->ThreadControlBlock.Registers.EFlags = 0x200202;
 
 	ThreadObject->ThreadControlBlock.Registers.Rip = ( ULONG64 )StartRoutine;
 

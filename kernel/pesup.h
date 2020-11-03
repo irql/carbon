@@ -30,10 +30,10 @@ typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
 	USHORT   e_cs;                        // Initial (relative) CS value
 	USHORT   e_lfarlc;                    // File address of relocation table
 	USHORT   e_ovno;                      // Overlay number
-	USHORT   e_res[4];                    // Reserved USHORTs
+	USHORT   e_res[ 4 ];                    // Reserved USHORTs
 	USHORT   e_oemid;                     // OEM identifier (for e_oeminfo)
 	USHORT   e_oeminfo;                   // OEM information; e_oemid specific
-	USHORT   e_res2[10];                  // Reserved USHORTs
+	USHORT   e_res2[ 10 ];                  // Reserved USHORTs
 	ULONG32  e_lfanew;                    // File address of new exe header
 } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
 
@@ -142,7 +142,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER {
 	ULONG32  SizeOfHeapCommit;
 	ULONG32  LoaderFlags;
 	ULONG32  NumberOfRvaAndSizes;
-	IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+	IMAGE_DATA_DIRECTORY DataDirectory[ IMAGE_NUMBEROF_DIRECTORY_ENTRIES ];
 } IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;
 
 typedef struct _IMAGE_OPTIONAL_HEADER64 {
@@ -185,7 +185,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 	ULONG64   SizeOfHeapCommit;
 	ULONG32  LoaderFlags;
 	ULONG32  NumberOfRvaAndSizes;
-	IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+	IMAGE_DATA_DIRECTORY DataDirectory[ IMAGE_NUMBEROF_DIRECTORY_ENTRIES ];
 } IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
 
 #define IMAGE_NT_OPTIONAL_HDR32_MAGIC      0x10b
@@ -208,7 +208,7 @@ typedef struct _IMAGE_NT_HEADERS64 {
 
 #ifdef _WIN64
 typedef IMAGE_NT_HEADERS64                  IMAGE_NT_HEADERS;
-typedef IMAGE_NT_HEADERS64                 *PIMAGE_NT_HEADERS;
+typedef struct _IMAGE_NT_HEADERS64        *PIMAGE_NT_HEADERS;
 #else
 typedef IMAGE_NT_HEADERS32                  IMAGE_NT_HEADERS;
 typedef IMAGE_NT_HEADERS32                 *PIMAGE_NT_HEADERS;
@@ -282,7 +282,7 @@ typedef IMAGE_NT_HEADERS32                 *PIMAGE_NT_HEADERS;
 #define IMAGE_SIZEOF_SHORT_NAME              8
 
 typedef struct _IMAGE_SECTION_HEADER {
-	UCHAR    Name[IMAGE_SIZEOF_SHORT_NAME];
+	UCHAR    Name[ IMAGE_SIZEOF_SHORT_NAME ];
 	union {
 		ULONG32  PhysicalAddress;
 		ULONG32  VirtualSize;
@@ -368,7 +368,7 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 
 typedef struct _IMAGE_IMPORT_BY_NAME {
 	USHORT    Hint;
-	UCHAR    Name[1];
+	UCHAR    Name[ 1 ];
 } IMAGE_IMPORT_BY_NAME, *PIMAGE_IMPORT_BY_NAME;
 
 typedef struct _IMAGE_THUNK_DATA64 {
@@ -440,13 +440,101 @@ typedef IMAGE_BASE_RELOCATION UNALIGNED * PIMAGE_BASE_RELOCATION;
 #define IMAGE_REL_BASED_MACHINE_SPECIFIC_9    9
 #define IMAGE_REL_BASED_DIR64                 10
 
+typedef struct _IMAGE_RUNTIME_FUNCTION_ENTRY {
+	ULONG BeginAddress;
+	ULONG EndAddress;
+	union {
+		ULONG UnwindInfoAddress;
+		ULONG UnwindData;
+	};
+} IMAGE_RUNTIME_FUNCTION_ENTRY, *PIMAGE_RUNTIME_FUNCTION_ENTRY;
+
+typedef enum _UNWIND_OP_CODES {
+#if 1
+	UWOP_PUSH_NONVOL = 0, /* info == register number */
+	UWOP_ALLOC_LARGE,     /* no info, alloc size in next 2 slots */
+	UWOP_ALLOC_SMALL,     /* info == size of allocation / 8 - 1 */
+	UWOP_SET_FPREG,       /* no info, FP = RSP + UNWIND_INFO.FPRegOffset*16 */
+	UWOP_SAVE_NONVOL,     /* info == register number, offset in next slot */
+	UWOP_SAVE_NONVOL_FAR, /* info == register number, offset in next 2 slots */
+	UWOP_EPILOG,
+	UWOP_SPARE_CODE,
+	UWOP_SAVE_XMM128, /* info == XMM reg number, offset in next slot */
+	UWOP_SAVE_XMM128_FAR, /* info == XMM reg number, offset in next 2 slots */
+	UWOP_PUSH_MACHFRAME   /* info == 0: no error-code, 1: error-code */
+#endif
+} UNWIND_CODE_OPS;
+
+typedef union _UNWIND_CODE {
+	struct {
+		UCHAR CodeOffset;
+		UCHAR UnwindOp : 4;
+		UCHAR OpInfo : 4;
+	};
+	USHORT FrameOffset;
+} UNWIND_CODE, *PUNWIND_CODE;
+
+#define UNW_FLAG_NHANDLER	0x0
+#define UNW_FLAG_EHANDLER	0x1
+#define UNW_FLAG_UHANDLER	0x2
+#define UNW_FLAG_CHAININFO	0x4
+
+typedef struct _UNWIND_INFO {
+	UCHAR Version : 3;
+	UCHAR Flags : 5;
+	UCHAR SizeOfProlog;
+	UCHAR CountOfCodes;
+	UCHAR FrameRegister : 4;
+	UCHAR FrameOffset : 4;
+	UNWIND_CODE UnwindCode[ 1 ];
+	union {
+		//
+		// If (Flags & UNW_FLAG_EHANDLER)
+		//
+		OPTIONAL ULONG ExceptionHandler;
+		//
+		// Else if (Flags & UNW_FLAG_CHAININFO)
+		//
+		OPTIONAL ULONG FunctionEntry;
+	};
+	//
+	// If (Flags & UNW_FLAG_EHANDLER)
+	//
+	OPTIONAL ULONG ExceptionData[ ];
+} UNWIND_INFO, *PUNWIND_INFO;
+
+typedef struct _SCOPE_TABLE {
+	ULONG Count;
+	struct {
+		ULONG BeginAddress;
+		ULONG EndAddress;
+		ULONG HandlerAddress;
+		ULONG JumpTarget;
+	} ScopeRecord[ 1 ];
+} SCOPE_TABLE, *PSCOPE_TABLE;
+
+#define GetUnwindCodeEntry(info, index) \
+    ((info)->UnwindCode[index])
+
+#define GetLanguageSpecificDataPtr(info) \
+    ((PVOID)&GetUnwindCodeEntry((info),((info)->CountOfCodes + 1) & ~1))
+
+#define GetExceptionHandler(base, info) \
+    ((PEXCEPTION_HANDLER)((base) + *(PULONG)GetLanguageSpecificDataPtr(info)))
+
+#define GetChainedFunctionEntry(base, info) \
+    ((PRUNTIME_FUNCTION)((base) + *(PULONG)GetLanguageSpecificDataPtr(info)))
+
+#define GetExceptionDataPtr(info) \
+    ((PVOID)((PULONG)GetLanguageSpecificData(info) + 1)
+
 FORCEINLINE
 BOOLEAN
 PeSupVerifyDosHeader(
 	__in PIMAGE_DOS_HEADER DosHeader
 )
 {
-	if (DosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+	if ( DosHeader->e_magic != IMAGE_DOS_SIGNATURE ) {
 
 		return FALSE;
 	}
@@ -460,7 +548,7 @@ PeSupVerifyNtHeaders(
 	__in IMAGE_NT_HEADERS* NtHeaders
 )
 {
-	if (NtHeaders->Signature != IMAGE_NT_SIGNATURE) {
+	if ( NtHeaders->Signature != IMAGE_NT_SIGNATURE ) {
 
 		return FALSE;
 	}
@@ -474,7 +562,7 @@ PeSupGetProcedureAddressByName(
 	__in PVOID ModuleBase,
 	__in CHAR* ExportName,
 	__out PVOID* ProcedureAddress
-	);
+);
 
 
 NTSTATUS
@@ -482,17 +570,17 @@ PeSupGetProcedureAddressByOrdinal(
 	__in PVOID ModuleBase,
 	__in USHORT ExportOrdinal,
 	__out PVOID* ProcedureAddress
-	);
+);
 
 NTSTATUS
 PeSupResolveImportDescriptorSingle(
 	__in PVOID ModuleBase,
 	__in PVOID DescribedModuleBase,
 	__in PIMAGE_IMPORT_DESCRIPTOR ImportDescriptor
-	);
+);
 
 NTSTATUS
 PeSupResolveBaseRelocDescriptor(
 	__in PVOID ModuleBase,
 	__in PIMAGE_BASE_RELOCATION BaseRelocation
-	);
+);

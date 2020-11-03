@@ -36,13 +36,13 @@ KiExceptionTrap(
 
 		//STATUS_UNHANDLED_SYSTEM_EXCEPTION
 
-		KeBugCheckEx( STATUS_UNHANDLED_SYSTEM_EXCEPTION, TrapFrame->Interrupt, TrapFrame->Rip, ( ULONG64 )TrapFrame, ExceptionThread->ActiveThreadId );
+		KeBugCheckEx( STATUS_UNHANDLED_SYSTEM_EXCEPTION, TrapFrame->Interrupt, TrapFrame->Rip, ( ULONG64 )TrapFrame, ( ULONG64 )ExceptionThread );
 
 		break;
 	case UserMode:
 
 
-		KeRaiseException( STATUS_ACCESS_VIOLATION );
+		KeRaiseException( ( ULONG32 )STATUS_ACCESS_VIOLATION );
 
 		break;
 	}
@@ -50,7 +50,7 @@ KiExceptionTrap(
 
 VOID
 KeRaiseException(
-	__in NTSTATUS Exception
+	__in ULONG32 ExceptionCode
 )
 {
 	//
@@ -59,7 +59,7 @@ KeRaiseException(
 	//	it should terminate the thread and "handle" the exception.
 	//
 
-	DbgPrint( L"**EXCEPTION RAISED**\n%#.8X -- %#.8X\n", KiQueryCurrentThread( )->ActiveThreadId, Exception );
+	DbgPrint( L"**EXCEPTION RAISED**\n %#.8X %#.8X\n", KiQueryCurrentThread( )->ActiveThreadId, ExceptionCode );
 
 	KeExitThread( );
 }

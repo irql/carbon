@@ -13,5 +13,11 @@ NtCreateFile(
 	__in  POBJECT_ATTRIBUTES ObjectAttributes
 )
 {
+	FileHandle;
+	IoStatusBlock;
+	DesiredAccess;
+	Disposition;
+	ObjectAttributes;
 
+	return 0;
 }

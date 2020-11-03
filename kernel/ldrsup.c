@@ -15,6 +15,9 @@ Abstract:
 #include "ldrpsup.h"
 #include "mi.h"
 #include "ldrp.h"
+#include "ki.h"
+#include "ki_struct.h"
+#include "psp.h"
 
 NTSTATUS
 LdrpSupGetInfoBlock(
@@ -226,7 +229,7 @@ LdrSupLoadSupervisorModule(
 		PVOID SectionBase = ( PUCHAR )ModuleBase + SectionHeaders[ i ].VirtualAddress;
 		_memcpy( SectionBase, ( PUCHAR )FileBase + SectionHeaders[ i ].PointerToRawData, SectionHeaders[ i ].SizeOfRawData );
 	}
-
+#if 0
 	ntStatus = LdrpSupGetInfoBlock( ModuleBase, InfoBlock );
 
 	if ( !NT_SUCCESS( ntStatus ) ) {
@@ -235,6 +238,30 @@ LdrSupLoadSupervisorModule(
 		MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
 		return ntStatus;
 	}
+#else
+
+
+	// find last vad and insert.
+
+	PVAD Vad = PspAllocateVad( );
+	ntStatus = LdrpSupGetInfoBlock( ModuleBase, &Vad->Range );
+
+	if ( !NT_SUCCESS( ntStatus ) ) {
+
+		MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
+		MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
+		ZwClose( FileHandle );
+		return STATUS_UNSUCCESSFUL;
+	}
+
+	_memcpy( InfoBlock, &Vad->Range, sizeof( LDR_INFO_BLOCK ) );
+
+	//fix.
+	//RtlAllocateAndInitUnicodeString( &KiSystemProcess->VadTree.RangeName, LdrpNameFromPath( ModuleName->Buffer ) );
+
+	PspInsertVad( KiSystemProcess, Vad );
+
+#endif
 
 	if ( NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_BASERELOC ].VirtualAddress != 0 ) {
 

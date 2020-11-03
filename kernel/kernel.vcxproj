@@ -125,6 +125,7 @@
     <ClCompile Include="syscall.c" />
     <ClCompile Include="table.c" />
     <ClCompile Include="tlb.c" />
+    <ClCompile Include="unwind.c" />
     <ClCompile Include="user.c" />
     <ClCompile Include="vbe.c" />
     <ClCompile Include="bugcheck.c" />
@@ -192,6 +193,7 @@
     <ClInclude Include="obp.h" />
     <ClInclude Include="pesup.h" />
     <ClInclude Include="psp.h" />
+    <ClInclude Include="rtlp.h" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="arch.asm" />

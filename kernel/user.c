@@ -33,16 +33,10 @@ PsCreateUserProcess(
 	MiAllocateAddressSpace( &ProcessObject->AddressSpace );
 	MiInsertAddressSpace( &ProcessObject->AddressSpace );
 
-	printf( " Champ Of Pogs. %.16P\n", _AddressOfReturnAddress( ) );
-
 	PreviousAddressSpace = MiGetAddressSpace( );
 	MiSetAddressSpace( &ProcessObject->AddressSpace );
 
-	printf( "starting user module load...\n" );
-
 	ntStatus = LdrpUsrLoadModule( ProcessObject, FileName );
-
-	printf( "user module load: %.8x\n", ntStatus );
 
 	if ( !NT_SUCCESS( ntStatus ) ) {
 
@@ -64,8 +58,6 @@ PsCreateUserProcess(
 		ObDestroyObject( ProcessObject );
 		return ntStatus;
 	}
-
-	printf( "Creating THE Thread.\n" );
 
 	HANDLE FirstThread;
 	ntStatus = PsCreateUserThread(
@@ -175,7 +167,7 @@ PsCreateUserThread(
 	ThreadObject->ThreadControlBlock.Registers.Rsp = ThreadObject->ThreadControlBlock.Registers.Rbp - 48;
 	*( ULONG64* )ThreadObject->ThreadControlBlock.Registers.Rsp = ( ULONG64 )KeExitThread; // write ntdll.dll
 
-	ThreadObject->ThreadControlBlock.Registers.Rflags = 0x203202;
+	ThreadObject->ThreadControlBlock.Registers.EFlags = 0x203202;
 	ThreadObject->ThreadControlBlock.Registers.Rip = ( ULONG64 )ThreadStart;
 	ThreadObject->ThreadControlBlock.LogicalProcessor = KiAcquireLowestWorkProcessor( );
 

@@ -33,6 +33,11 @@ Abstract:
 #define DLLEXPORT			dllexport
 #define FORCEINLINE			__forceinline
 #define UNALIGNED			__unaligned
+#define OPTIONAL
+
+#define EXCEPTION_EXECUTE_HANDLER       1
+#define EXCEPTION_CONTINUE_SEARCH       0
+#define EXCEPTION_CONTINUE_EXECUTION    -1
 
 typedef unsigned char		UCHAR, *PUCHAR;
 typedef unsigned short		USHORT, *PUSHORT;
