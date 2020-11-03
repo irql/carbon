@@ -25,7 +25,7 @@ KdCmdListModules(
 		POBJECT_ENTRY_HEADER ObjectHeader = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
 		PKMODULE ModuleObject = ( PKMODULE )( ObjectHeader + 1 );
 
-		RtlStringCopy( ( PWCHAR )&ListModules->Module[ i ].ModuleName, ModuleObject->ImageName.Buffer );
+		lstrcpyW( ( PWCHAR )&ListModules->Module[ i ].ModuleName, ModuleObject->ImageName.Buffer );
 		ListModules->Module[ i ].ModuleStart = ( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleStart;
 		ListModules->Module[ i ].ModuleEnd = ( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleEnd;
 

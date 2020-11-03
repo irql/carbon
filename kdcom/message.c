@@ -18,11 +18,11 @@ KdCmdMessage(
 
 	va_end( Args );
 
-	ULONG32 MessageSize = sizeof( KD_CMDR_MESSAGE ) + ( ( RtlStringLength( Buffer ) + 1 ) * sizeof( WCHAR ) );
+	ULONG32 MessageSize = sizeof( KD_CMDR_MESSAGE ) + ( ( lstrlenW( Buffer ) + 1 ) * sizeof( WCHAR ) );
 	PKD_CMDR_MESSAGE CmdMessage = ExAllocatePoolWithTag( MessageSize, TAGEX_MESSAGE );
 	KdInitCmdSz( CmdMessage, KD_CMD_MESSAGE, MessageSize );
 
-	RtlStringCopy( CmdMessage->Message, Buffer );
+	lstrcpyW( CmdMessage->Message, Buffer );
 
 	KdSendCmdSz( CmdMessage, MessageSize );
 	ExFreePoolWithTag( CmdMessage, ' gsM' );
