@@ -162,6 +162,7 @@ KeTerminateThread(
 );
 
 NTSYSAPI
+DECLSPEC( noreturn )
 VOID
 KeExitThread(
 

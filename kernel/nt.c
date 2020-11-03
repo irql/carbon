@@ -155,8 +155,8 @@ NtDisplayString(
 	//String->Buffer
 
 	if ( !MmIsAddressRangeValid( String, sizeof( UNICODE_STRING ) ) ||
-		!NT_SUCCESS( RtlUnicodeStringValidate( String ) ) ||
-		!MmIsAddressRangeValid( String->Buffer, String->Size ) ) {
+		 !NT_SUCCESS( RtlUnicodeStringValidate( String ) ) ||
+		 !MmIsAddressRangeValid( String->Buffer, String->Size ) ) {
 
 		KeRaiseException( STATUS_ACCESS_VIOLATION );
 	}

@@ -502,6 +502,7 @@ KeTerminateThread(
 	return STATUS_SUCCESS;
 }
 
+DECLSPEC( noreturn )
 VOID
 KeExitThread(
 
