@@ -88,14 +88,14 @@ FsFat32ConvertPathTo8Dot3(
 	FileName8Dot3[11] = 0;
 
 	for (ULONG32 i = 0; i < DotPosition && FileName[i]; i++)
-		FileName8Dot3[i] = (CHAR)UPPER(FileName[i]);
+		FileName8Dot3[i] = (CHAR)toupper(FileName[i]);
 
 	if (DotPosition < FileNameLength) {
 
 		DotPosition++;
 
 		for (ULONG32 i = DotPosition; (i - DotPosition) < 3; i++)
-			FileName8Dot3[(DotPosition <= 8 ? 8 : DotPosition) + (i - DotPosition)] = (CHAR)UPPER(FileName[i]);
+			FileName8Dot3[(DotPosition <= 8 ? 8 : DotPosition) + (i - DotPosition)] = (CHAR)toupper(FileName[i]);
 	}
 
 	return;

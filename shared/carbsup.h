@@ -13,83 +13,86 @@ Abstract:
 
 #pragma once
 
-#pragma warning (disable : 4200)
-#pragma warning (disable : 4053)
-#pragma warning (disable : 4201)
-#pragma warning (disable : 4204)
-#pragma warning (disable : 4152)
-#pragma warning (disable : 4214)
-#pragma warning (disable : 4366)
-#pragma warning (disable : 4213)
+#include <intrin.h>
 
-#define NULL				((void*)0)
+#pragma warning (disable: 4200)
+#pragma warning (disable: 4201)
+#pragma warning (disable: 4204)
+#pragma warning (disable: 4152)
+#pragma warning (disable: 4214)
+#pragma warning (disable: 4366)
+#pragma warning (disable: 4213)
+
+#define NULL				((void *)0)
 #define VOID				void
-
-#define EXTERN				extern
-#define STATIC				static
-#define VOLATILE			volatile
-#define DECLSPEC			__declspec
-#define CONST				const
-#define DLLIMPORT			dllimport
-#define DLLEXPORT			dllexport
-#define FORCEINLINE			__forceinline
-#define UNALIGNED			__unaligned
-#define OPTIONAL
-
-#define EXCEPTION_EXECUTE_HANDLER       1
-#define EXCEPTION_CONTINUE_SEARCH       0
-#define EXCEPTION_CONTINUE_EXECUTION    -1
-
-typedef unsigned char		UCHAR, *PUCHAR;
-typedef unsigned short		USHORT, *PUSHORT;
-typedef unsigned long		ULONG, *PULONG;
-typedef unsigned long		ULONG32, *PULONG32;
-typedef unsigned long long	ULONG64, *PULONG64;
-
-typedef signed char			CHAR, *PCHAR;
-typedef signed short		SHORT, *PSHORT;
-typedef signed long			LONG, *PLONG;
-typedef signed long			LONG32, *PLONG32;
-typedef signed long	long	LONG64, *PLONG64;
-
-typedef unsigned long long	UCHAR_PTR;
-typedef unsigned long long	USHORT_PTR;
-typedef unsigned long long	ULONG_PTR;
-typedef unsigned long long	ULONG32_PTR;
-typedef unsigned long long	ULONG64_PTR;
-
-typedef unsigned char		BOOLEAN, *PBOOLEAN;
 
 #define TRUE				1
 #define FALSE				0
 
+#define CONST				const
+#define VOLATILE			volatile
+#define EXTERN				extern
+#define STATIC				static
+#define FORCEINLINE			__forceinline
+#define UNALIGNED			__unaligned
+#define DECLSPEC			__declspec
+#define DLLIMPORT			dllimport
+#define DLLEXPORT			dllexport
+#define OPTIONAL
+
+#define FIELD_OFFSET(type, field)		((ULONG64_PTR)&(((type *)0)->field))
+
+#define EXCEPTION_EXECUTE_HANDLER		 1
+#define EXCEPTION_CONTINUE_SEARCH		 0
+#define EXCEPTION_CONTINUE_EXECUTION	-1
+
+#ifdef __KERNEL_INTERNAL__
+	#define NTSYSAPI DECLSPEC(DLLEXPORT)
+#else
+	#define NTSYSAPI DECLSPEC(DLLIMPORT)
+#endif
+
+typedef unsigned char		byte;
 typedef unsigned short		wchar_t;
-typedef unsigned short		WCHAR, *PWCHAR, *PWSTR;
-typedef CONST WCHAR			*PCWCHAR, *PCWSTR;
-typedef void*				PVOID;
+
+typedef signed char			CHAR,		*PCHAR;
+typedef signed short		SHORT,		*PSHORT;
+typedef signed int			INT,		*PINT;
+typedef signed long			LONG,		*PLONG;
+typedef signed long			LONG32,		*PLONG32;
+typedef signed long	long	LONG64,		*PLONG64;
+
+typedef unsigned char		UCHAR,		*PUCHAR;
+typedef unsigned short		USHORT,		*PUSHORT;
+typedef unsigned int		UINT,		*PUINT;
+typedef unsigned long		ULONG,		*PULONG;
+typedef unsigned long		ULONG32,	*PULONG32;
+typedef unsigned long long	ULONG64,	*PULONG64;
+
+typedef unsigned char		BOOLEAN,	*PBOOLEAN;
+typedef unsigned long		HANDLE,		*PHANDLE;
+typedef unsigned long long	SIZE_T,		*PSIZE_T;
+typedef unsigned long long	UCHAR_PTR,
+							USHORT_PTR, 
+							ULONG_PTR,
+							ULONG32_PTR,
+							ULONG64_PTR;
+
+typedef __m128i				M128I,		*PM128I;
+typedef void							*PVOID;
+
+typedef unsigned char		BYTE,		*PBYTE;
+typedef unsigned short		WCHAR,		*PWCHAR,  *PWSTR;
+typedef const  wchar_t					*PCWCHAR, *PCWSTR;
 
 typedef float				FLOAT;
 typedef double				DOUBLE;
 
-typedef unsigned long long	SIZE_T, *PSIZE_T;
-
-#define FIELD_OFFSET(type, field) ((ULONG64_PTR)&(((type*)0)->field))
-
-#ifdef __KERNEL_INTERNAL__
-#define NTSYSAPI DECLSPEC(DLLEXPORT)
-#else
-#define NTSYSAPI DECLSPEC(DLLIMPORT)
-#endif
-
-#include <intrin.h>
-
-typedef ULONG32 HANDLE, *PHANDLE;
-
-typedef struct _KTCB *PKTCB;
-typedef struct _KTHREAD *PKTHREAD;
-typedef struct _KPROCESS *PKPROCESS;
-typedef struct _KPCR *PKPCR;
-typedef struct _CONTEXT *PCONTEXT;
+typedef struct				_KTCB		*PKTCB;
+typedef struct				_KTHREAD	*PKTHREAD;
+typedef struct				_KPROCESS	*PKPROCESS;
+typedef struct				_KPCR		*PKPCR;
+typedef struct				_CONTEXT	*PCONTEXT;
 
 #include "ntstatus.h"
 #include "rtl.h"

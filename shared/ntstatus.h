@@ -12,7 +12,7 @@ Abstract:
 
 #pragma once
 
-typedef ULONG32									NTSTATUS, *PNTSTATUS;
+typedef unsigned long							NTSTATUS, *PNTSTATUS;
 
 #define STATUS_SUCCESS							((NTSTATUS)(0x00000000L))
 #define STATUS_UNSUCCESSFUL						((NTSTATUS)(0x00000001L))

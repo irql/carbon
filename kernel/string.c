@@ -146,9 +146,9 @@ PWSTR lstrstrW(
 	do {
 		PWSTR SubstringAddress = Substring;
 
-		while ( *String++ == *SubstringAddress++ )
-			if ( *SubstringAddress == 0 ) return String - SubstringAddress + Substring; // Return pointer to the first occurence.
-	} while ( *String != 0 );
+		while (*String == *SubstringAddress)
+			if (String++, *++SubstringAddress == 0) return String - (SubstringAddress - Substring); // Return pointer to the first occurence.
+	} while (*String++ != 0);
 
 	return NULL; // Return NULL pointer if no matches.
 }
@@ -161,13 +161,21 @@ PWSTR lstrstriW(
 	do {
 		PWSTR SubstringAddress = Substring;
 
-		while ( toupper( *String ) == toupper( *SubstringAddress ) ) {
-			if ( *SubstringAddress++ == 0 ) return String - SubstringAddress + Substring; // Return pointer to the first occurence.
+		while (toupper(*String) == toupper(*SubstringAddress)) {
+			if (*SubstringAddress++ == 0) return String - SubstringAddress + Substring; // Return pointer to the first occurence.
 			String++;
 		}
-	} while ( *String != 0 );
+	} while (*String != 0);
 
 	return NULL; // Return NULL pointer if no matches.
+}
+
+/* */
+PWSTR lstrtokW(
+	__in PWSTR String,		// String.
+	__in WCHAR *Delimiters	// Delimiters.
+) {
+
 }
 
 /* Validates a unicode string. */

@@ -1,8 +1,13 @@
 /*++
+
 Module ObjectName:
+	
 	crt.c
+
 Abstract:
+	
 	Defines C run-time library routines for the system.
+
 --*/
 
 #include <carbsup.h>
@@ -298,7 +303,7 @@ void vsprintfA( char *buffer, char *format, va_list args ) {
 			}
 			
 			for ( unsigned char i = 0; buf[ i ]; i++, buffer_index++ )
-				buffer[ buffer_index ] = uppercase ? UPPER( buf[ i ] ) : buf[ i ];
+				buffer[ buffer_index ] = uppercase ? toupper( buf[ i ] ) : buf[ i ];
 
 			format++;
 			break;
@@ -336,7 +341,7 @@ void vsprintfA( char *buffer, char *format, va_list args ) {
 			}
 
 			for ( unsigned char i = 0; buf_high[ i ] && high != 0; i++, buffer_index++ )
-				buffer[ buffer_index ] = uppercase ? UPPER( buf_high[ i ] ) : buf_high[ i ];
+				buffer[ buffer_index ] = uppercase ? toupper( buf_high[ i ] ) : buf_high[ i ];
 
 			if ( low_pad > 0 ) {
 				for ( unsigned char i = 0; i < low_pad; i++, buffer_index++ )
@@ -344,7 +349,7 @@ void vsprintfA( char *buffer, char *format, va_list args ) {
 			}
 
 			for ( unsigned char i = 0; buf_low[ i ]; i++, buffer_index++ )
-				buffer[ buffer_index ] = uppercase ? UPPER( buf_low[ i ] ) : buf_low[ i ];
+				buffer[ buffer_index ] = uppercase ? toupper( buf_low[ i ] ) : buf_low[ i ];
 
 			format++;
 			break;
@@ -497,7 +502,7 @@ void vsprintfW( wchar_t *buffer, wchar_t *format, va_list args ) {
 				buffer[ buffer_index ] = '0';
 
 			for ( unsigned char i = 0; buf[ i ]; i++, buffer_index++ )
-				buffer[ buffer_index ] = uppercase ? UPPER( buf[ i ] ) : buf[ i ];
+				buffer[ buffer_index ] = uppercase ? toupper( buf[ i ] ) : buf[ i ];
 
 			format++;
 			break;
@@ -533,13 +538,13 @@ void vsprintfW( wchar_t *buffer, wchar_t *format, va_list args ) {
 				buffer[ buffer_index ] = '0';
 
 			for ( unsigned char i = 0; buf_high[ i ] && high != 0; i++, buffer_index++ )
-				buffer[ buffer_index ] = uppercase ? UPPER( buf_high[ i ] ) : buf_low[ i ];
+				buffer[ buffer_index ] = uppercase ? toupper( buf_high[ i ] ) : buf_low[ i ];
 
 			for ( unsigned char i = 0; i < low_pad; i++, buffer_index++ )
 				buffer[ buffer_index ] = '0';
 
 			for ( unsigned char i = 0; buf_low[ i ]; i++, buffer_index++ )
-				buffer[ buffer_index ] = uppercase ? UPPER( buf_low[ i ] ) : buf_low[ i ];
+				buffer[ buffer_index ] = uppercase ? toupper( buf_low[ i ] ) : buf_low[ i ];
 
 			format++;
 			break;
