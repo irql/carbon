@@ -178,6 +178,7 @@ PWSTR lstrtokW(
 	String;
 	Delimiters;
 
+	return NULL;
 }
 
 /* Validates a unicode string. */
