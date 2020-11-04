@@ -175,6 +175,8 @@ PWSTR lstrtokW(
 	__in PWSTR String,		// String.
 	__in WCHAR *Delimiters	// Delimiters.
 ) {
+	String;
+	Delimiters;
 
 }
 
