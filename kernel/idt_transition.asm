@@ -48,15 +48,15 @@ HalInitTrapFrame:
 	mov gs, rax
 	mov es, rax
 
-	push qword 0x200202
+	push qword 0x200002
 	popfq
 
 	;removed for now
 	mov rax, cr3
 	push rax
-	mov rax, g_KernelPageTable
-	mov rax, qword [rax + 32]
-	mov cr3, rax
+	;mov rax, g_KernelPageTable
+	;mov rax, qword [rax + 32]
+	;mov cr3, rax
 
 	mov rdi, rsp
 

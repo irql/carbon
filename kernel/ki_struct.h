@@ -86,9 +86,6 @@ typedef struct _KTHREAD {
 	ULONG64 UserStackBase;
 	ULONG32 UserStackSize;
 
-	ULONG64 ApicStackBase;
-	ULONG32 ApicStackSize;
-
 	//add locks.
 
 	PKPROCESS Process;

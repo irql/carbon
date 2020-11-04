@@ -59,17 +59,11 @@ HalHandleInterrupt(
 		//	exceptions are handled with the timer disabled.
 		//
 
-		if ( TrapFrame->Interrupt < 32 ) {
-
-			//HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) | LOCAL_APIC_CR0_DEST_DISABLE );
-		}
+		HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) | LOCAL_APIC_CR0_DEST_DISABLE );
 
 		HalInterruptHandlers[ TrapFrame->Interrupt ]( TrapFrame, Processor );
 
-		if ( TrapFrame->Interrupt < 32 ) {
-
-			//HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) & ~LOCAL_APIC_CR0_DEST_DISABLE );
-		}
+		HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) & ~LOCAL_APIC_CR0_DEST_DISABLE );
 	}
 }
 

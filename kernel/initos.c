@@ -64,14 +64,14 @@ KiSystemThread(
 
 	UNICODE_STRING FilePath = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\serial.sys" );
 	NTSTATUS Load = IoLoadDriver( &FilePath );
-
+	Load;
 	UNICODE_STRING FilePath2 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\kdcom.dll" );
 	Load = LdrLoadDll( &FilePath2 );
 
-	//UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
-	//Load = IoLoadDriver( &FilePath1 );
+	UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
+	Load = IoLoadDriver( &FilePath1 );
 
-	//printf( "%x\n", Load );
+	printf( "%x\n", Load );
 #if 1
 	HANDLE ProcessHandle;
 	UNICODE_STRING UserFile = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\user1.exe" );
@@ -83,6 +83,34 @@ KiSystemThread(
 	printf( "result: %x\n", ntStatus );
 #endif
 
+	PLIST_ENTRY Flink = ObjectTypeModule->ObjectList.List;
+	do {
+		POBJECT_ENTRY_HEADER Module = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
+		PKMODULE ModuleObject = ( PKMODULE )( Module + 1 );
+
+		printf( "%w [%#.16P %#.16P %#.16P]\n",
+			ModuleObject->ImageName.Buffer,
+			ModuleObject->LoaderInfoBlock.ModuleStart,
+			ModuleObject->LoaderInfoBlock.ModuleEnd,
+			( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleEnd - ( ULONG64 )ModuleObject->LoaderInfoBlock.ModuleStart );
+
+		Flink = Flink->Flink;
+	} while ( Flink != ObjectTypeModule->ObjectList.List );
+
+	Flink = ObjectTypeThread->ObjectList.List;
+	do {
+		POBJECT_ENTRY_HEADER Thread = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
+		PKTHREAD ThreadObject = ( PKTHREAD )( Thread + 1 );
+
+		printf( "%d, %d %.16P\n", ThreadObject->ActiveThreadId, ThreadObject->ThreadControlBlock.ThreadState, ThreadObject->ThreadControlBlock.Registers.Rip );
+		
+
+		Flink = Flink->Flink;
+	} while ( Flink != ObjectTypeThread->ObjectList.List );
+
+	printf( "Limus.\n" );
+
+	return;
 }
 
 VOID

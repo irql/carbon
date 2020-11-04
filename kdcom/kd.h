@@ -8,7 +8,7 @@
 #define KDSYSAPI DECLSPEC(DLLEXPORT)
 
 typedef VOID( *KD_CMD_HANDLER ) (
-
+	__in PKD_BASE_COMMAND_RECIEVE Cmd
 	);
 
 EXTERN KD_CMD_HANDLER g_CommandTable[ 0xFF ];

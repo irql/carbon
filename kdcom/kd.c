@@ -13,6 +13,7 @@ KD_CMD_HANDLER g_CommandTable[ 0xFF ] = {
 	KD_DECLARE_NONE,
 	KD_DECLARE_NONE,
 	KD_DECLARE_HANDLER( KdCmdListThreads ),
-	KD_DECLARE_HANDLER( KdCmdListModules )
+	KD_DECLARE_HANDLER( KdCmdListModules ),
+	KD_DECLARE_HANDLER( KdCmdThreadContext ),
 };
 

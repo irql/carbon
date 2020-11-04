@@ -151,15 +151,7 @@ NtDisplayString(
 	__in PUNICODE_STRING String
 )
 {
-
-	//String->Buffer
-
-	if ( !MmIsAddressRangeValid( String, sizeof( UNICODE_STRING ) ) ||
-		 !NT_SUCCESS( RtlUnicodeStringValidate( String ) ) ||
-		 !MmIsAddressRangeValid( String->Buffer, String->Size ) ) {
-
-		KeRaiseException( STATUS_ACCESS_VIOLATION );
-	}
+	KeProbeStringForRead( String );
 
 	printf( "%w", String->Buffer );
 

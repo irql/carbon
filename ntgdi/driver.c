@@ -120,6 +120,9 @@ DriverEntry(
 
 	NtGdiWriteConsole( ConsoleHandle, L"Lime_S", 6 );
 
+	static UNICODE_STRING VerboseMark = RTL_CONSTANT_UNICODE_STRING( L"Lemon" );
+	NtGdiVerboseAddEntry( &VerboseMark );
+
 #if 1
 	HANDLE RenderThread;
 	HANDLE SystemProcess = KeQueryCurrentProcess( );
@@ -128,7 +131,16 @@ DriverEntry(
 	ZwClose( RenderThread );
 	ZwClose( SystemProcess );
 #endif
+	/*
+	__try {
 
+		__debugbreak( );
+	}
+	__except ( EXCEPTION_EXECUTE_HANDLER )  {
+
+		printf( "Catch The Lime.\n" );
+	}
+	*/
 	return STATUS_SUCCESS;
 }
 

@@ -113,22 +113,44 @@ PULONG64 FORCEINLINE MiCurrentDirectory( ) {
 ULONG64 FORCEINLINE MiFlagsToEntryFlags(
 	__in ULONG64 Flags
 ) {
-	ULONG64 PteFlags = EntryPresent;
+	ULONG64 Entry = EntryPresent;
 
 	if ( Flags & PAGE_EXECUTE );
 
 	if ( Flags & PAGE_READ );
 
 	if ( Flags & PAGE_WRITE )
-		PteFlags |= EntryWriteable;
+		Entry |= EntryWriteable;
 
 	if ( Flags & PAGE_USER )
-		PteFlags |= EntryUser;
+		Entry |= EntryUser;
 
 	if ( Flags & PAGE_GLOBAL )
-		PteFlags |= EntryCpuGlobal;
+		Entry |= EntryCpuGlobal;
 
-	return PteFlags;
+	return Entry;
+}
+
+ULONG64 FORCEINLINE MiEntryFlagsToFlags(
+	__in ULONG64 EntryFlags
+) {
+	ULONG64 Flags = 0;
+
+	if ( EntryFlags & EntryPresent )
+		Flags |= PAGE_READ;
+	else
+		return 0;
+
+	if ( EntryFlags & EntryWriteable )
+		Flags |= PAGE_WRITE;
+
+	if ( EntryFlags & EntryUser )
+		Flags |= PAGE_USER;
+
+	if ( EntryFlags & EntryCpuGlobal )
+		Flags |= PAGE_GLOBAL;
+
+	return EntryFlags;
 }
 
 /* phys.c */

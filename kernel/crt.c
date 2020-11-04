@@ -296,7 +296,7 @@ void vsprintfA( char *buffer, char *format, va_list args ) {
 				for ( unsigned char i = 0; i < pad; i++, buffer_index++ )
 					buffer[ buffer_index ] = '0';
 			}
-
+			
 			for ( unsigned char i = 0; buf[ i ]; i++, buffer_index++ )
 				buffer[ buffer_index ] = uppercase ? UPPER( buf[ i ] ) : buf[ i ];
 

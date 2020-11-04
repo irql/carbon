@@ -282,6 +282,17 @@ MiInitMemoryManager(
 
 	MiMarkPhysical( RegionDescriptorsPhysicalBase, RegionDescriptorsSize, TRUE );
 
+	//
+	//	map all 256 pml4t entries, this is so that if kernel memory is allocated 
+	//	all other page tables are updated (the top 256 entries are copied from
+	//	page table to page table), uses 2mb of memory.
+	//
+
+	for ( ULONG32 i = 0; i < 256; i++ ) {
+
+		MiPageTableToVirtual( &g_KernelPageTable.BaseVirtual[ 256 + i ] );
+	}
+
 	return TotalMemorySize;
 }
 

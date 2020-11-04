@@ -4,30 +4,32 @@
 
 #pragma warning( disable : 4200 )
 
-#define KD_ACK_BYTE			(0xFA)
+#define KD_ACK_BYTE				(0xFA)
 
-#define KD_CMD_CONNECT      (0x00)
-#define KD_CMD_BREAK        (0x01)
-#define KD_CMD_CONTINUE     (0x02)
-#define KD_CMD_CRASH        (0x03)
-#define KD_CMD_MESSAGE      (0x04)
-#define KD_CMD_LIST_THREADS (0x05)
-#define KD_CMD_LIST_MODULES (0x06)
+#define KD_CMD_CONNECT			(0x00)
+#define KD_CMD_BREAK			(0x01)
+#define KD_CMD_CONTINUE			(0x02)
+#define KD_CMD_CRASH			(0x03)
+#define KD_CMD_MESSAGE			(0x04)
+#define KD_CMD_LIST_THREADS		(0x05)
+#define KD_CMD_LIST_MODULES		(0x06)
+#define KD_CMD_THREAD_CONTEXT	(0x07)
 
 typedef struct _KB_BASE_COMMAND_RECIEVE {
 	UCHAR KdAckByte;
 	UCHAR KdCommandByte;
-
-	ULONG32 KdCmdSize;
+	ULONG KdCmdSize;
 
 } KD_BASE_COMMAND_RECIEVE, *PKD_BASE_COMMAND_RECIEVE;
 
 typedef struct _KD_BASE_COMMAND_SEND {
 	UCHAR KdAckByte;
 	UCHAR KdCommandByte;
+	ULONG KdCmdSize;
 
 } KD_BASE_COMMAND_SEND, *PKD_BASE_COMMAND_SEND;
 
+//change this, its outdated.
 typedef struct _KD_CMDR_CRASH {
 	KD_BASE_COMMAND_RECIEVE Base;
 
@@ -72,3 +74,38 @@ typedef struct _KD_CMDR_LIST_MODULES {
 
 	KD_MODULE Module[ 0 ];
 } KD_CMDR_LIST_MODULES, *PKD_CMDR_LIST_MODULES;
+
+typedef struct _KD_CMDR_THREAD_CONTEXT {
+	KD_BASE_COMMAND_RECIEVE Base;
+
+	ULONG64 Rax;
+	ULONG64 Rcx;
+	ULONG64 Rdx;
+	ULONG64 Rbx;
+	ULONG64 Rsp;
+	ULONG64 Rbp;
+	ULONG64 Rsi;
+	ULONG64 Rdi;
+	ULONG64 R8;
+	ULONG64 R9;
+	ULONG64 R10;
+	ULONG64 R11;
+	ULONG64 R12;
+	ULONG64 R13;
+	ULONG64 R14;
+	ULONG64 R15;
+	ULONG64 Rip;
+
+	ULONG64 EFlags;
+
+	ULONG64 CodeSegment;
+	ULONG64 DataSegment;
+	ULONG64 StackSegment;
+} KD_CMDR_THREAD_CONTEXT, *PKD_CMDR_THREAD_CONTEXT;
+
+typedef struct _KD_CMDS_THREAD_CONTEXT {
+	KD_BASE_COMMAND_RECIEVE Base;
+
+	ULONG64 ThreadId;
+
+} KD_CMDS_THREAD_CONTEXT, *PKD_CMDS_THREAD_CONTEXT;

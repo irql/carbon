@@ -6,9 +6,10 @@
 
 VOID
 KdCmdListModules(
-
+	__in PKD_BASE_COMMAND_RECIEVE Cmd
 )
 {
+	Cmd;
 
 	//
 	//	should only be called when g_ProcessorBreak == TRUE.

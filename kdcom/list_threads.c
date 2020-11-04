@@ -12,9 +12,10 @@
 
 VOID
 KdCmdListThreads(
-
+	__in PKD_BASE_COMMAND_RECIEVE Cmd
 )
 {
+	Cmd;
 
 	//
 	//	should only be called when g_ProcessorBreak == TRUE.
@@ -31,9 +32,12 @@ KdCmdListThreads(
 		POBJECT_ENTRY_HEADER ObjectHeader = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
 		PKTHREAD ThreadObject = ( PKTHREAD )( ObjectHeader + 1 );
 
-		ListThreads->Thread[ i ].ProcessId = ThreadObject->Process->ActiveProcessId;
-		ListThreads->Thread[ i ].ThreadId = ThreadObject->ActiveThreadId;
-		i++;
+		if ( ThreadObject->ThreadControlBlock.ThreadState & ( THREAD_STATE_READY | THREAD_STATE_RUNNING ) ) {
+
+			ListThreads->Thread[ i ].ProcessId = ThreadObject->Process->ActiveProcessId;
+			ListThreads->Thread[ i ].ThreadId = ThreadObject->ActiveThreadId;
+			i++;
+		}
 
 		Flink = Flink->Flink;
 	} while ( Flink != ObjectTypeThread->ObjectList.List );

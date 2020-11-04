@@ -29,20 +29,6 @@ typedef struct _KBASIC_INFO {
 
 EXTERN KBASIC_INFO g_Basic;
 
-void*
-memcpy_SSE2_4KA(
-	__in void* m1,
-	__in void* m2,
-	__in __int64 c
-);
-
-void*
-memset_SSE2_4KA(
-	__in void* m1,
-	__in __int64 v,
-	__in __int64 c
-);
-
 ULONG32
 FORCEINLINE
 NtGdiAlphaBlend(
@@ -258,5 +244,21 @@ EXTERN RECT g_TypingCursorPosition;
 
 VOID
 NtGdiTypingCursorRender(
+
+);
+
+typedef struct _VERBOSE_ENTRY {
+	LIST_ENTRY		VerboseLinks;
+	PUNICODE_STRING VerboseString;
+
+} VERBOSE_ENTRY, *PVERBOSE_ENTRY;
+
+PVERBOSE_ENTRY
+NtGdiVerboseAddEntry(
+	__in PUNICODE_STRING String
+);
+
+VOID
+NtGdiVerboseOverlayRender(
 
 );

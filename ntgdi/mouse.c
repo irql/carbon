@@ -35,10 +35,21 @@ NtMouseUpdateIrq(
 	__in PKPCR Processor
 )
 {
-
 	TrapFrame;
 	Processor;
-	//KeEnterCriticalRegion();
+
+	//printf( "L:ime\n" );
+
+	STATIC PVERBOSE_ENTRY VerboseEntry = NULL;
+	STATIC UNICODE_STRING VerboseString;
+
+	if ( VerboseEntry == NULL ) {
+
+		VerboseString.Buffer = ExAllocatePoolWithTag( 512, TAGEX_STRING );
+		lstrcpyW( VerboseString.Buffer, L"LIME_SECURITY.\n" );
+
+		VerboseEntry = NULL;// NtGdiVerboseAddEntry( &VerboseString );
+	}
 
 	NtMouseByte[ NtMouseCycle ] = __inbyte( I8042_CONTROLLER_CMD1 );
 
@@ -115,6 +126,8 @@ NtMouseUpdateIrq(
 
 		SvMoveCursor( g_CursorVisible, g_NtCursorPosition.x, g_NtCursorPosition.y );
 
+		//sprintfW( VerboseString.Buffer, L"mouse pos: %d, %d\n", g_NtCursorPosition.x, g_NtCursorPosition.y );
+
 		if ( NtMouseByte[ 0 ] & 1 ) {
 
 			NtSendMousePacket( 1, KeyStatePress, &g_NtCursorPosition );
@@ -155,7 +168,6 @@ NtMouseUpdateIrq(
 		break;
 	}
 
-	//KeLeaveCriticalRegion();
 }
 
 VOID

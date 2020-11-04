@@ -94,14 +94,7 @@ KiThreadDispatcher(
 
 	_memcpy( TrapFrame, &Processor->ThreadQueue->ThreadControlBlock.Registers, sizeof( KTRAP_FRAME ) );
 	Processor->TaskState.Rsp0 = Processor->ThreadQueue->KernelStackBase + Processor->ThreadQueue->KernelStackSize;
-	Processor->TaskState.Ist3 = Processor->ThreadQueue->ApicStackBase + Processor->ThreadQueue->ApicStackSize;//fix, redundant.
 	Processor->ThreadQueue->ThreadControlBlock.Registers.Cr3 = Processor->ThreadQueue->ThreadControlBlock.AddressSpace->BasePhysical;
-
-	//( ( PGDT_ENTRY_TSS )( ( char* )Processor->Gdtr.Base + Processor->TaskStateDescriptor ) )->AccessByte = 0x89;
-	//__ltr( Processor->TaskStateDescriptor | Processor->ThreadQueue->ThreadControlBlock.PrivilegeLevel );
-
-	//( ( PGDT_ENTRY_TSS )( ( char* )Processor->Gdtr.Base + Processor->TaskStateDescriptor ) )->AccessByte = 0x89;
-	//__ltr( Processor->TaskStateDescriptor );
 
 	HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, HalLocalApicRead( LOCAL_APIC_LVT_TIMER_REGISTER ) & ~LOCAL_APIC_CR0_DEST_DISABLE );
 }
@@ -198,11 +191,9 @@ KiCreateThread(
 		return ntStatus;
 	}
 
-	ThreadObject->ApicStackSize = 0x4000;
 	ThreadObject->KernelStackSize = KernelStackSize == 0 ? 0x4000 : KernelStackSize;
 	ThreadObject->UserStackSize = UserStackSize == 0 ? 0x4000 : UserStackSize;
 
-	ThreadObject->ApicStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->ApicStackSize, PAGE_READ | PAGE_WRITE );
 	ThreadObject->KernelStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->KernelStackSize, PAGE_READ | PAGE_WRITE );
 	ThreadObject->UserStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->UserStackSize, PAGE_READ | PAGE_WRITE );
 

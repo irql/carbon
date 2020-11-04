@@ -57,7 +57,7 @@ KiCreateKpcr(
 NTSTATUS
 KeQueryLogicalProcessor(
 	__in ULONG32 ProcessorIndex,
-	__in PKPCR* Kpcr
+	__in PKPCR* Processor
 )
 {
 	if ( ProcessorIndex > KiLogicalProcessorsInstalled ) {
@@ -65,7 +65,7 @@ KeQueryLogicalProcessor(
 		return STATUS_UNSUCCESSFUL;
 	}
 
-	*Kpcr = KiLogicalProcessors[ ProcessorIndex ];
+	*Processor = KiLogicalProcessors[ ProcessorIndex ];
 
 	return STATUS_SUCCESS;
 }

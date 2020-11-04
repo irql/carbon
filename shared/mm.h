@@ -74,3 +74,7 @@ NTSYSAPI BOOLEAN MmIsAddressRangeValid(
 	__in PVOID   VirtualAddress,
 	__in ULONG64 ByteCount
 );
+
+NTSYSAPI ULONG64 MmQueryVirtualProtection(
+	__in PVOID VirtualAddress
+);

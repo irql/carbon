@@ -15,7 +15,6 @@
     <ClCompile Include="dieditbox.c" />
     <ClCompile Include="diwinbase.c" />
     <ClCompile Include="driver.c" />
-    <ClCompile Include="fmem.c" />
     <ClCompile Include="focus.c" />
     <ClCompile Include="font.c" />
     <ClCompile Include="keyboard.c" />
@@ -27,6 +26,7 @@
     <ClCompile Include="ttf.c" />
     <ClCompile Include="ttf_render.c" />
     <ClCompile Include="typing.c" />
+    <ClCompile Include="verbose.c" />
     <ClCompile Include="winlist.c" />
     <ClCompile Include="wndcomposite.c" />
     <ClCompile Include="wndcreate.c" />

@@ -90,10 +90,14 @@ HalLocalApicEnable(
 {
 
 	//MmAllocateMemoryAt( ( ULONG64 )Madt->LocalApicAddress, ( ULONG64 )Madt->LocalApicAddress, 0x1000, PAGE_READ | PAGE_WRITE );
-	MadtLocalApic = ( ULONG64 )MmAllocateMemoryAtPhysical( Madt->LocalApicAddress, 0x1000, PAGE_READ | PAGE_WRITE );
+
+	if ( MadtLocalApic == 0 ) {
+
+		MadtLocalApic = ( ULONG64 )MmAllocateMemoryAtPhysical( Madt->LocalApicAddress, 0x1000, PAGE_READ | PAGE_WRITE );
+	}
 
 	HalLocalApicWrite( LOCAL_APIC_LVT_TIMER_REGISTER, LOCAL_APIC_CR0_DEST_DISABLE );
-	//HalLocalApicWrite( LOCAL_APIC_LVT_PERFORMANCE_MONITORING_COUNTERS_REGISTER, LOCAL_APIC_CR0_DEST_NMI );
+	HalLocalApicWrite( LOCAL_APIC_LVT_PERFORMANCE_MONITORING_COUNTERS_REGISTER, LOCAL_APIC_CR0_DEST_NMI );
 	HalLocalApicWrite( LOCAL_APIC_LVT_LINT0_REGISTER, LOCAL_APIC_CR0_DEST_DISABLE );
 	HalLocalApicWrite( LOCAL_APIC_LVT_LINT1_REGISTER, LOCAL_APIC_CR0_DEST_DISABLE );
 	HalLocalApicWrite( LOCAL_APIC_TASK_PRIORITY_REGISTER, 0 );
@@ -104,8 +108,13 @@ HalLocalApicEnable(
 
 	HalLocalApicWrite( LOCAL_APIC_SPURIOUS_INTERRUPT_VECTOR_REGISTER, 0x1ff );
 
-	//MmAllocateMemoryAt( ( ULONG64 )MadtIoApics[ 0 ]->IoApicAddress, ( ULONG64 )MadtIoApics[ 0 ]->IoApicAddress, 0x2000, PAGE_READ | PAGE_WRITE );
-	MadtIoApic0 = ( ULONG64 )MmAllocateMemoryAtPhysical( MadtIoApics[ 0 ]->IoApicAddress, 0x2000, PAGE_READ | PAGE_WRITE );
+	MmAllocateMemoryAt( ( ULONG64 )MadtIoApics[ 0 ]->IoApicAddress, ( ULONG64 )MadtIoApics[ 0 ]->IoApicAddress, 0x2000, PAGE_READ | PAGE_WRITE );
+
+	//if ( MadtIoApic0 == 0 ) {
+
+	//	MadtIoApic0 = ( ULONG64 )MmAllocateMemoryAtPhysical( MadtIoApics[ 0 ]->IoApicAddress, 0x2000, PAGE_READ | PAGE_WRITE );
+	//	printf( "ioapic: %.16P, %.16P\n", MadtIoApic0, MadtIoApics[ 0 ]->IoApicAddress );
+	//}
 }
 
 VOID
@@ -183,7 +192,6 @@ HalIoApicRedirectIrq(
 {
 	//should always be an io-apic otherwise you can FUCK OFF.
 
-
-	HalIoApicWrite( MadtIoApic0, IO_APIC_REDIRECTION_TABLE( Irq ), RedirectionEntry->Lower );
-	HalIoApicWrite( MadtIoApic0, IO_APIC_REDIRECTION_TABLE( Irq ) + 1, RedirectionEntry->Upper );
+	HalIoApicWrite( ( ULONG64 )MadtIoApics[ 0 ]->IoApicAddress, IO_APIC_REDIRECTION_TABLE( Irq ), RedirectionEntry->Lower );
+	HalIoApicWrite( ( ULONG64 )MadtIoApics[ 0 ]->IoApicAddress, IO_APIC_REDIRECTION_TABLE( Irq ) + 1, RedirectionEntry->Upper );
 }

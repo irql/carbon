@@ -180,6 +180,7 @@
     <ClCompile Include="list_modules.c" />
     <ClCompile Include="list_threads.c" />
     <ClCompile Include="message.c" />
+    <ClCompile Include="thread_context.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="com.h" />

@@ -25,6 +25,11 @@ KdCmdMessage(
 	__in PKD_CMDR_MESSAGE Message
 );
 
+VOID
+KdCmdThreadContext(
+	__in PKD_CMDR_THREAD_CONTEXT Cmd
+);
+
 typedef VOID( *KD_CMD_HANDLER ) (
 	__in PKD_BASE_COMMAND_RECIEVE
 	);

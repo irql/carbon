@@ -8,6 +8,7 @@
 #include "ldrp.h"
 #include "ldrpsup.h"
 #include "ldrpusr.h"
+#include "obp.h"
 
 NTSTATUS
 PsCreateUserProcess(
@@ -50,6 +51,23 @@ PsCreateUserProcess(
 	MiSetAddressSpace( PreviousAddressSpace );
 
 	ntStatus = ObCreateHandle( ProcessHandle, ProcessObject );
+
+	if ( !NT_SUCCESS( ntStatus ) ) {
+
+		MiRemoveAddressSpace( &ProcessObject->AddressSpace );
+		MiFreeAddressSpace( &ProcessObject->AddressSpace );
+		ObDestroyObject( ProcessObject );
+		return ntStatus;
+	}
+
+	ProcessObject->ActiveProcessId = KiGetUniqueIdentifier( );
+
+	ProcessObject->ProcessHandleTable.TotalNumberOfHandles = 0;
+	ProcessObject->ProcessHandleTable.HandleLinks.List = NULL;
+	ProcessObject->ProcessHandleTable.HandleLinks.Lock.ThreadLocked = NULL;
+
+	HANDLE SelfHandle;
+	ntStatus = ObpCreateHandle( &ProcessObject->ProcessHandleTable, ( PVOID )ProcessObject, &SelfHandle );
 
 	if ( !NT_SUCCESS( ntStatus ) ) {
 
@@ -137,14 +155,12 @@ PsCreateUserThread(
 		return ntStatus;
 	}
 
-	ThreadObject->ApicStackSize = 0x4000;
 	ThreadObject->KernelStackSize = 0x4000;
 	ThreadObject->UserStackSize = UserStackSize == 0 ? 0x4000 : UserStackSize;
 
 	PADDRESS_SPACE_DESCRIPTOR PreviousAddressSpace = MiGetAddressSpace( );
 
 	MiSetAddressSpace( &ProcessObject->AddressSpace );
-	ThreadObject->ApicStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->ApicStackSize, PAGE_READ | PAGE_WRITE );
 	ThreadObject->KernelStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->KernelStackSize, PAGE_READ | PAGE_WRITE );
 	ThreadObject->UserStackBase = ( ULONG64 )MmAllocateMemory( ThreadObject->UserStackSize, PAGE_READ | PAGE_WRITE | PAGE_USER );
 	MiSetAddressSpace( PreviousAddressSpace );

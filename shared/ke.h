@@ -116,7 +116,7 @@ NTSYSAPI
 NTSTATUS
 KeQueryLogicalProcessor(
 	__in ULONG32 ProcessorIndex,
-	__in PKPCR* Kpcr
+	__in PKPCR* Processor
 );
 
 NTSYSAPI
@@ -183,6 +183,18 @@ VOID
 KeProbeForRead(
 	__in PVOID Address,
 	__in ULONG Length
+);
+
+NTSYSAPI
+VOID
+KeProbeStringForRead(
+	__in PUNICODE_STRING StringAddress
+);
+
+NTSYSAPI
+VOID
+KeProbeStringForWrite(
+	__in PUNICODE_STRING StringAddress
 );
 
 NTSYSAPI

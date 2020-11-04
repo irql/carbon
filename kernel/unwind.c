@@ -77,25 +77,25 @@ RtlUnwind(
 	PIMAGE_DOS_HEADER DosHeader = ( PIMAGE_DOS_HEADER )ModuleBase;
 	PIMAGE_NT_HEADERS NtHeaders = ( PIMAGE_NT_HEADERS )( ( PCHAR )ModuleBase + DosHeader->e_lfanew );
 
-	PIMAGE_RUNTIME_FUNCTION_ENTRY Functions = ( PIMAGE_RUNTIME_FUNCTION_ENTRY )( ( PCHAR )ModuleBase +
+	PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry = ( PIMAGE_RUNTIME_FUNCTION_ENTRY )( ( PCHAR )ModuleBase +
 		NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_EXCEPTION ].VirtualAddress );
 	ULONG32 FunctionCount = NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_EXCEPTION ].Size / sizeof( IMAGE_RUNTIME_FUNCTION_ENTRY );
 
-	if ( Functions == 0 || FunctionCount == 0 ) {
+	if ( FunctionEntry == 0 || FunctionCount == 0 ) {
 
 		return STATUS_INVALID_PE_FILE;
 	}
 
 	for ( ULONG32 i = 0; i < FunctionCount; i++ ) {
 
-		if ( TargetContext->Rip >= ( ( ULONG64 )ModuleBase + Functions[ i ].BeginAddress ) &&
-			TargetContext->Rip <= ( ( ULONG64 )ModuleBase + Functions[ i ].EndAddress ) ) {
+		if ( TargetContext->Rip >= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].BeginAddress ) &&
+			TargetContext->Rip <= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].EndAddress ) ) {
 
 			return RtlpUnwindPrologue(
 				Thread,
 				TargetContext,
 				CurrentVad->Range.ModuleStart,
-				&Functions[ i ] );
+				&FunctionEntry[ i ] );
 		}
 	}
 

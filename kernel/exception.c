@@ -4,6 +4,7 @@
 #include <carbsup.h>
 #include "ki.h"
 #include "ki_struct.h"
+#include "rtlp.h"
 
 VOID
 KiExceptionTrap(
@@ -24,11 +25,75 @@ KiExceptionTrap(
 
 	KPROCESSOR_MODE ExceptionMode = ( TrapFrame->CodeSegment & 1 ) == 0 ? KernelMode : UserMode;
 
-	PKTHREAD ExceptionThread = Processor->ThreadQueue;
+	PKTHREAD		ExceptionThread = Processor->ThreadQueue;
 
 	//
-	//	there should really be more checks to try figure out what happened.
+	//	two context records, we need one for unwinding and searching for the error
+	//	and one for any other functions.
 	//
+
+	CONTEXT			ExceptionContext;
+	CONTEXT			OriginalContext;
+
+	PVOID			ExceptionHandler;
+	PSCOPE_TABLE	ExceptionScope;
+	PVAD			ExceptionVad;
+
+	NTSTATUS		ntStatus;
+
+	TRAPFRAME_TO_CONTEXT( TrapFrame, &ExceptionContext );
+	TRAPFRAME_TO_CONTEXT( TrapFrame, &OriginalContext );
+
+	do {
+
+		ntStatus = RtlpFindTargetExceptionHandler(
+			ExceptionThread,
+			&ExceptionContext,
+			&ExceptionVad,
+			&ExceptionHandler,
+			&ExceptionScope );
+
+		if ( ntStatus != STATUS_NOT_FOUND ) {
+
+			break;
+		}
+
+		ntStatus = RtlUnwind( 
+			ExceptionThread, 
+			&ExceptionContext );
+
+		if ( !NT_SUCCESS( ntStatus ) ) {
+
+			break;
+		}
+
+	} while ( ExceptionContext.Rsp + 0x28 < ExceptionThread->UserStackBase + ExceptionThread->UserStackSize );
+
+	if ( ExceptionHandler != NULL ) {
+
+		//
+		//	this is poggers!
+		//	we can jump to the exception handler.
+		//
+
+		//
+		//	calls the __C_specific_handler
+		//
+
+		( ( void( *)( ) )ExceptionHandler )( );
+
+		for ( ULONG32 i = 0; i < ExceptionScope->Count; i++ ) {
+
+			if ( ExceptionContext.Rip >= ( ULONG64 )ExceptionVad->Range.ModuleStart + ExceptionScope->ScopeRecord[ i ].BeginAddress &&
+				 ExceptionContext.Rip <= ( ULONG64 )ExceptionVad->Range.ModuleStart + ExceptionScope->ScopeRecord[ i ].EndAddress ) {
+
+				ExceptionContext.Rip = ( ULONG64 )ExceptionVad->Range.ModuleStart + ExceptionScope->ScopeRecord[ i ].JumpTarget;
+
+				CONTEXT_TO_TRAPFRAME( TrapFrame, &ExceptionContext );
+				return;
+			}
+		}
+	}
 
 	switch ( ExceptionMode ) {
 
@@ -41,9 +106,9 @@ KiExceptionTrap(
 		break;
 	case UserMode:
 
-		KeBugCheckEx( STATUS_UNHANDLED_SYSTEM_EXCEPTION, TrapFrame->Interrupt, TrapFrame->Rip, ( ULONG64 )TrapFrame, ( ULONG64 )ExceptionThread );
+		//KeBugCheckEx( STATUS_UNHANDLED_SYSTEM_EXCEPTION, TrapFrame->Interrupt, TrapFrame->Rip, ( ULONG64 )TrapFrame, ( ULONG64 )ExceptionThread );
 
-		//KeRaiseException( ( ULONG32 )STATUS_ACCESS_VIOLATION );
+		KeRaiseException( ( ULONG32 )STATUS_ACCESS_VIOLATION );
 
 		break;
 	}

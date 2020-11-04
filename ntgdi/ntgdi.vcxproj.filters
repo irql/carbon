@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="driver.c" />
-    <ClCompile Include="fmem.c" />
     <ClCompile Include="wndcreate.c">
       <Filter>Wnd</Filter>
     </ClCompile>
@@ -67,6 +66,7 @@
     <ClCompile Include="typing.c">
       <Filter>Cursor</Filter>
     </ClCompile>
+    <ClCompile Include="verbose.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="driver.h" />

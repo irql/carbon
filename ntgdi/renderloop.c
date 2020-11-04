@@ -47,6 +47,8 @@ NtSvRenderLoop(
 
 		KeReleaseSpinLock( &g_WindowListLock );
 
+		NtGdiVerboseOverlayRender( );
+
 		_memcpy( g_Basic.Framebuffer, g_Basic.Doublebuffer, g_Basic.Height * g_Basic.Width * 4 );
 
 		NtGdiTypingCursorRender( );

@@ -13,6 +13,9 @@
     <ClCompile Include="list_modules.c">
       <Filter>Commands</Filter>
     </ClCompile>
+    <ClCompile Include="thread_context.c">
+      <Filter>Commands</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="com.h" />

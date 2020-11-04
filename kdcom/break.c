@@ -24,9 +24,11 @@ KdProcessorBreak(
 
 VOID
 KdCmdBreak(
-
+	__in PKD_BASE_COMMAND_RECIEVE Cmd
 )
 {
+	Cmd;
+
 	if ( g_ProcessorBreak == TRUE ) {
 
 		return;
