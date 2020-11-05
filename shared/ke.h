@@ -249,3 +249,22 @@ VOID
 KeRaiseException(
 	__in ULONG32 ExceptionCode
 );
+
+typedef struct _SYSTEM_SERVICE {
+	PVOID ServiceProcedure;
+	ULONG ArgumentCount;
+	ULONG Alignment;
+} SYSTEM_SERVICE, *PSYSTEM_SERVICE;
+
+typedef struct _KSYSTEM_SERVICE_DESCRIPTOR_TABLE {
+	ULONG			ServiceCount;
+	ULONG			Alignment;
+	PSYSTEM_SERVICE ServiceTable;
+} KSYSTEM_SERVICE_DESCRIPTOR_TABLE, *PKSYSTEM_SERVICE_DESCRIPTOR_TABLE;
+
+NTSYSAPI
+NTSTATUS
+KeInstallServiceDescriptorTable(
+	__in ULONG			 ServiceCount,
+	__in PSYSTEM_SERVICE ServiceTable
+);

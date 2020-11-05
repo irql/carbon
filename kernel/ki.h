@@ -135,9 +135,3 @@ KiInitializeSyscalls(
 );
 
 EXTERN PKPROCESS KiSystemProcess;
-
-typedef struct _SYSTEM_SERVICE {
-	PVOID ServiceProcedure;
-	ULONG ArgumentCount;
-	ULONG Alignment;
-} SYSTEM_SERVICE, *PSYSTEM_SERVICE;

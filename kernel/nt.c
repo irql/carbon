@@ -85,6 +85,9 @@ NtQueryDirectoryFile(
 	FileInformationClass;
 	FileName;
 
+	//testing arg passing.
+	//printf( "%d %d %d %d %d %d\n", FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass, FileName );
+
 	return STATUS_SUCCESS;
 }
 

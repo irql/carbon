@@ -18,19 +18,10 @@ KiFastSystemCall(
 
 #define DECLARE_SYSTEM_SERVICE( x, y ) { x, y }
 
-SYSTEM_SERVICE KeServiceDescriptorTable[ ] = {
-#if 0
-	[ 0 ] = {0},
+ULONG							 KeServiceTableCount;
+KSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable[ 16 ];
 
-	[ 0 ] = { NtCreateFile, 1 },
-	[ 1 ] = { NtReadFile, 1 },
-	[ 2 ] = { NtWriteFile, 1 },
-	[ 3 ] = { NtClose, 0 },
-	[ 4 ] = { NtQueryDirectoryFile, 2 },
-	[ 5 ] = { NtQueryInformationFile, 1 },
-	[ 6 ] = { NtSetInformationFile, 1 },
-	[ 7 ] = { NtDeviceIoControlFile, 3 }
-#endif
+SYSTEM_SERVICE KeNativeServiceTable[ ] = {
 
 	DECLARE_SYSTEM_SERVICE( NtCreateFile, 1 ),
 	DECLARE_SYSTEM_SERVICE( NtReadFile, 1 ),
@@ -43,7 +34,25 @@ SYSTEM_SERVICE KeServiceDescriptorTable[ ] = {
 	DECLARE_SYSTEM_SERVICE( NtDisplayString, 0 ),
 };
 
-#define SYSCALL_MAX ( sizeof( KeServiceDescriptorTable ) / sizeof ( SYSTEM_SERVICE ) )
+NTSTATUS
+KeInstallServiceDescriptorTable(
+	__in ULONG			 ServiceCount,
+	__in PSYSTEM_SERVICE ServiceTable
+)
+{
+
+	if ( KeServiceTableCount >= 16 ) {
+
+		return STATUS_UNSUCCESSFUL;
+	}
+
+	KeServiceDescriptorTable[ KeServiceTableCount ].ServiceCount = ServiceCount;
+	KeServiceDescriptorTable[ KeServiceTableCount ].ServiceTable = ServiceTable;
+
+	KeServiceTableCount++;
+
+	return STATUS_SUCCESS;
+}
 
 VOID
 KiInitializeSyscalls(
@@ -55,6 +64,15 @@ KiInitializeSyscalls(
 	__writemsr( IA32_MSR_LSTAR, ( unsigned long long )KiFastSystemCall );
 	__writemsr( IA32_MSR_STAR, ( ( ( ULONG64 )GDT_USER_CODE64 - 16 ) << 48 ) | ( ( ( ULONG64 )GDT_KERNEL_CODE64 ) << 32 ) );
 	__writemsr( IA32_MSR_SFMASK, 0 );
+
+	STATIC BOOLEAN NativeInit = FALSE;
+
+	if ( !NativeInit ) {
+
+		KeInstallServiceDescriptorTable( sizeof( KeNativeServiceTable ) / sizeof( SYSTEM_SERVICE ), KeNativeServiceTable );
+
+		NativeInit = TRUE;
+	}
 
 }
 

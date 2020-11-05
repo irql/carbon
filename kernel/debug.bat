@@ -35,5 +35,5 @@ qemu-system-x86_64 -s -m 1024 -cpu core2duo -smp 1 -no-reboot -no-shutdown -moni
 rem qemu-system-x86_64 -s -m 1024 -cpu core2duo -smp 2 -no-reboot -no-shutdown -monitor stdio -vga vmware -accel hax -drive format=raw,media=disk,file="%cd%\carbon_os.vhd"
 
 rem del /s /q "..\carbon_os.vhd.lock"
-rem "I:\win_old\Chris\Downloads\bochs-master\bochs-master\bochs\obj-release\bochs.exe" -f "%cd%\vm\bochs\bochsrc.bxrc"
+"I:\win_old\Chris\Downloads\bochs-master\bochs-master\bochs\obj-release\bochs.exe" -f "%cd%\vm\bochs\bochsrc.bxrc"
 
