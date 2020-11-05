@@ -22,6 +22,7 @@ LdrpUsrLoadModule(
 	NTSTATUS ntStatus;
 	IO_STATUS_BLOCK Iosb;
 
+	printf( "try %w\n", ModuleName->Buffer );
 
 	HANDLE FileHandle;
 	OBJECT_ATTRIBUTES FileAttributes = { 0, ModuleName };
@@ -96,7 +97,7 @@ LdrpUsrLoadModule(
 	ULONG64 ModuleSize = ( ULONG64 )SectionHeaders[ LastSection ].VirtualAddress + ( ULONG64 )ROUND_TO_PAGES( ( ( ULONG64 )SectionHeaders[ LastSection ].Misc.VirtualSize ) );
 	PVOID ModuleBase = MmAllocateMemoryAtVirtual( NtHeaders->OptionalHeader.ImageBase, ModuleSize, PAGE_READ | PAGE_WRITE | PAGE_EXECUTE | PAGE_USER );
 
-	if ( NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_BASERELOC ].VirtualAddress == 0 &&
+	if ( NtHeaders->OptionalHeader.DllCharacteristics & IMAGE_FILE_RELOCS_STRIPPED &&
 		( ULONG64 )ModuleBase != NtHeaders->OptionalHeader.ImageBase ) {
 		//lol imagine.
 
@@ -114,7 +115,8 @@ LdrpUsrLoadModule(
 		_memcpy( ( PUCHAR )ModuleBase + SectionHeaders[ i ].VirtualAddress, ( PUCHAR )FileBase + SectionHeaders[ i ].PointerToRawData, SectionHeaders[ i ].SizeOfRawData );
 	}
 
-	if ( NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_BASERELOC ].VirtualAddress != 0 &&
+	if ( ( NtHeaders->OptionalHeader.DllCharacteristics & IMAGE_FILE_RELOCS_STRIPPED ) != 0 &&
+		NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_BASERELOC ].VirtualAddress != 0 &&
 		( ULONG64 )ModuleBase != NtHeaders->OptionalHeader.ImageBase ) {
 
 		ntStatus = PeSupResolveBaseRelocDescriptor( ModuleBase, ( PIMAGE_BASE_RELOCATION )( ( PUCHAR )ModuleBase + NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_BASERELOC ].VirtualAddress ) );
@@ -217,8 +219,6 @@ LdrpUsrLoadModule(
 			}
 		}
 	}
-
-
 
 	return STATUS_SUCCESS;
 }

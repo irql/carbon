@@ -265,6 +265,9 @@ typedef struct _KSYSTEM_SERVICE_DESCRIPTOR_TABLE {
 NTSYSAPI
 NTSTATUS
 KeInstallServiceDescriptorTable(
+	__in ULONG           ServiceTableIndex,
 	__in ULONG			 ServiceCount,
 	__in PSYSTEM_SERVICE ServiceTable
 );
+
+#define DECLARE_SYSTEM_SERVICE( x, y ) { x, y }

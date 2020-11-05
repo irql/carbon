@@ -141,6 +141,9 @@ DriverEntry(
 		printf( "Catch The Lime.\n" );
 	}
 	*/
+
+	NtGdiSyscallInitialize( );
+
 	return STATUS_SUCCESS;
 }
 

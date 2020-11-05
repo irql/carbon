@@ -69,7 +69,7 @@ NtGdiVerboseOverlayRender(
 		g_DefaultFont->Render( g_DefaultFont, Entry->VerboseString->Buffer, x, y, 0xFFFFFFFF, g_Basic.Doublebuffer, &Region );
 
 		x += ( ExtentPoint.x );
-		y += ( ExtentPoint.y );
+		y += ( ExtentPoint.y ) + 16;
 		x = 0;
 
 

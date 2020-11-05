@@ -7,7 +7,6 @@ section .text
 
 global KiFastSystemCall
 
-extern KeServiceTableCount
 extern KeServiceDescriptorTable
 
 extern KeProbeForRead
@@ -36,16 +35,10 @@ KiFastSystemCall:
 	;thank you nasm.
 	mov rcx, KeServiceDescriptorTable
 	mov qword [rsp-8], rcx
-	mov rcx, KeServiceTableCount
-	mov rcx, qword [rcx]
-	mov qword [rsp-16], rcx
 
 	mov rcx, rax
 	shr rcx, 28
 	and rcx, 0xF
-	cmp rcx, qword [rsp-16]
-	jge .done
-
 	shl rcx, 4
 	add rcx, qword [rsp-8]
 

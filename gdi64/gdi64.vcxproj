@@ -1,62 +1,38 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bitfont.c" />
-    <ClCompile Include="console.c" />
-    <ClCompile Include="cursor.c" />
-    <ClCompile Include="di.c" />
-    <ClCompile Include="diconbase.c" />
-    <ClCompile Include="dieditbox.c" />
-    <ClCompile Include="diwinbase.c" />
     <ClCompile Include="driver.c" />
-    <ClCompile Include="focus.c" />
-    <ClCompile Include="font.c" />
-    <ClCompile Include="keyboard.c" />
-    <ClCompile Include="mouse.c" />
-    <ClCompile Include="renderloop.c" />
-    <ClCompile Include="dibutton.c" />
-    <ClCompile Include="svga.c" />
-    <ClCompile Include="svga3d.c" />
-    <ClCompile Include="syscall.c" />
-    <ClCompile Include="ttf.c" />
-    <ClCompile Include="ttf_render.c" />
-    <ClCompile Include="typing.c" />
-    <ClCompile Include="verbose.c" />
-    <ClCompile Include="winlist.c" />
-    <ClCompile Include="wndcomposite.c" />
-    <ClCompile Include="wndcreate.c" />
-    <ClCompile Include="wndproc.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bitfont.h" />
-    <ClInclude Include="bmp.h" />
-    <ClInclude Include="di.h" />
-    <ClInclude Include="driver.h" />
-    <ClInclude Include="font.h" />
-    <ClInclude Include="i8042.h" />
-    <ClInclude Include="svga.h" />
-    <ClInclude Include="svga3d.h" />
-    <ClInclude Include="svga3d_reg.h" />
-    <ClInclude Include="svga_reg.h" />
-    <ClInclude Include="ntgdi.h" />
-    <ClInclude Include="ttf.h" />
-    <ClInclude Include="wnd.h" />
+    <NASM Include="syscall.asm">
+      <FileType>Document</FileType>
+    </NASM>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{83be1a9c-3492-4f04-8591-c9088aa46713}</ProjectGuid>
-    <RootNamespace>ntgdi</RootNamespace>
+    <ProjectGuid>{055b0b90-d3a7-4157-8dbd-5961eec76536}</ProjectGuid>
+    <RootNamespace>gdi64</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>
@@ -69,22 +45,34 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\nasm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetExt>.sys</TargetExt>
-    <IncludePath>$(SolutionDir)shared\;$(VC_IncludePath)</IncludePath>
+    <TargetExt>.dll</TargetExt>
+    <IncludePath>$(SolutionDir)Shared\;$(VC_IncludePath);</IncludePath>
     <ReferencePath />
     <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
     <LibraryWPath />
     <SourcePath>$(VC_SourcePath);</SourcePath>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -112,13 +100,11 @@
       <UseFullPaths>false</UseFullPaths>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <OmitFramePointers>
-      </OmitFramePointers>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>kernel.lib;kdcom.lib</AdditionalDependencies>
+      <AdditionalDependencies />
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ManifestFile />
       <AllowIsolation />
@@ -126,13 +112,13 @@
       <UACExecutionLevel />
       <UACUIAccess />
       <ProgramDatabaseFile>$(OutDir)Symbols\$(TargetName).pdb</ProgramDatabaseFile>
-      <SubSystem>Native</SubSystem>
-      <LargeAddressAware>false</LargeAddressAware>
-      <EntryPointSymbol>DriverEntry</EntryPointSymbol>
+      <SubSystem>Windows</SubSystem>
+      <LargeAddressAware>
+      </LargeAddressAware>
+      <EntryPointSymbol>DllMain</EntryPointSymbol>
       <FixedBaseAddress>false</FixedBaseAddress>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <CLRImageType />
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
     <BuildLog>
       <Path />
@@ -140,5 +126,6 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\nasm.targets" />
   </ImportGroup>
 </Project>

@@ -16,9 +16,6 @@ KiFastSystemCall(
 
 );
 
-#define DECLARE_SYSTEM_SERVICE( x, y ) { x, y }
-
-ULONG							 KeServiceTableCount;
 KSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable[ 16 ];
 
 SYSTEM_SERVICE KeNativeServiceTable[ ] = {
@@ -36,20 +33,24 @@ SYSTEM_SERVICE KeNativeServiceTable[ ] = {
 
 NTSTATUS
 KeInstallServiceDescriptorTable(
+	__in ULONG           ServiceTableIndex,
 	__in ULONG			 ServiceCount,
 	__in PSYSTEM_SERVICE ServiceTable
 )
 {
 
-	if ( KeServiceTableCount >= 16 ) {
+	if ( ServiceTableIndex >= 16 ) {
 
 		return STATUS_UNSUCCESSFUL;
 	}
 
-	KeServiceDescriptorTable[ KeServiceTableCount ].ServiceCount = ServiceCount;
-	KeServiceDescriptorTable[ KeServiceTableCount ].ServiceTable = ServiceTable;
+	if ( KeServiceDescriptorTable[ ServiceTableIndex ].ServiceCount != 0 ) {
 
-	KeServiceTableCount++;
+		return STATUS_UNSUCCESSFUL;
+	}
+
+	KeServiceDescriptorTable[ ServiceTableIndex ].ServiceCount = ServiceCount;
+	KeServiceDescriptorTable[ ServiceTableIndex ].ServiceTable = ServiceTable;
 
 	return STATUS_SUCCESS;
 }
@@ -69,7 +70,7 @@ KiInitializeSyscalls(
 
 	if ( !NativeInit ) {
 
-		KeInstallServiceDescriptorTable( sizeof( KeNativeServiceTable ) / sizeof( SYSTEM_SERVICE ), KeNativeServiceTable );
+		KeInstallServiceDescriptorTable( 0, sizeof( KeNativeServiceTable ) / sizeof( SYSTEM_SERVICE ), KeNativeServiceTable );
 
 		NativeInit = TRUE;
 	}

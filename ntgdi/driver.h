@@ -262,3 +262,8 @@ VOID
 NtGdiVerboseOverlayRender(
 
 );
+
+VOID
+NtGdiSyscallInitialize(
+
+);
