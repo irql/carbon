@@ -293,25 +293,27 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <NASM Include="smp_trampoline.asm">
+      <Filter>Hal</Filter>
+    </NASM>
     <NASM Include="arch.asm">
       <Filter>Hal</Filter>
     </NASM>
     <NASM Include="idt_transition.asm">
       <Filter>Hal</Filter>
     </NASM>
-    <NASM Include="smp_trampoline.asm">
-      <Filter>Hal</Filter>
-    </NASM>
-    <NASM Include="idle.asm">
-      <Filter>Ke</Filter>
-    </NASM>
-    <NASM Include="syscall_stub.asm">
-      <Filter>Ke</Filter>
-    </NASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.bat" />
     <None Include="finalize.bat" />
     <None Include="..\vm\bochs\bochsrc.bxrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="idle.asm">
+      <Filter>Ke</Filter>
+    </MASM>
+    <MASM Include="syscall_stub.asm">
+      <Filter>Ke</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

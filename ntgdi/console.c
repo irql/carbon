@@ -113,6 +113,9 @@ NtGdiCreateConsole(
 {
 	Flags;
 
+	//KeProbeStringForRead( Name );
+	//KeProbeForWrite( ConsoleHandle, sizeof( HANDLE ) );
+
 	STATIC OBJECT_ATTRIBUTES DefaultAttributes = { OBJ_PERMANENT, NULL };
 	STATIC UNICODE_STRING ConsoleClassName = RTL_CONSTANT_UNICODE_STRING( L"ConClass" );
 	STATIC UNICODE_STRING EditboxClassName = RTL_CONSTANT_UNICODE_STRING( L"SIME_S" );
@@ -131,14 +134,17 @@ NtGdiCreateConsole(
 		goto done;
 	}
 
-	ntStatus = NtGdiCreateWindow( Name, &ConsoleClassName, 0, x, y, CONSOLE_DEFAULT_WIDTH, CONSOLE_DEFAULT_HEIGHT, 0, 0, &ConsoleWindowHandle );
+	PUNICODE_STRING KernelName;
+	RtlAllocateAndInitUnicodeStringEx( &KernelName, Name->Buffer );
+
+	ntStatus = NtGdiCreateWindow( KernelName, &ConsoleClassName, 0, x, y, CONSOLE_DEFAULT_WIDTH, CONSOLE_DEFAULT_HEIGHT, 0, 0, &ConsoleWindowHandle );
 
 	if ( !NT_SUCCESS( ntStatus ) ) {
 
 		goto done;
 	}
 
-	ntStatus = NtGdiCreateWindow( Name, &EditboxClassName, 0, 0, 0, CONSOLE_DEFAULT_WIDTH, CONSOLE_DEFAULT_HEIGHT, 0, ConsoleWindowHandle, &ConsoleEditboxHandle );
+	ntStatus = NtGdiCreateWindow( KernelName, &EditboxClassName, 0, 0, 0, CONSOLE_DEFAULT_WIDTH, CONSOLE_DEFAULT_HEIGHT, 0, ConsoleWindowHandle, &ConsoleEditboxHandle );
 
 	if ( !NT_SUCCESS( ntStatus ) ) {
 
@@ -203,6 +209,10 @@ NtGdiReadConsole(
 {
 	Length;
 
+	//vuln because of buffer.
+
+	KeProbeForRead( Buffer, Length * sizeof( WCHAR ) );
+
 	NTSTATUS ntStatus;
 	PKCONSOLE Console;
 
@@ -251,6 +261,8 @@ NtGdiWriteConsole(
 	__in ULONG32 Length
 )
 {
+
+	KeProbeForRead( Buffer, Length * sizeof( WCHAR ) );
 
 	NTSTATUS ntStatus;
 	PKCONSOLE Console;

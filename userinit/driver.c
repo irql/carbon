@@ -20,6 +20,13 @@ EntryPoint(
 
 	NtGdiDisplayString( &String );
 
+	HANDLE ConsoleHandle;
+	NtGdiCreateConsole( &ConsoleHandle, &String, 0, 80, 80 );
+	NtGdiWriteConsole( ConsoleHandle, L"My ballsack is itchy.", sizeof( L"li limelime me limey." ) / 2 - 2 );
+
+	NtGdiDisplayString( &String );
+
+
 	//there is no exit function just yet lol, just let the thread return to KeExitThread, have an exception occur and have the os terminate the thread.
 	//while ( 1 )
 		//;

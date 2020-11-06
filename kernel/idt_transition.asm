@@ -125,6 +125,8 @@ HalInitTrapFrame:
 %assign int_no 0
 %rep 256
 HalInt%+int_no:
+
+	;.pushframe
 	cli
 	%if int_no != 8 && int_no != 10 && int_no != 11 && int_no != 12 && int_no != 13 && int_no != 14 && int_no != 17
 	push 0

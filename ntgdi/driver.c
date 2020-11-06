@@ -70,6 +70,7 @@ DriverEntry(
 	NtGdiWindowsInitializeSubsystem( );
 	NtGdiConsoleInitializeSubsystem( );
 
+#if 0
 	UNICODE_STRING RootClassName = RTL_CONSTANT_UNICODE_STRING( L"asswipe" );
 	WNDCLASSEX RootClass;
 	RootClass.ClassName = RootClassName;
@@ -119,6 +120,7 @@ DriverEntry(
 	NtGdiCreateConsole( &ConsoleHandle, &ButtonText1, 0, 30, 30 );
 
 	NtGdiWriteConsole( ConsoleHandle, L"Lime_S", 6 );
+#endif
 
 	static UNICODE_STRING VerboseMark = RTL_CONSTANT_UNICODE_STRING( L"Lemon" );
 	NtGdiVerboseAddEntry( &VerboseMark );

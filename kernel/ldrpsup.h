@@ -16,7 +16,7 @@ LdrpSupLoadModule(
 
 NTSTATUS
 LdrSupLoadSupervisorModule(
-	__in HANDLE FileHandle,
+	__in PUNICODE_STRING FileName,
 	__in PLDR_INFO_BLOCK InfoBlock
 );
 

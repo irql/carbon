@@ -31,6 +31,15 @@ PsCreateUserProcess(
 		return ntStatus;
 	}
 
+	PKMODULE ModuleObject;
+	ntStatus = ObpCreateObject( &ModuleObject, &DefaultAttributes, ObjectTypeModule );
+
+	if ( !NT_SUCCESS( ntStatus ) ) {
+
+		ObDestroyObject( ProcessObject );
+		return ntStatus;
+	}
+
 	MiAllocateAddressSpace( &ProcessObject->AddressSpace );
 	MiInsertAddressSpace( &ProcessObject->AddressSpace );
 
@@ -47,6 +56,9 @@ PsCreateUserProcess(
 		ObDestroyObject( ProcessObject );
 		return ntStatus;
 	}
+
+	_memcpy( &ModuleObject->LoaderInfoBlock, &ProcessObject->VadTree.Range, sizeof( LDR_INFO_BLOCK ) );
+	_memcpy( &ModuleObject->ImageName, FileName, sizeof( UNICODE_STRING ) );
 
 	MiSetAddressSpace( PreviousAddressSpace );
 

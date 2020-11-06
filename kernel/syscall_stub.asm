@@ -1,61 +1,60 @@
 
 
+.CODE
 
-bits 64
+PUBLIC KiFastSystemCall
 
-section .text
+EXTERNDEF KeServiceDescriptorTable:qword
 
-global KiFastSystemCall
+EXTERNDEF KeProbeForRead:proc
 
-extern KeServiceDescriptorTable
+KiFastSystemCall PROC FRAME
 
-extern KeProbeForRead
-
-KiFastSystemCall:
+	.ENDPROLOG
 
 	shl r11, 32
 	or rax, r11
 
 	swapgs
-	mov r11, qword [gs:4]
+	mov r11, qword ptr gs:[4]
 	swapgs
 
-	mov qword [r11], rax
-	mov qword [r11+8], rcx
-	mov qword [r11+16], rsp
+	mov qword ptr [r11], rax
+	mov qword ptr [r11+8], rcx
+	mov qword ptr [r11+16], rsp
 
-	mov rsp, qword [r11+24]
-	mov ecx, dword [r11+32]
+	mov rsp, qword ptr [r11+24]
+	mov ecx, dword ptr [r11+32]
 	mov ecx, ecx
 	add rsp, rcx
 
-	push qword 0x200202
+	sub rsp, 8
+	mov dword ptr [rsp], 200202h
 	popfq
 
-	;thank you nasm.
-	mov rcx, KeServiceDescriptorTable
-	mov qword [rsp-8], rcx
+	mov rcx, offset KeServiceDescriptorTable
+	mov qword ptr [rsp-8], rcx
 
 	mov rcx, rax
 	shr rcx, 28
-	and rcx, 0xF
+	and rcx, 0fh
 	shl rcx, 4
-	add rcx, qword [rsp-8]
+	add rcx, qword ptr [rsp-8]
 
-	and rax, 0x0FFFFFFF
-	cmp eax, dword [rcx]
-	jg .done
+	and rax, 0FFFFFFFh
+	cmp eax, dword ptr [rcx]
+	jg done
 
 	shl rax, 1
-	mov rcx, qword [rcx+8]
+	mov rcx, qword ptr [rcx+8]
 	lea rax, [rcx+rax*8]
 	
-	movsx rcx, dword [rax+8]
+	movsxd rcx, dword ptr [rax+8]
 	test ecx, ecx
-	jz .call_service
+	jz call_service
 
-	mov r11, qword [r11+16]
-	add r11, 0x28
+	mov r11, qword ptr [r11+16]
+	add r11, 28h
 
 	shl rcx, 3
 	add r11, rcx
@@ -71,9 +70,9 @@ KiFastSystemCall:
 	mov rdx, r11
 	xchg rcx, rdx
 
-	sub rsp, 0x28
+	sub rsp, 28h
 	call KeProbeForRead
-	add rsp, 0x28
+	add rsp, 28h
 	
 	pop rax
 	pop r11
@@ -84,26 +83,32 @@ KiFastSystemCall:
 	pop rcx
 	shr rcx, 3
 
-	.copy_stack:
-	push qword [r11]
+	copy_stack:
+	push qword ptr [r11]
 
 	sub r11, 8
 	dec rcx
-	jnz .copy_stack
+	jnz copy_stack
 
-	.call_service:
-	sub rsp, 0x20
+	call_service:
+	sub rsp, 20h
+
 	mov rcx, r10
-	call qword [rax]
+	call qword ptr [rax]
 	
 	;imagine fixing the stack lol.
 
-.done:
+	done:
 	swapgs
-	mov r11, qword [gs:4]
+	mov r11, qword ptr gs:[4]
 	swapgs
 
-	mov rcx, qword [r11+8]
-	mov rsp, qword [r11+16]
-	movsx r11, dword [r11+4]
-	o64 sysret
+	mov rcx, qword ptr [r11+8]
+	mov rsp, qword ptr [r11+16]
+	movsxd r11, dword ptr [r11+4]
+	sysretq
+
+KiFastSystemCall ENDP
+
+
+END

@@ -67,7 +67,13 @@ KiExceptionTrap(
 			break;
 		}
 
-	} while ( ExceptionContext.Rsp + 0x28 < ExceptionThread->UserStackBase + ExceptionThread->UserStackSize );
+	} while ( NT_SUCCESS( ntStatus ) );
+	
+	//
+	//	limit checks were moved to RtlUnwind, for syscalls.
+	//
+	
+	//while ( ExceptionContext.Rsp + 0x28 < ExceptionThread->UserStackBase + ExceptionThread->UserStackSize );
 
 	if ( ExceptionHandler != NULL ) {
 

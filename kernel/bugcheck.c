@@ -158,7 +158,16 @@ KeBugCheckEx(
 		Flink = Flink->Flink;
 	} while ( Flink != ObjectTypeModule->ObjectList.List );
 
+	EXTERN ULONG printf_x, printf_y;
 	//_memset( VbeGetBasicInfo( )->Framebuffer, 0, VbeGetBasicInfo( )->Height * VbeGetBasicInfo( )->Width * 4 );
+
+	for ( ULONG32 i = 0; i < VbeGetBasicInfo( )->Height * VbeGetBasicInfo( )->Width; i++ ) {
+
+		VbeGetBasicInfo( )->Framebuffer[ i ] = 0xFF24292E;
+	}
+
+	printf_x = 0;
+	printf_y = 0;
 
 	PKTRAP_FRAME TrapFrame = ( PKTRAP_FRAME )Arg3;
 	CONTEXT TargetContext;
@@ -168,7 +177,7 @@ KeBugCheckEx(
 	printf(
 		"BUGCHECK CPU%d\n\n"
 
-		"%#.8X (%P, %P, %P, %p)\n\n",
+		"%#.8X (%P, %P, %P, %P)\n\n",
 
 		Processor->CpuIndex,
 
@@ -191,17 +200,32 @@ KeBugCheckEx(
 		TrapFrame->Cr3
 	);
 
-	printf( "unwinding call stack...\nAddress          Frame\n%.16P %.16P\n", TargetContext.Rip, TargetContext.Rsp );
+	PVAD ExceptionVad = RtlpFindTargetModule( Processor->ThreadQueue, &TargetContext );
+
+	printf( "Fault thread : 0x%.4x\nFault process: 0x%.4x\nFault module : %w\nProcess name : %w\n\n",
+		Processor->ThreadQueue->ActiveThreadId,
+		Processor->ThreadQueue->Process->ActiveProcessId,
+		ExceptionVad->RangeName.Buffer,
+		Processor->ThreadQueue->Process->VadTree.RangeName.Buffer );
+
+	printf( "Unwinding call stack...\nAddress          Frame\n%.16P %.16P %w!%.8X\n", 
+		TargetContext.Rip, 
+		TargetContext.Rsp, 
+		ExceptionVad->RangeName.Buffer,
+		TargetContext.Rip - ( ULONG64 )ExceptionVad->Range.ModuleStart );
 
 	while ( NT_SUCCESS( RtlUnwind( ( PKTHREAD )Arg4, &TargetContext ) ) ) {
 
-		printf( "%.16P %.16P\n", TargetContext.Rip, TargetContext.Rsp );
+		ExceptionVad = RtlpFindTargetModule( Processor->ThreadQueue, &TargetContext );
 
-		if ( TargetContext.Rsp + 0x28 >= ( ( ( PKTHREAD )Arg4 )->UserStackBase + ( ( PKTHREAD )Arg4 )->UserStackSize ) ) {
+		printf( "%.16P %.16P %w!%.8X\n", 
+			TargetContext.Rip, 
+			TargetContext.Rsp, 
+			ExceptionVad->RangeName.Buffer,
+			TargetContext.Rip - ( ULONG64 )ExceptionVad->Range.ModuleStart );
 
-			printf( "Top of the stack.\n" );
-			break;
-		}
+		//removed limit checks for syscall fix.
+
 	}
 
 	printf( "\n" );
@@ -210,7 +234,7 @@ KeBugCheckEx(
 		POBJECT_ENTRY_HEADER Module = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
 		PKMODULE ModuleObject = ( PKMODULE )( Module + 1 );
 
-		printf( "%w [%#.16P %#.16P %#.16P]\n",
+		printf( "%w [%.16P %.16P %.16P]\n",
 			ModuleObject->ImageName.Buffer,
 			ModuleObject->LoaderInfoBlock.ModuleStart,
 			ModuleObject->LoaderInfoBlock.ModuleEnd,

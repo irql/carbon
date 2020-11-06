@@ -1,12 +1,15 @@
 
 
+.CODE
 
-bits 64
+PUBLIC KiIdleThread
 
-section .text
+KiIdleThread PROC
 
-global KiIdleThread
+idle:hlt
+	jmp idle
 
-KiIdleThread:
-.Z:	hlt
-	jmp KiIdleThread.Z
+KiIdleThread ENDP
+
+
+end

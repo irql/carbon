@@ -5,6 +5,13 @@
 #include "rtlp.h"
 #include "ki_struct.h"
 #include "pesup.h"
+#include "ki.h"
+
+EXTERN
+VOID
+KiFastSystemCall(
+
+);
 
 UCHAR RtlpUnwindOpSlotTable[ ] = {
 	1,          // UWOP_PUSH_NONVOL
@@ -29,6 +36,26 @@ RtlpFindTargetModule(
 	PKPROCESS Process = Thread->Process;
 
 	PVAD Vad = &Process->VadTree;
+
+	while ( Vad != NULL ) {
+
+		if ( TargetContext->Rip > ( ULONG64 )Vad->Range.ModuleStart &&
+			TargetContext->Rip < ( ULONG64 )Vad->Range.ModuleEnd ) {
+
+			return Vad;
+		}
+
+		Vad = Vad->Next;
+	}
+
+	if ( Process == KiSystemProcess ) {
+
+		return NULL;
+	}
+
+	Process = KiSystemProcess;
+
+	Vad = &Process->VadTree;
 
 	while ( Vad != NULL ) {
 
@@ -89,7 +116,21 @@ RtlUnwind(
 	for ( ULONG32 i = 0; i < FunctionCount; i++ ) {
 
 		if ( TargetContext->Rip >= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].BeginAddress ) &&
-			TargetContext->Rip <= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].EndAddress ) ) {
+			 TargetContext->Rip <= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].EndAddress ) &&
+			 ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].BeginAddress ) == (ULONG64)KiFastSystemCall ) {
+
+			TargetContext->Rsp = Thread->SYSCALL.PreviousStack;
+			TargetContext->Rip = Thread->SYSCALL.PreviousIp;
+			return STATUS_SUCCESS;
+		}
+
+		if ( TargetContext->Rip >= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].BeginAddress ) &&
+			 TargetContext->Rip <= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].EndAddress ) ) {
+
+			if ( TargetContext->Rsp + 0x28 < Thread->UserStackBase + Thread->UserStackSize ) {
+
+				return STATUS_UNSUCCESSFUL;
+			}
 
 			return RtlpUnwindPrologue(
 				Thread,

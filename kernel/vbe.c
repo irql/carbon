@@ -391,6 +391,8 @@ HalGetDrawColor(
 	return HalColour;
 }
 
+ULONG printf_x = 0, printf_y = 0;
+
 VOID
 printf(
 	__in CHAR* Format,
@@ -399,7 +401,6 @@ printf(
 {
 
 	STATIC KSPIN_LOCK lock = { 0 };
-	STATIC ULONG x = 0, y = 0;
 
 	KeAcquireSpinLock( &lock );
 
@@ -415,21 +416,21 @@ printf(
 		__outbyte( 0xE9, string[ i ] );
 		switch ( string[ i ] ) {
 		case '\n':
-			y += 16;
+			printf_y += 16;
 		case '\r':
-			x = 0;
+			printf_x = 0;
 			break;
 		case '\t':
 			//x += (8 * 4);
 			//x += (8 * 3) + (4 - (x % 4));
-			x += ( 32 - ( x % 32 ) );
+			printf_x += ( 32 - ( printf_x % 32 ) );
 			break;
 		case ' ':
-			x += 8;
+			printf_x += 8;
 			break;
 		default:
-			HalpDrawGlyph( string[ i ], x, y, HalGetDrawColor( 0xff000000 ) );
-			x += 8;
+			HalpDrawGlyph( string[ i ], printf_x, printf_y, HalGetDrawColor( 0xff000000 ) );
+			printf_x += 8;
 			break;
 		}
 	}

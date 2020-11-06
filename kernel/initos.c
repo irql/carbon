@@ -19,6 +19,7 @@ Abstract:
 #include "exp.h"
 #include "ki.h"
 #include "iop.h"
+#include "ldrp.h"
 
 EXTERN VOLATILE ULONG32 KiCurrentCpuInitializing;
 EXTERN ULONG32 KiDispatcherSpinlocks;
@@ -83,6 +84,7 @@ KiSystemThread(
 	printf( "result: %x\n", ntStatus );
 #endif
 
+#if 1
 	PLIST_ENTRY Flink = ObjectTypeModule->ObjectList.List;
 	do {
 		POBJECT_ENTRY_HEADER Module = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
@@ -109,7 +111,7 @@ KiSystemThread(
 	} while ( Flink != ObjectTypeThread->ObjectList.List );
 
 	printf( "Limus.\n" );
-
+#endif
 	return;
 }
 
@@ -266,6 +268,7 @@ Return Value:
 	KiCreateProcess( &KernelProcess, KernelModule, &KernelName );
 
 	_memcpy( &KernelProcess->VadTree.Range, &KernelModule->LoaderInfoBlock, sizeof( LDR_INFO_BLOCK ) );
+	RtlAllocateAndInitUnicodeString( &KernelProcess->VadTree.RangeName, LdrpNameFromPath( KernelName.Buffer ) );
 
 	//_memcpy( &KernelProcess->AddressSpace, &g_KernelPageTable, sizeof( ADDRESS_SPACE_DESCRIPTOR ) );
 
