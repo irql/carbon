@@ -13,6 +13,20 @@
 
 #include "mi.h"
 
+typedef struct _VAD {
+    LDR_INFO_BLOCK Range;
+    UNICODE_STRING RangeName;
+
+    struct _VAD*   Next;
+} VAD, *PVAD;
+
+#if 0
+typedef struct _KDEBUGGER {
+
+
+} KDEBUGGER, *PKDEBUGGER;
+#endif //impl later you greaseball.
+
 typedef struct _KPROCESS {
 	ULONG32 ActiveProcessId;
 	PUNICODE_STRING ProcessName;

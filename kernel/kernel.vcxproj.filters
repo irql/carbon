@@ -123,6 +123,9 @@
     <ClInclude Include="rtlp.h">
       <Filter>Rtl</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\carbusr.h">
+      <Filter>shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="string.c">

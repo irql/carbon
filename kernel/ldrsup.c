@@ -135,7 +135,6 @@ LdrpSupLoadModule(
 		PIMAGE_IMPORT_DESCRIPTOR iat = ( PIMAGE_IMPORT_DESCRIPTOR )( ( PUCHAR )ModuleBase + NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_IMPORT ].VirtualAddress );
 
 
-#if 1
 		ntStatus = PeSupResolveImportDescriptorSingle( ModuleBase, ( PVOID )KERNEL_IMAGE_BASE, iat );
 
 		if ( !NT_SUCCESS( ntStatus ) ) {
@@ -143,7 +142,6 @@ LdrpSupLoadModule(
 			MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
 			return ntStatus;
 		}
-#endif
 	}
 
 	return STATUS_SUCCESS;
@@ -232,18 +230,6 @@ LdrSupLoadSupervisorModule(
 	ULONG64 ModuleSize = ( ULONG64 )SectionHeaders[ LastSection ].VirtualAddress + ( ULONG64 )ROUND_TO_PAGES( ( ( ULONG64 )SectionHeaders[ LastSection ].Misc.VirtualSize ) );
 	PVOID ModuleBase = NULL;
 
-#if 0
-	ntStatus = LdrpSupFindModuleBase( FileBase, &ModuleBase );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
-		return ntStatus;
-	}
-
-	ModuleBase = ( PVOID )MmAllocateMemoryAtVirtual( ( ULONG64 )ModuleBase, ModuleSize, PAGE_READ | PAGE_WRITE | PAGE_EXECUTE );
-#endif
-
 	ModuleBase = MmAllocateMemory( ModuleSize, PAGE_READ | PAGE_WRITE | PAGE_EXECUTE );
 
 	_memcpy( ModuleBase, FileBase, NtHeaders->OptionalHeader.SizeOfHeaders );
@@ -253,19 +239,6 @@ LdrSupLoadSupervisorModule(
 		PVOID SectionBase = ( PUCHAR )ModuleBase + SectionHeaders[ i ].VirtualAddress;
 		_memcpy( SectionBase, ( PUCHAR )FileBase + SectionHeaders[ i ].PointerToRawData, SectionHeaders[ i ].SizeOfRawData );
 	}
-#if 0
-	ntStatus = LdrpSupGetInfoBlock( ModuleBase, InfoBlock );
-
-	if ( !NT_SUCCESS( ntStatus ) ) {
-
-		MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
-		MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
-		return ntStatus;
-	}
-#else
-
-
-	// find last vad and insert.
 
 	PVAD Vad = PspAllocateVad( );
 	ntStatus = LdrpSupGetInfoBlock( ModuleBase, &Vad->Range );
@@ -284,8 +257,6 @@ LdrSupLoadSupervisorModule(
 	RtlAllocateAndInitUnicodeString( &Vad->RangeName, LdrpNameFromPath( FileName->Buffer ) );
 
 	PspInsertVad( KiSystemProcess, Vad );
-
-#endif
 
 	if ( NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_BASERELOC ].VirtualAddress != 0 ) {
 
@@ -354,68 +325,6 @@ LdrSupLoadSupervisorModule(
 				continue;
 			}
 		}
-
-#if 0
-
-#if 1
-		PWCHAR ModuleFileNameBuffer = ExAllocatePoolWithTag( 256 * sizeof( WCHAR ), TAGEX_FILE );
-
-		while ( iat->Characteristics ) {
-
-
-			for ( ULONG32 i = 0; ( ( PCHAR )( ( ULONG64 )ModuleBase + iat->Name ) )[ i ]; i++ ) {
-
-				ModuleFileNameBuffer[ i ] = ( ( PCHAR )( ( ULONG64 )ModuleBase + iat->Name ) )[ i ];
-				ModuleFileNameBuffer[ i + 1 ] = 0;
-			}
-
-			PLIST_ENTRY Flink = ObjectTypeModule->ObjectList.List;
-			ntStatus = STATUS_NOT_FOUND;
-
-			do {
-				POBJECT_ENTRY_HEADER Module = CONTAINING_RECORD( Flink, OBJECT_ENTRY_HEADER, ObjectList );
-				PKMODULE ModuleObject = ( PKMODULE )( Module + 1 );
-
-				if ( ModuleObject->ImageName.Buffer == NULL ) {
-
-					continue;
-				}
-
-				if ( lstrcmpW( ModuleFileNameBuffer, LdrpNameFromPath( ModuleObject->ImageName.Buffer ) ) == 0 ) {
-
-					ntStatus = PeSupResolveImportDescriptorSingle( ModuleBase, ModuleObject->LoaderInfoBlock.ModuleStart, iat );
-					break;
-				}
-
-				Flink = Flink->Flink;
-			} while ( Flink != ObjectTypeModule->ObjectList.List );
-
-			if ( !NT_SUCCESS( ntStatus ) ) {
-
-				ExFreePoolWithTag( ModuleFileNameBuffer, TAGEX_FILE );
-				MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
-				MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
-				ZwClose( FileHandle );
-				return ntStatus;
-			}
-
-			iat++;
-		}
-
-		ExFreePoolWithTag( ModuleFileNameBuffer, TAGEX_FILE );
-#else
-		ntStatus = PeSupResolveImportDescriptorSingle( ModuleBase, ( PVOID )KERNEL_IMAGE_BASE, iat );
-
-
-		if ( !NT_SUCCESS( ntStatus ) ) {
-
-			MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );
-			MmFreeMemory( ( ULONG64 )ModuleBase, ModuleSize );
-			return ntStatus;
-		}
-#endif
-
-#endif
 	}
 
 	MmFreeMemory( ( ULONG64 )FileBase, BasicInfo.FileSize );

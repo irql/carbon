@@ -5,7 +5,7 @@
 #include "rtlp.h"
 #include "ki.h"
 
-
+DECLSPEC( noreturn )
 VOID
 RtlRaiseAssertionFailure(
 

@@ -205,17 +205,28 @@ KeProbeForWrite(
 );
 
 // eh.
-#define EXCEPTION_DIV_BY_ZERO			0x00
-#define EXCEPTION_DEBUG					0x01
-#define EXCEPTION_ILLEGAL_INSTRUCTION	0x06
-#define EXCEPTION_ACCESS_VIOLATION		0x0E
+#define EXCEPTION_DIV_BY_ZERO			( (ULONG32)0x80000001 )
+#define EXCEPTION_BREAKPOINT            ( (ULONG32)0x80000002 )
+#define EXCEPTION_ILLEGAL_INSTRUCTION	( (ULONG32)0x80000003 )
+#define EXCEPTION_ACCESS_VIOLATION		( (ULONG32)0x80000004 )
+#define EXCEPTION_DOUBLE_FAULT          ( (ULONG32)0x80000005 )
 
-typedef struct _EXCEPTION_RECORD {
-	ULONG ExceptionCode;
-	PVOID ExceptionAddress;
-	ULONG ExceptionFlags;
+typedef CHAR KEXCEPTION_SEVERITY;
 
-} EXCEPTION_RECORD, *PEXCEPTION_RECORD;
+typedef enum _SEVERITY {
+    ExceptionFatal,
+    ExceptionNormal,
+    ExceptionIgnore,
+    ExceptionMaximum
+} SEVERITY;
+
+typedef CHAR KPROCESSOR_MODE;
+
+typedef enum _MODE {
+    KernelMode,
+    UserMode,
+    MaximumMode
+} MODE;
 
 typedef struct _CONTEXT {
 	ULONG64 Rax;
@@ -242,6 +253,17 @@ typedef struct _CONTEXT {
 	ULONG64 DataSegment;
 	ULONG64 StackSegment;
 } CONTEXT, *PCONTEXT;
+
+typedef struct _EXCEPTION_RECORD {
+    PKTHREAD            ExceptionThread;
+    PVAD                ExceptionVad;
+    ULONG32             ExceptionCode;
+    KPROCESSOR_MODE     ExceptionMode;
+    KEXCEPTION_SEVERITY ExceptionSeverity;
+    PVOID               ExceptionAddress;
+    CONTEXT             ExceptionContext;
+
+} EXCEPTION_RECORD, *PEXCEPTION_RECORD;
 
 NTSYSAPI
 DECLSPEC( noreturn )

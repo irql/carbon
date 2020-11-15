@@ -1,11 +1,19 @@
 
 
 
-#include <carbsup.h>
+#include <carbusr.h>
 
 #define NTSYSCALLAPI DECLSPEC(DLLIMPORT)
 #include "../kernel/nt.h"
 #include "../ntgdi/ntgdi.h"
+
+void
+__C_specific_handler(
+
+)
+{
+
+}
 
 VOID
 EntryPoint(
@@ -26,6 +34,15 @@ EntryPoint(
 
 	NtGdiDisplayString( &String );
 
+#if 0
+    __try {
+        __debugbreak( );
+    }
+    __except ( EXCEPTION_EXECUTE_HANDLER ) {
+
+        NtDisplayString( &String );
+    }
+#endif
 
 	//there is no exit function just yet lol, just let the thread return to KeExitThread, have an exception occur and have the os terminate the thread.
 	//while ( 1 )

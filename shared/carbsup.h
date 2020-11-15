@@ -15,6 +15,7 @@ Abstract:
 
 #include <intrin.h>
 
+#pragma warning (disable: 4053)
 #pragma warning (disable: 4200)
 #pragma warning (disable: 4201)
 #pragma warning (disable: 4204)
@@ -93,6 +94,8 @@ typedef struct				_KTHREAD	*PKTHREAD;
 typedef struct				_KPROCESS	*PKPROCESS;
 typedef struct				_KPCR		*PKPCR;
 typedef struct				_CONTEXT	*PCONTEXT;
+typedef struct              _VAD        *PVAD;
+typedef struct              _EXCEPTION_RECORD *PEXCEPTION_RECORD;
 
 #include "ntstatus.h"
 #include "rtl.h"

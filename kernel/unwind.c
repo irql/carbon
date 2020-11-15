@@ -92,10 +92,18 @@ RtlUnwind(
 	PVOID     ModuleBase;
 	PVAD      CurrentVad;
 
+    if ( TargetContext->Rip == 0 ) {
+
+        TargetContext->Rip = *( PULONG64 )TargetContext->Rsp;
+        TargetContext->Rsp += 8;
+
+        return TargetContext->Rip == 0 ? STATUS_UNSUCCESSFUL : STATUS_SUCCESS;
+    }
+
 	CurrentVad = RtlpFindTargetModule( Thread, TargetContext );
 
 	if ( CurrentVad == NULL ) {
-
+        
 		return STATUS_UNSUCCESSFUL;
 	}
 
@@ -114,6 +122,10 @@ RtlUnwind(
 	}
 
 	for ( ULONG32 i = 0; i < FunctionCount; i++ ) {
+
+        //
+        //  special handler for syscalls, can't get proper unwinding for that.
+        //
 
 		if ( TargetContext->Rip >= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].BeginAddress ) &&
 			 TargetContext->Rip <= ( ( ULONG64 )ModuleBase + FunctionEntry[ i ].EndAddress ) &&
@@ -145,10 +157,10 @@ RtlUnwind(
 
 NTSTATUS
 RtlpUnwindPrologue(
-	__in PKTHREAD Thread,
-	__in PCONTEXT TargetContext,
-	__in PVOID    TargetVadBase,
-	__in PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry
+	__in PKTHREAD                       Thread,
+	__in PCONTEXT                       TargetContext,
+	__in PVOID                          TargetVadBase,
+	__in PIMAGE_RUNTIME_FUNCTION_ENTRY  FunctionEntry
 )
 {
 	PULONG64  IntegerRegister;

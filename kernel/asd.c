@@ -17,8 +17,6 @@ MiAllocateAddressSpace(
 	AddressSpace->BaseVirtual = MmAllocateMemory( 0x1000, PAGE_READ | PAGE_WRITE );
 	AddressSpace->BasePhysical = MmPhysicalMapping( ( ULONG64 )AddressSpace->BaseVirtual );
 
-	printf( "addr space alloc: %.16P, %.16P\n", AddressSpace->BasePhysical, AddressSpace->BaseVirtual );
-
 	_memset( AddressSpace->BaseVirtual, 0, 0x800 );
 	_memcpy( &AddressSpace->BaseVirtual[ 256 ], &g_KernelPageTable.BaseVirtual[ 256 ], 0x800 );
 }

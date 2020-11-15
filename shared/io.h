@@ -39,14 +39,6 @@ typedef ACCESS_MASK *PACCESS_MASK;
 #define IRP_MJ_CONTROL					0x07
 #define IRP_MJ_MAX						(IRP_MJ_CONTROL+1)
 
-typedef CHAR KPROCESSOR_MODE;
-
-typedef enum _MODE {
-	KernelMode,
-	UserMode,
-	MaximumMode
-} MODE;
-
 typedef enum _FILE_INFORMATION_CLASS {
 	FileDirectoryInformation = 1,
 	FileBasicInformation,

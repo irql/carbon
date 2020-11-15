@@ -187,7 +187,7 @@ NtGdiMouseHandleMove(
 #include "wnd.h"
 
 #define CONSOLE_DEFAULT_HEIGHT 450
-#define CONSOLE_DEFAULT_WIDTH  600
+#define CONSOLE_DEFAULT_WIDTH  800
 
 #define CON_FLAG_READING 0x80
 

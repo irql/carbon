@@ -6,8 +6,8 @@ PUBLIC KiIdleThread
 
 KiIdleThread PROC
 
-idle:hlt
-	jmp idle
+i:  hlt
+	jmp     i
 
 KiIdleThread ENDP
 

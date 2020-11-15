@@ -22,8 +22,6 @@ LdrpUsrLoadModule(
 	NTSTATUS ntStatus;
 	IO_STATUS_BLOCK Iosb;
 
-	printf( "try %w\n", ModuleName->Buffer );
-
 	HANDLE FileHandle;
 	OBJECT_ATTRIBUTES FileAttributes = { 0, ModuleName };
 

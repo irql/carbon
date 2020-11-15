@@ -172,7 +172,7 @@ KeBugCheckEx(
 	PKTRAP_FRAME TrapFrame = ( PKTRAP_FRAME )Arg3;
 	CONTEXT TargetContext;
 
-	TRAPFRAME_TO_CONTEXT( TrapFrame, &TargetContext );
+	RtlTrapFrameToContext( TrapFrame, &TargetContext );
 
 	printf(
 		"BUGCHECK CPU%d\n\n"
@@ -205,14 +205,14 @@ KeBugCheckEx(
 	printf( "Fault thread : 0x%.4x\nFault process: 0x%.4x\nFault module : %w\nProcess name : %w\n\n",
 		Processor->ThreadQueue->ActiveThreadId,
 		Processor->ThreadQueue->Process->ActiveProcessId,
-		ExceptionVad->RangeName.Buffer,
+        ExceptionVad ? ExceptionVad->RangeName.Buffer : NULL,
 		Processor->ThreadQueue->Process->VadTree.RangeName.Buffer );
 
 	printf( "Unwinding call stack...\nAddress          Frame\n%.16P %.16P %w!%.8X\n", 
 		TargetContext.Rip, 
 		TargetContext.Rsp, 
-		ExceptionVad->RangeName.Buffer,
-		TargetContext.Rip - ( ULONG64 )ExceptionVad->Range.ModuleStart );
+        ExceptionVad ? ExceptionVad->RangeName.Buffer : NULL,
+		TargetContext.Rip - (ExceptionVad ? ( ULONG64 )ExceptionVad->Range.ModuleStart : 0) );
 
 	while ( NT_SUCCESS( RtlUnwind( ( PKTHREAD )Arg4, &TargetContext ) ) ) {
 
@@ -221,8 +221,8 @@ KeBugCheckEx(
 		printf( "%.16P %.16P %w!%.8X\n", 
 			TargetContext.Rip, 
 			TargetContext.Rsp, 
-			ExceptionVad->RangeName.Buffer,
-			TargetContext.Rip - ( ULONG64 )ExceptionVad->Range.ModuleStart );
+            ExceptionVad ? ExceptionVad->RangeName.Buffer : NULL,
+            TargetContext.Rip - ( ExceptionVad ? ( ULONG64 )ExceptionVad->Range.ModuleStart : 0 ) );
 
 		//removed limit checks for syscall fix.
 

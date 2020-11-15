@@ -86,7 +86,8 @@ NtQueryDirectoryFile(
 	FileName;
 
 	//testing arg passing.
-	//printf( "%d %d %d %d %d %d\n", FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass, FileName );
+	//printf( "%d %d %d %d %d %d %.16P\n", FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass, FileName, _AddressOfReturnAddress() );
+    //__debugbreak( );
 
 	return STATUS_SUCCESS;
 }
@@ -156,7 +157,7 @@ NtDisplayString(
 {
 	KeProbeStringForRead( String );
 
-	printf( "%w", String->Buffer );
+	DbgPrint( L"%s\n", String->Buffer );
 
 	return STATUS_SUCCESS;
 }

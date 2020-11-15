@@ -170,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\carbsup.h" />
+    <ClInclude Include="..\shared\carbusr.h" />
     <ClInclude Include="..\shared\dbg.h" />
     <ClInclude Include="..\shared\ex.h" />
     <ClInclude Include="..\shared\hal.h" />

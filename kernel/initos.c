@@ -72,7 +72,6 @@ KiSystemThread(
 	UNICODE_STRING FilePath1 = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\ntgdi.sys" );
 	Load = IoLoadDriver( &FilePath1 );
 
-	printf( "%x\n", Load );
 #if 1
 	HANDLE ProcessHandle;
 	UNICODE_STRING UserFile = RTL_CONSTANT_UNICODE_STRING( L"\\SystemRoot\\user1.exe" );
@@ -112,6 +111,7 @@ KiSystemThread(
 
 	printf( "Limus.\n" );
 #endif
+
 	return;
 }
 
