@@ -31,7 +31,7 @@ NtProcessStartup(
 
     FILE* file;
     file = fopen( "HI.TXT", "r" );
-    fseek( file, 1, SEEK_SET );
+    fseek( file, 5, SEEK_SET );
     if ( file )
         fread( data, 256, 1, file );
 
@@ -116,7 +116,7 @@ NtProcessStartup(
 
     NtCreateWindow( &WindowHandle,
                     0,
-                    L"who is lime?",
+                    L"window title",
                     L"BITCH",
                     50,
                     50,
@@ -125,7 +125,7 @@ NtProcessStartup(
                     0 );
     NtCreateWindow( &ButtonHandle,
                     WindowHandle,
-                    L"pog is wimes",
+                    L"button",
                     L"BUTTON",
                     280,
                     24,
@@ -180,9 +180,9 @@ NtProcessStartup(
 
                 Error = FT_Load_Char( FontFace, 'p', FT_LOAD_RENDER );
 
-                RtlDebugPrint( L"Load Error: %d\n", Error );
+                //RtlDebugPrint( L"Load Error: %d\n", Error );
 
-                RtlDebugPrint( L"Pogin %d, %d\n", Slot->bitmap_left, Slot->bitmap_top );
+                //RtlDebugPrint( L"Pogin %d, %d\n", Slot->bitmap_left, Slot->bitmap_top );
 
                 NtBltBits( &Slot->bitmap,
                            0,

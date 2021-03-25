@@ -558,9 +558,9 @@ KiInitThread(
                           &dwm_File );
 #endif
 
-    ZwWaitForSingleObject( 0, 1500 );
+    //ZwWaitForSingleObject( 0, 1500 );
 
-#if 1
+#if 0
     while ( 1 ) {
 
         RtlDebugPrint( L"Sup dawg.\n" );
