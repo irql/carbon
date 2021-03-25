@@ -33,12 +33,7 @@ typedef union _PMLE {
         ULONG64 Avail1 : 3;
         ULONG64 PageFrameNumber : 36;
         ULONG64 Reserved1 : 4;
-        ULONG64 Avail2 : 7;         // You should implement a memory locking mechanism
-                                    // and use these bits to indicate when it is locked.
-                                    // When memory is locked, set a bit and when a free is 
-                                    // pending, set a bit too, when memory is locked the bit is
-                                    // set and cannot be freed until unlock memory is called.
-                                    // maybe use it as a counter. (might be an idea to just write better functions)
+        ULONG64 Avail2 : 7;
         ULONG64 ProtectionKey : 4;  // E
         ULONG64 ExecuteDisable : 1; // E
     };
