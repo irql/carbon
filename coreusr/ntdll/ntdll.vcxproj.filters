@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="driver.c" />
+    <ClCompile Include="ldr\loader.c" />
+    <ClCompile Include="ldr\startup.c" />
+    <ClCompile Include="path.c" />
+    <ClCompile Include="crt\string.c" />
+    <ClCompile Include="crt\stdio.c" />
+    <ClCompile Include="crt\format.c" />
+    <ClCompile Include="rtl\heap.c" />
+    <ClCompile Include="crt\alloc.c" />
+    <ClCompile Include="crt\sort.c" />
+    <ClCompile Include="crt\system.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ldr\ldrp.h" />
+    <ClInclude Include="ntdll.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <NASM Include="service.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="rtl\chkstk.asm" />
+    <MASM Include="crt\setjmp.asm" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="driver.c" />
+    <ClCompile Include="svga.c" />
+    <ClCompile Include="svga3d.c" />
+    <ClCompile Include="ddi.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="svga.h" />
+    <ClInclude Include="svga_reg.h" />
+    <ClInclude Include="svga3d.h" />
+    <ClInclude Include="svga3d_reg.h" />
+    <ClInclude Include="driver.h" />
+    <ClInclude Include="ddi.h" />
+  </ItemGroup>
+</Project>

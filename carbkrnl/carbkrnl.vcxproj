@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="config\cminit.c" />
+    <None Include="config\SYSTEM">
+      <FileType>CppCode</FileType>
+    </None>
+    <ClCompile Include="fsrtl\disk.c" />
+    <ClCompile Include="fsrtl\path.c" />
+    <ClCompile Include="hal\acpi.c" />
+    <ClCompile Include="hal\apic.c" />
+    <ClCompile Include="hal\bios.c" />
+    <ClCompile Include="hal\gdt.c" />
+    <ClCompile Include="hal\idt.c" />
+    <ClCompile Include="hal\smp.c" />
+    <ClCompile Include="initos.c" />
+    <ClCompile Include="io\device.c" />
+    <ClCompile Include="io\driver.c" />
+    <ClCompile Include="io\file.c" />
+    <ClCompile Include="io\int.c" />
+    <ClCompile Include="io\ioinit.c" />
+    <ClCompile Include="io\link.c" />
+    <ClCompile Include="io\queue.c" />
+    <MASM Include="ke\call_gate.asm">
+      <FileType>CppCode</FileType>
+    </MASM>
+    <ClCompile Include="ke\clock.c" />
+    <ClCompile Include="ke\disp.c" />
+    <ClCompile Include="ke\exception.c" />
+    <ClCompile Include="ke\id.c" />
+    <ClCompile Include="ke\irql.c" />
+    <ClCompile Include="ke\keinit.c" />
+    <ClCompile Include="ke\mutex.c" />
+    <ClCompile Include="ke\probe.c" />
+    <ClCompile Include="ke\processor.c" />
+    <ClCompile Include="ke\syscall.c" />
+    <ClCompile Include="mm\cache.c" />
+    <ClCompile Include="mm\mminit.c" />
+    <ClCompile Include="mm\pfndb.c" />
+    <ClCompile Include="mm\physical.c" />
+    <ClCompile Include="mm\pool.c" />
+    <ClCompile Include="mm\section.c" />
+    <ClCompile Include="mm\space.c" />
+    <ClCompile Include="mm\table.c" />
+    <ClCompile Include="mm\tlb.c" />
+    <ClCompile Include="mm\vad.c" />
+    <ClCompile Include="mm\wsl.c" />
+    <ClCompile Include="ob\obcreate.c" />
+    <ClCompile Include="ob\obhandle.c" />
+    <ClCompile Include="ob\obinit.c" />
+    <ClCompile Include="ob\obquery.c" />
+    <ClCompile Include="ob\obref.c" />
+    <ClCompile Include="ps\process.c" />
+    <ClCompile Include="ps\psinit.c" />
+    <ClCompile Include="ps\thread.c" />
+    <ClCompile Include="rtl\except.c" />
+    <ClCompile Include="rtl\debug_con.c" />
+    <ClCompile Include="rtl\ldr\datadir.c" />
+    <ClCompile Include="rtl\ldr\ldrsup.c" />
+    <ClCompile Include="rtl\ldr\ldrusr.c" />
+    <ClCompile Include="rtl\memory.c" />
+    <ClCompile Include="rtl\string.c" />
+    <ClCompile Include="rtl\unicode.c" />
+    <ClCompile Include="rtl\unwind.c" />
+    <ClCompile Include="se\privilege.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="config\cmp.h" />
+    <ClInclude Include="fsrtl\fsrtlp.h" />
+    <ClInclude Include="hal\halp.h" />
+    <ClInclude Include="inc\bootldr.h" />
+    <ClInclude Include="inc\carbsup.h" />
+    <ClInclude Include="inc\carbusr.h" />
+    <ClInclude Include="inc\cm.h" />
+    <ClInclude Include="inc\compiler.h" />
+    <ClInclude Include="inc\fsrtl.h" />
+    <ClInclude Include="inc\hal.h" />
+    <ClInclude Include="inc\io.h" />
+    <ClInclude Include="inc\ke.h" />
+    <ClInclude Include="inc\mm.h" />
+    <ClInclude Include="inc\ntbase.h" />
+    <ClInclude Include="inc\ntstatus.h" />
+    <ClInclude Include="inc\ob.h" />
+    <ClInclude Include="inc\ps.h" />
+    <ClInclude Include="inc\rtl.h" />
+    <ClInclude Include="io\iop.h" />
+    <ClInclude Include="ke\ki.h" />
+    <ClInclude Include="mm\mi.h" />
+    <ClInclude Include="ob\obp.h" />
+    <ClInclude Include="ps\psp.h" />
+    <ClInclude Include="rtl\ldr\ldrp.h" />
+    <ClInclude Include="rtl\rtlp.h" />
+    <ClInclude Include="se\sep.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <NASM Include="hal\cpu_start.asm" />
+    <MASM Include="ps\return.asm">
+      <FileType>Document</FileType>
+    </MASM>
+    <MASM Include="rtl\chkstk.asm">
+      <FileType>Document</FileType>
+    </MASM>
+    <None Include="debug.bat" />
+    <NASM Include="hal\amd64.asm" />
+    <NASM Include="hal\int_handle.asm">
+      <FileType>Document</FileType>
+    </NASM>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{a3d46415-bb51-4752-83ae-91352a366d3b}</ProjectGuid>
+    <RootNamespace>carbkrnl</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>
+    </WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc />
+    <CLRSupport />
+    <WindowsAppContainer />
+    <SpectreMitigation>false</SpectreMitigation>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetExt>.sys</TargetExt>
+    <IncludePath>$(ProjectDir)inc\;$(VC_IncludePath)</IncludePath>
+    <ReferencePath />
+    <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
+    <LibraryWPath />
+    <SourcePath>$(VC_SourcePath);</SourcePath>
+    <GenerateManifest>false</GenerateManifest>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>
+      </SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DiagnosticsFormat />
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
+      <PrecompiledHeaderFile />
+      <PrecompiledHeaderOutputFile />
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <AssemblerListingLocation>
+      </AssemblerListingLocation>
+      <CallingConvention>FastCall</CallingConvention>
+      <CompileAs>CompileAsC</CompileAs>
+      <UseFullPaths>false</UseFullPaths>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;KRNLINTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
+      <AdditionalDependencies />
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <ManifestFile />
+      <AllowIsolation />
+      <EnableUAC />
+      <UACExecutionLevel />
+      <UACUIAccess />
+      <ProgramDatabaseFile>$(OutDir)Symbols\$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Native</SubSystem>
+      <LargeAddressAware>false</LargeAddressAware>
+      <EntryPointSymbol>KiSystemStartup</EntryPointSymbol>
+      <FixedBaseAddress>false</FixedBaseAddress>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <CLRImageType />
+    </Link>
+    <BuildLog>
+      <Path />
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\nasm.targets" />
+  </ImportGroup>
+</Project>

@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="initos.c" />
+    <ClCompile Include="io\ioinit.c" />
+    <ClCompile Include="io\link.c" />
+    <ClCompile Include="mm\mminit.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="mm\pfndb.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="mm\physical.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="mm\pool.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="mm\table.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="mm\wsl.c">
+      <Filter>Mm</Filter>
+    </ClCompile>
+    <ClCompile Include="ob\obcreate.c" />
+    <ClCompile Include="ob\obinit.c" />
+    <ClCompile Include="rtl\memory.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="rtl\string.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="rtl\unicode.c">
+      <Filter>Rtl</Filter>
+    </ClCompile>
+    <ClCompile Include="hal\idt.c" />
+    <ClCompile Include="ke\irql.c" />
+    <ClCompile Include="hal\apic.c" />
+    <ClCompile Include="hal\acpi.c" />
+    <ClCompile Include="hal\smp.c" />
+    <ClCompile Include="ke\processor.c" />
+    <ClCompile Include="ke\disp.c" />
+    <ClCompile Include="ke\exception.c" />
+    <ClCompile Include="hal\gdt.c" />
+    <ClCompile Include="ke\keinit.c" />
+    <ClCompile Include="ob\obhandle.c" />
+    <ClCompile Include="ps\thread.c" />
+    <ClCompile Include="ob\obref.c" />
+    <ClCompile Include="mm\space.c" />
+    <ClCompile Include="ps\psinit.c" />
+    <ClCompile Include="ps\process.c" />
+    <ClCompile Include="mm\tlb.c" />
+    <ClCompile Include="ke\id.c" />
+    <ClCompile Include="se\privilege.c" />
+    <ClCompile Include="rtl\ldr\datadir.c" />
+    <ClCompile Include="rtl\ldr\ldrsup.c" />
+    <ClCompile Include="io\device.c" />
+    <ClCompile Include="io\driver.c" />
+    <ClCompile Include="rtl\debug_con.c" />
+    <ClCompile Include="io\file.c" />
+    <ClCompile Include="mm\section.c" />
+    <ClCompile Include="mm\cache.c" />
+    <ClCompile Include="mm\vad.c" />
+    <ClCompile Include="ob\obquery.c" />
+    <ClCompile Include="ke\mutex.c" />
+    <ClCompile Include="rtl\except.c" />
+    <ClCompile Include="fsrtl\disk.c" />
+    <ClCompile Include="fsrtl\path.c" />
+    <ClCompile Include="config\cminit.c" />
+    <ClCompile Include="rtl\unwind.c" />
+    <ClCompile Include="io\queue.c" />
+    <ClCompile Include="ke\syscall.c" />
+    <ClCompile Include="ke\probe.c" />
+    <ClCompile Include="rtl\ldr\ldrusr.c" />
+    <ClCompile Include="io\int.c" />
+    <ClCompile Include="ke\clock.c" />
+    <ClCompile Include="hal\bios.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="shared">
+      <UniqueIdentifier>{e93671a3-5a87-4cc0-8851-b1d440cf9111}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mm">
+      <UniqueIdentifier>{6acfe9f6-abc3-48b6-86b6-dc942a1c8496}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rtl">
+      <UniqueIdentifier>{1246042a-d935-457e-8132-7dfb3834c244}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ke">
+      <UniqueIdentifier>{333ccc03-b65a-4d80-ba07-a2af0c9f223b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ob">
+      <UniqueIdentifier>{daf81971-e867-4ecd-88de-ea6fda3f71eb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="io\iop.h" />
+    <ClInclude Include="mm\mi.h">
+      <Filter>Mm</Filter>
+    </ClInclude>
+    <ClInclude Include="ob\obp.h" />
+    <ClInclude Include="ke\ki.h" />
+    <ClInclude Include="hal\halp.h" />
+    <ClInclude Include="ps\psp.h" />
+    <ClInclude Include="se\sep.h" />
+    <ClInclude Include="rtl\ldr\ldrp.h" />
+    <ClInclude Include="rtl\rtlp.h" />
+    <ClInclude Include="inc\bootldr.h" />
+    <ClInclude Include="inc\hal.h" />
+    <ClInclude Include="inc\io.h" />
+    <ClInclude Include="inc\ke.h" />
+    <ClInclude Include="inc\mm.h" />
+    <ClInclude Include="inc\ntbase.h" />
+    <ClInclude Include="inc\ntstatus.h" />
+    <ClInclude Include="inc\ob.h" />
+    <ClInclude Include="inc\ps.h" />
+    <ClInclude Include="inc\rtl.h" />
+    <ClInclude Include="inc\fsrtl.h" />
+    <ClInclude Include="fsrtl\fsrtlp.h" />
+    <ClInclude Include="config\cmp.h" />
+    <ClInclude Include="inc\cm.h" />
+    <ClInclude Include="inc\carbsup.h" />
+    <ClInclude Include="inc\carbusr.h" />
+    <ClInclude Include="inc\compiler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="debug.bat" />
+    <None Include="config\SYSTEM" />
+  </ItemGroup>
+  <ItemGroup>
+    <NASM Include="hal\int_handle.asm" />
+    <NASM Include="hal\cpu_start.asm" />
+    <NASM Include="hal\amd64.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="ps\return.asm" />
+    <MASM Include="rtl\chkstk.asm" />
+    <MASM Include="ke\call_gate.asm" />
+  </ItemGroup>
+</Project>

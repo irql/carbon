@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<Foundry>
-<VM>
-<VMId type="string">52 8d 0e 70 bc 6f 7a f6-39 98 42 5e 5a b0 71 9d</VMId>
-<ClientMetaData>
-<clientMetaDataAttributes/>
-<HistoryEventList/></ClientMetaData>
-<vmxPathName type="string">carbon.vmx</vmxPathName></VM><tools-install-info><installError>0</installError><updateCounter>38</updateCounter></tools-install-info></Foundry>

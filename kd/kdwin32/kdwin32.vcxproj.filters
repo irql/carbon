@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="init.cc" />
+    <ClCompile Include="pdb.cc" />
+    <ClCompile Include="rtl.cc" />
+    <ClCompile Include="unwind.cc" />
+    <ClCompile Include="com.cc" />
+    <ClCompile Include="cmd.cc" />
+    <ClCompile Include="modcache.cc" />
+    <ClCompile Include="osl\winosl.cc" />
+    <ClCompile Include="handlers\display.cc" />
+    <ClCompile Include="handlers\edit.cc" />
+    <ClCompile Include="handlers\go.cc" />
+    <ClCompile Include="handlers\list.cc" />
+    <ClCompile Include="handlers\process.cc" />
+    <ClCompile Include="handlers\trace.cc" />
+    <ClCompile Include="handlers\wsl.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="kd.h" />
+    <ClInclude Include="carbon.h" />
+    <ClInclude Include="pdb.h" />
+    <ClInclude Include="kdp.h" />
+    <ClInclude Include="osl\osl.h" />
+  </ItemGroup>
+</Project>
