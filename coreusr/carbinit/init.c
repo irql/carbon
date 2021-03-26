@@ -110,7 +110,7 @@ NtProcessStartup(
     NTSTATUS ntStatus = NtCreateFont( &FontHandle,
                                       12,
                                       0,
-                                      L"COUSINE.TTF" );
+                                      L"MICROSS.TTF" );
     RtlDebugPrint( L"NtCreateFont: %ul\n", ntStatus );
     RECT FontClip;
 

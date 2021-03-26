@@ -10,9 +10,9 @@ EXTERN ULONG64 KxIntHandlerTable[ ];
 EXTERN ULONG64 KiInterruptHandleBase[ ];
 
 VOID
-HalInitializeIdt(
+HalCreateInterrupt(
     _Inout_ PKIDT_GATE     Table,
-    _Out_   PKSEG_DESC_REG Idtr
+    _Out_   PKDESCRIPTOR_TABLE Idtr
 )
 {
     ULONG64 i = 0;
@@ -42,7 +42,7 @@ HalInitializeIdt(
         Table[ i ].CodeSelector = GDT_KERNEL_CODE64;
         Table[ i ].PrivilegeLevel = 0;
         Table[ i ].Present = 1;
-        Table[ i ].Type = IDT_GATE_TYPE_INTERRUPT64;
+        Table[ i ].Type = SYSTEM_SEGMENT_TYPE_INTERRUPT_GATE;
     }
 
     Table[ 0x29 ].PrivilegeLevel = 3; // fast fail

@@ -5,8 +5,8 @@
 #include "halp.h"
 
 VOID
-HalGdtCreate(
-    _Inout_ PKSEG_DESC_REG Gdtr
+HalCreateGlobal(
+    _Inout_ PKDESCRIPTOR_TABLE Gdtr
 )
 {
     Gdtr->Base = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPoolZeroed, 0x1000, HAL_TAG );
@@ -14,9 +14,9 @@ HalGdtCreate(
 }
 
 ULONG
-HalGdtAddSegEntry(
-    _Inout_ PKSEG_DESC_REG  Gdtr,
-    _In_    PKGDT_SEG_ENTRY Entry
+HalInsertCodeSegment(
+    _Inout_ PKDESCRIPTOR_TABLE  Gdtr,
+    _In_    PKGDT_CODE_SEGMENT Entry
 )
 {
     ULONG Offset;
@@ -25,14 +25,14 @@ HalGdtAddSegEntry(
     Offset = Gdtr->Limit + 1;
     Next = ( PULONG64 )( Gdtr->Base + Offset );
     *Next = Entry->Long;
-    Gdtr->Limit += sizeof( KGDT_SEG_ENTRY );
+    Gdtr->Limit += sizeof( KGDT_CODE_SEGMENT );
     return Offset;
 }
 
 ULONG
-HalGdtAddAltEntry(
-    _Inout_ PKSEG_DESC_REG  Gdtr,
-    _In_    PKGDT_ALT_ENTRY Entry
+HalInsertSystemSegment(
+    _Inout_ PKDESCRIPTOR_TABLE  Gdtr,
+    _In_    PKGDT_SYSTEM_SEGMENT Entry
 )
 {
     ULONG Offset;
@@ -40,42 +40,41 @@ HalGdtAddAltEntry(
 
     Offset = Gdtr->Limit + 1;
     Next = ( PULONG64 )( Gdtr->Base + Offset );
-    *Next++ = Entry->Value0;
-    *Next++ = Entry->Value1;
-    Gdtr->Limit += sizeof( KGDT_ALT_ENTRY );
+    *Next++ = Entry->Long0;
+    *Next++ = Entry->Long1;
+    Gdtr->Limit += sizeof( KGDT_SYSTEM_SEGMENT );
     return Offset;
 }
 
 ULONG
-HalGdtAddTss(
-    _Inout_ PKSEG_DESC_REG Gdtr,
+HalInsertTaskSegment(
+    _Inout_ PKDESCRIPTOR_TABLE Gdtr,
     _In_    PKTASK_STATE   Task,
     _In_    ULONG          Length
 )
 {
     ULONG TaskRegister;
-    KGDT_ALT_ENTRY TaskEntry;
+    KGDT_SYSTEM_SEGMENT TaskSegment;
     ULONG64 Base = ( ULONG64 )Task;
 
-    TaskEntry.Value0 = 0;
-    TaskEntry.Value1 = 0;
-    TaskEntry.BaseLow = ( USHORT )( Base );
-    TaskEntry.BaseMid = ( UCHAR )( Base >> 16 );
-    TaskEntry.BaseHigh = ( UCHAR )( Base >> 24 );
-    TaskEntry.BaseUpper = ( ULONG )( Base >> 32 );
-    TaskEntry.Accessed = 1;
-    TaskEntry.Executable = 1;
-    TaskEntry.Present = 1;
-    TaskEntry.LimitLow = Length;
+    TaskSegment.Long0 = 0;
+    TaskSegment.Long1 = 0;
+    TaskSegment.BaseLow = ( USHORT )( Base );
+    TaskSegment.BaseMid = ( UCHAR )( Base >> 16 );
+    TaskSegment.BaseHigh = ( UCHAR )( Base >> 24 );
+    TaskSegment.BaseUpper = ( ULONG )( Base >> 32 );
+    TaskSegment.Type = SYSTEM_SEGMENT_TYPE_TSS;
+    TaskSegment.Present = 1;
+    TaskSegment.LimitLow = Length;
 
-    TaskRegister = HalGdtAddAltEntry( Gdtr, &TaskEntry );
+    TaskRegister = HalInsertSystemSegment( Gdtr, &TaskSegment );
 
     return TaskRegister;
 }
 
 VOID
-HalGdtSetSegBase(
-    _Inout_ PKGDT_SEG_ENTRY Entry,
+HalSetCodeSegmentBase(
+    _Inout_ PKGDT_CODE_SEGMENT Entry,
     _In_    PVOID           Base
 )
 {

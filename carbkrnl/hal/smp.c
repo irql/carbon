@@ -25,90 +25,43 @@ HalInitializeCpu0(
 
 )
 {
-    //ULONG Vector;
     PKPCB Processor;
-    //PIO_INTERRUPT InterruptObject;
-    //OBJECT_ATTRIBUTES Interrupt = { 0 };
+    PKTASK_STATE TaskState;
+
+    KGDT_CODE_SEGMENT KernelCode64 = { 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0 };
+    KGDT_CODE_SEGMENT KernelData = { 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0 };
+    KGDT_CODE_SEGMENT UserCode64 = { 0, 0, 0, 0, 1, 0, 1, 1, 3, 1, 0, 0, 1, 0, 1, 0 };
+    KGDT_CODE_SEGMENT UserData = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
+    KGDT_CODE_SEGMENT UserGsBase = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
 
     KiInitializeServiceCallTable( );
 
     Processor = KiCreatePcb( );
     Processor->ApicId = HalLocalApics[ 0 ]->ApicId;
 
-    HalInitializeIdt(
-        MmAllocatePoolWithTag( NonPagedPoolZeroed,
-                               sizeof( KIDT_GATE[ 256 ] ),
-                               HAL_TAG ), &Processor->Interrupt );
-#if 0
-#if 0
-    for ( Vector = 0; Vector < 32; Vector++ ) {
+    HalCreateInterrupt( MmAllocatePoolWithTag( NonPagedPoolZeroed,
+                                               sizeof( KIDT_GATE[ 256 ] ),
+                                               HAL_TAG ), &Processor->Interrupt );
 
-        HalIdtInstallHandler( Vector, KiTrapException );
-    }
-
-    HalIdtInstallHandler( 0x20, KiTrapDispatcher );
-    HalIdtInstallHandler( 0x2c, RtlpTrapAssertionFailure );
-    HalIdtInstallHandler( 0x30, KiTrapProcessorWakeup );
-#endif
-    for ( Vector = 0; Vector < 32; Vector++ ) {
-
-        IoConnectInterrupt( &InterruptObject,
-            ( KSERVICE_ROUTINE )KiTrapException,
-                            NULL,
-                            Vector,
-                            IPI_LEVEL,
-                            &Interrupt );
-        ObDereferenceObject( InterruptObject );
-    }
-
-    IoConnectInterrupt( &InterruptObject,
-        ( KSERVICE_ROUTINE )KiTrapDispatcher,
-                        NULL,
-                        0x20,
-                        IPI_LEVEL,
-                        &Interrupt );
-    ObDereferenceObject( InterruptObject );
-    IoConnectInterrupt( &InterruptObject,
-        ( KSERVICE_ROUTINE )RtlpTrapAssertionFailure,
-                        NULL,
-                        0x2c,
-                        IPI_LEVEL,
-                        &Interrupt );
-    ObDereferenceObject( InterruptObject );
-    IoConnectInterrupt( &InterruptObject,
-        ( KSERVICE_ROUTINE )KiTrapProcessorWakeup,
-                        NULL,
-                        0x30,
-                        DISPATCH_LEVEL,
-                        &Interrupt );
-    ObDereferenceObject( InterruptObject );
-#endif
     __lidt( &Processor->Interrupt );
     _enable( );
 
-    HalGdtCreate( &Processor->Global );
+    HalCreateGlobal( &Processor->Global );
 
-    KGDT_SEG_ENTRY KernelCode64 = { 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0 };
-    KGDT_SEG_ENTRY KernelData = { 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0 };
-    KGDT_SEG_ENTRY UserCode64 = { 0, 0, 0, 0, 1, 0, 1, 1, 3, 1, 0, 0, 1, 0, 1, 0 };
-    KGDT_SEG_ENTRY UserData = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
-    KGDT_SEG_ENTRY UserGsBase = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
+    HalInsertCodeSegment( &Processor->Global, &KernelCode64 );
+    HalInsertCodeSegment( &Processor->Global, &KernelData );
+    HalInsertCodeSegment( &Processor->Global, &UserData );
+    HalInsertCodeSegment( &Processor->Global, &UserCode64 );
+    Processor->SegGs = HalInsertCodeSegment( &Processor->Global, &UserGsBase );
 
-    HalGdtAddSegEntry( &Processor->Global, &KernelCode64 );
-    HalGdtAddSegEntry( &Processor->Global, &KernelData );
-    HalGdtAddSegEntry( &Processor->Global, &UserData );
-    HalGdtAddSegEntry( &Processor->Global, &UserCode64 );
-    Processor->SegGs = HalGdtAddSegEntry( &Processor->Global, &UserGsBase );
-
-    PKTASK_STATE TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
-    //TaskState->Ist[ 0 ] = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000;
-    //TaskState->Ist[ 1 ] = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000;
-    //TaskState->Ist[ 2 ] = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000;
+    TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
     TaskState->Ist[ 0 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
     TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
-    TaskState->Rsp0 =  ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000; // remove ^
+    //TaskState->Rsp0 =  ( ULONG64 )PspCreateStack( 0, 0x8000 );
     TaskState->IopbOffset = sizeof( KTASK_STATE );
-    Processor->TaskStateDescriptor = HalGdtAddTss( &Processor->Global, TaskState, sizeof( KTASK_STATE ) );
+    Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
+                                                           TaskState,
+                                                           sizeof( KTASK_STATE ) );
 
     _lgdt( &Processor->Global );
     __ltr( ( USHORT )Processor->TaskStateDescriptor );
@@ -125,6 +78,8 @@ HalProcessorStartupPrepare(
 {
     PKPCB Processor;
     PKPCB Processor0;
+    PKTASK_STATE TaskState;
+    KGDT_CODE_SEGMENT UserGsBase = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
 
     HalEnableCpuFeatures( );
     MmInitializeCaching( );
@@ -136,23 +91,22 @@ HalProcessorStartupPrepare(
 
     Processor0 = KeQueryProcessorByNumber( 0 );
 
-    RtlCopyMemory( &Processor->Interrupt, &Processor0->Interrupt, sizeof( KSEG_DESC_REG ) );
-    RtlCopyMemory( &Processor->Global, &Processor0->Global, sizeof( KSEG_DESC_REG ) );
+    RtlCopyMemory( &Processor->Interrupt, &Processor0->Interrupt, sizeof( KDESCRIPTOR_TABLE ) );
+    RtlCopyMemory( &Processor->Global, &Processor0->Global, sizeof( KDESCRIPTOR_TABLE ) );
 
     __lidt( &Processor->Interrupt );
     _enable( );
 
-    KGDT_SEG_ENTRY UserGsBase = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
-    PKTASK_STATE TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
-    //TaskState->Ist[ 0 ] = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000;
-    //TaskState->Ist[ 1 ] = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000;
-    //TaskState->Ist[ 2 ] = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000;
+    TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
     TaskState->Ist[ 0 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
     TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
-    TaskState->Rsp0 =  ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, 0x8000, HAL_TAG ) + 0x8000; // remove ^
+    //TaskState->Rsp0 =  ( ULONG64 )PspCreateStack( 0, 0x8000 );
     TaskState->IopbOffset = sizeof( KTASK_STATE );
-    Processor->TaskStateDescriptor = HalGdtAddTss( &Processor->Global, TaskState, sizeof( KTASK_STATE ) );
-    Processor->SegGs = HalGdtAddSegEntry( &Processor->Global, &UserGsBase );
+    Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
+                                                           TaskState,
+                                                           sizeof( KTASK_STATE ) );
+
+    Processor->SegGs = HalInsertCodeSegment( &Processor->Global, &UserGsBase );
 
     _lgdt( &Processor->Global );
     __ltr( ( USHORT )Processor->TaskStateDescriptor );

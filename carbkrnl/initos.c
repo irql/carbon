@@ -557,31 +557,31 @@ KiInitThread(
         }
 
         Flink = Flink->Flink;
-} while ( Flink != MmNonPagedPoolHead.AllocatedTableLinks );
+    } while ( Flink != MmNonPagedPoolHead.AllocatedTableLinks );
 #endif
 #if 0
-HANDLE dwm_Handle;
-OBJECT_ATTRIBUTES dwm_File = {
-    RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
-    RTL_CONSTANT_STRING( L"\\SYSTEM\\DWM.EXE" ), OBJ_KERNEL_HANDLE
-};
+    HANDLE dwm_Handle;
+    OBJECT_ATTRIBUTES dwm_File = {
+        RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
+        RTL_CONSTANT_STRING( L"\\SYSTEM\\DWM.EXE" ), OBJ_KERNEL_HANDLE
+    };
 
-PspCreateUserProcess( &dwm_Handle,
-                      PROCESS_ALL_ACCESS,
-                      &dwm_File );
+    PspCreateUserProcess( &dwm_Handle,
+                          PROCESS_ALL_ACCESS,
+                          &dwm_File );
 #endif
 
-//ZwWaitForSingleObject( 0, 1500 );
+    //ZwWaitForSingleObject( 0, 1500 );
 
 #if 0
-while ( 1 ) {
+    while ( 1 ) {
 
-    RtlDebugPrint( L"Sup dawg.\n" );
-    __debugbreak( );
-                }
+        RtlDebugPrint( L"Sup dawg.\n" );
+        __debugbreak( );
+    }
 #endif
 
-//KiRecursiveDirectoryList( &ObRootDirectory, 1 );
+    //KiRecursiveDirectoryList( &ObRootDirectory, 1 );
 
 }
 
@@ -600,7 +600,7 @@ KiSystemStartup(
     PMEMORY_MAP MemoryMap = ( PMEMORY_MAP )( ULONG64 )( BootInfo->MemoryMap & 0xFFFF );
 #if 0
     // idt is loaded pretty late into the boot sequence, this is some old stuff.
-    KSEG_DESC_REG BspIdtr;
+    KDESCRIPTOR_TABLE BspIdtr;
     for ( ULONG32 i = 0; i < 256; i++ ) {
 
         BspIdt[ i ].OffsetLow = KxIntHandlerTable[ i ];

@@ -195,13 +195,14 @@ KiSwapContext(
 
     // this arch is fucking stupid
     // so the IA32_MSR_GS_BASE is completely useless? and it's actually
-    // the gdt segment base that's used (32 bits (?)), swapgs can be used
+    // the gdt segment base that's used (32 bits (? unless i can use S)), swapgs can be used
     // to have to gs base be set to IA32_MSR_KERNEL_GS_BASE, so only one of the two
     // msrs are actually used?
     //__writemsr( IA32_MSR_GS_BASE, ( unsigned long long )Thread->Process->Peb );
-    HalGdtSetSegBase(
-        ( PKGDT_SEG_ENTRY )( Processor->Global.Base + Processor->SegGs ),
+    HalSetCodeSegmentBase(
+        ( PKGDT_CODE_SEGMENT )( Processor->Global.Base + Processor->SegGs ),
         Thread->Process->Peb );
+    Processor->TaskState.Rsp0 = Thread->KernelStackBase + Thread->KernelStackLength;
 
     KeLowerIrql( PreviousIrql );
     return;

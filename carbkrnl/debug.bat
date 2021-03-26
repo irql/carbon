@@ -25,6 +25,7 @@ copy ..\..\hi.txt T:\SYSTEM\HI.TXT
 copy ..\..\ports\freetype\freetype.dll T:\SYSTEM\FREETYPE.DLL
 copy ..\..\fonts\COUSINE.TTF T:\SYSTEM\FONTS\COUSINE.TTF
 copy ..\..\fonts\ARIAL.TTF T:\SYSTEM\FONTS\ARIAL.TTF
+copy ..\..\fonts\MICROSS.TTF T:\SYSTEM\FONTS\MICROSS.TTF
 copy ..\..\fonts\IBMVGA.BIN T:\SYSTEM\FONTS\IBMVGA.BIN
 copy ..\..\carbkrnl\config\SYSTEM T:\SYSTEM\SYSTEM
 cd ..\..\

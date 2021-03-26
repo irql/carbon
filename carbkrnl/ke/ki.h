@@ -103,8 +103,8 @@ typedef struct _KPCB {
     ULONG64         ProcessorNumber;
     ULONG64         ApicId;
     BOOLEAN         InService;
-    KSEG_DESC_REG   Global;
-    KSEG_DESC_REG   Interrupt;
+    KDESCRIPTOR_TABLE   Global;
+    KDESCRIPTOR_TABLE   Interrupt;
     ULONG32         TaskStateDescriptor;
     KTASK_STATE     TaskState;
 

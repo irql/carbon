@@ -12,17 +12,19 @@
 #define GDT_USER_CODE64     0x20
 #define GDT_USER_DATA       0x18
 
-#define IDT_GATE_TYPE_INTERRUPT64   0b1110
-#define IDT_GATE_TYPE_TRAP64        0b1111
+#define SYSTEM_SEGMENT_TYPE_TSS             0b1001
+#define SYSTEM_SEGMENT_TYPE_CALL_GATE       0b1100
+#define SYSTEM_SEGMENT_TYPE_INTERRUPT_GATE  0b1110
+#define SYSTEM_SEGMENT_TYPE_TRAP_GATE       0b1111
 
-typedef struct _KSEG_DESC_REG {
+typedef struct _KDESCRIPTOR_TABLE {
     USHORT  Limit;
     ULONG64 Base;
-} KSEG_DESC_REG, *PKSEG_DESC_REG;
+} KDESCRIPTOR_TABLE, *PKDESCRIPTOR_TABLE;
 
-C_ASSERT( sizeof( KSEG_DESC_REG ) == 10 );
+C_ASSERT( sizeof( KDESCRIPTOR_TABLE ) == 10 );
 
-typedef union _KGDT_SEG_ENTRY {
+typedef union _KGDT_CODE_SEGMENT {
     struct {
         ULONG64 LimitLow : 16;
         ULONG64 BaseLow : 16;
@@ -43,39 +45,34 @@ typedef union _KGDT_SEG_ENTRY {
     };
 
     ULONG64     Long;
-} KGDT_SEG_ENTRY, *PKGDT_SEG_ENTRY;
+} KGDT_CODE_SEGMENT, *PKGDT_CODE_SEGMENT;
 
-C_ASSERT( sizeof( KGDT_SEG_ENTRY ) == 8 );
+C_ASSERT( sizeof( KGDT_CODE_SEGMENT ) == 8 );
 
-//TSS or LDT
-typedef union _KGDT_ALT_ENTRY {
+typedef union _KGDT_SYSTEM_SEGMENT {
     struct {
         ULONG64 LimitLow : 16;
         ULONG64 BaseLow : 16;
         ULONG64 BaseMid : 8;
-        ULONG64 Accessed : 1;
-        ULONG64 Writeable : 1;
-        ULONG64 Direction : 1;
-        ULONG64 Executable : 1;
+        ULONG64 Type : 4;
         ULONG64 System : 1;
         ULONG64 PrivilegeLevel : 2;
         ULONG64 Present : 1;
         ULONG64 LimitHigh : 4;
         ULONG64 Avail : 1;
-        ULONG64 LongMode : 1;
-        ULONG64 DefaultBig : 1;
+        ULONG64 Reserved1 : 2;
         ULONG64 Granularity : 1;
         ULONG64 BaseHigh : 8;
         ULONG64 BaseUpper : 32;
         ULONG64 Reserved : 32;
     };
     struct {
-        ULONG64 Value0;
-        ULONG64 Value1;
+        ULONG64 Long0;
+        ULONG64 Long1;
     };
-} KGDT_ALT_ENTRY, *PKGDT_ALT_ENTRY;
+} KGDT_SYSTEM_SEGMENT, *PKGDT_SYSTEM_SEGMENT;
 
-C_ASSERT( sizeof( KGDT_ALT_ENTRY ) == 16 );
+C_ASSERT( sizeof( KGDT_SYSTEM_SEGMENT ) == 16 );
 
 typedef struct _KTASK_STATE {
     ULONG32 Reserved1;
@@ -95,19 +92,19 @@ typedef union _KIDT_GATE {
         ULONG64 OffsetLow : 16;
         ULONG64 CodeSelector : 16;
         ULONG64 Ist : 3;
-        ULONG64 System : 5;
+        ULONG64 Reserved : 5;
         ULONG64 Type : 4;
-        ULONG64 Zero2 : 1;
+        ULONG64 Reserved1 : 1;
         ULONG64 PrivilegeLevel : 2;
         ULONG64 Present : 1;
         ULONG64 OffsetMid : 16;
 
         ULONG64 OffsetHigh : 32;
-        ULONG64 Zero3 : 32;
+        ULONG64 Reserved2 : 32;
     };
     struct {
-        ULONG64 Value0;
-        ULONG64 Value1;
+        ULONG64 Long0;
+        ULONG64 Long1;
     };
 } KIDT_GATE, *PKIDT_GATE;
 
@@ -502,9 +499,9 @@ HalDelayExecutionPit(
 }
 
 VOID
-HalInitializeIdt(
+HalCreateInterrupt(
     _Inout_ PKIDT_GATE     Table,
-    _Out_   PKSEG_DESC_REG Idtr
+    _Out_   PKDESCRIPTOR_TABLE Idtr
 );
 
 VOID
@@ -513,32 +510,32 @@ HalInitializeCpu0(
 );
 
 VOID
-HalGdtCreate(
-    _Inout_ PKSEG_DESC_REG Gdtr
+HalCreateGlobal(
+    _Inout_ PKDESCRIPTOR_TABLE Gdtr
 );
 
 ULONG
-HalGdtAddSegEntry(
-    _Inout_ PKSEG_DESC_REG  Gdtr,
-    _In_    PKGDT_SEG_ENTRY Entry
+HalInsertCodeSegment(
+    _Inout_ PKDESCRIPTOR_TABLE  Gdtr,
+    _In_    PKGDT_CODE_SEGMENT Entry
 );
 
 ULONG
-HalGdtAddAltEntry(
-    _Inout_ PKSEG_DESC_REG  Gdtr,
-    _In_    PKGDT_ALT_ENTRY Entry
+HalInsertSystemSegment(
+    _Inout_ PKDESCRIPTOR_TABLE  Gdtr,
+    _In_    PKGDT_SYSTEM_SEGMENT Entry
 );
 
 ULONG
-HalGdtAddTss(
-    _Inout_ PKSEG_DESC_REG Gdtr,
+HalInsertTaskSegment(
+    _Inout_ PKDESCRIPTOR_TABLE Gdtr,
     _In_    PKTASK_STATE   Task,
     _In_    ULONG          Length
 );
 
 VOID
-HalGdtSetSegBase(
-    _Inout_ PKGDT_SEG_ENTRY Entry,
+HalSetCodeSegmentBase(
+    _Inout_ PKGDT_CODE_SEGMENT Entry,
     _In_    PVOID           Base
 );
 
