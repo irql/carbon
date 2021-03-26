@@ -187,9 +187,8 @@ int atoi( const char* Buffer ) {
 }
 
 
-int vswprintf( wchar_t* Buffer, size_t Length, const wchar_t* Format, va_list List ) {
+int vswprintf( wchar_t* Buffer, const wchar_t* Format, va_list List ) {
 
-    Length;
     ULONG Index;
     BOOLEAN CodeHash;
     BOOLEAN CodePad;
@@ -431,14 +430,13 @@ int swprintf( wchar_t* buffer, const wchar_t* format, ... ) {
     int r;
     va_list args;
     __crt_va_start( args, format );
-    r = vswprintf( buffer, 0, format, args );
+    r = vswprintf( buffer, format, args );
     __crt_va_end( args );
     return r;
 }
 
-int vsprintf( char* Buffer, size_t Length, const char* Format, va_list List ) {
+int vsprintf( char* Buffer, const char* Format, va_list List ) {
 
-    Length;
     ULONG Index;
     BOOLEAN CodeHash;
     BOOLEAN CodePad;
@@ -459,7 +457,7 @@ int vsprintf( char* Buffer, size_t Length, const char* Format, va_list List ) {
 
     Index = 0;
 
-    RtlDebugPrint( L"Sprintf: %as\n", Buffer );
+    //RtlDebugPrint( L"Sprintf: %as\n", Buffer );
 
     while ( *Format ) {
         if ( *Format != '%' ) {
@@ -483,7 +481,8 @@ int vsprintf( char* Buffer, size_t Length, const char* Format, va_list List ) {
             Format++;
         }
 
-        if ( *Format == '.' ) {
+        if ( *Format == '.' ||
+             *Format == '0' ) {
             Format++;
             ZeroPad = atoi( Format );
             while ( *Format >= '0' && *Format <= '9' ) {
@@ -571,11 +570,17 @@ int vsprintf( char* Buffer, size_t Length, const char* Format, va_list List ) {
         case 'u':;
         case 'U':;
             Format++;
+        case 'l':
+        case 'p':
 
+            // brutal
             if ( ( *Format == 'l' &&
                    *( Format + 1 ) == 'l' ) ||
                    ( *Format == 'L' &&
-                     *( Format + 1 ) == 'L' ) ) {
+                     *( Format + 1 ) == 'L' ) ||
+                     ( *Format == 'l' &&
+                       *( Format + 1 ) == 'x' ) ||
+                       ( *Format == 'p' ) ) {
                 Format++;
 
                 ArgULL64 = __crt_va_arg( List, ULONG64 );
@@ -682,7 +687,7 @@ int sprintf( char* buffer, const char* format, ... ) {
     int r;
     va_list args;
     __crt_va_start( args, format );
-    r = vsprintf( buffer, 0, format, args );
+    r = vsprintf( buffer, format, args );
     __crt_va_end( args );
     return r;
 }

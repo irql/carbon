@@ -7,5 +7,6 @@
 char* getenv( const char* name ) {
     name;
 
-    return NULL;
+    RtlDebugPrint( L"unimplemented getenv: %as\n", name );
+    return NULL;// "any:4";
 }

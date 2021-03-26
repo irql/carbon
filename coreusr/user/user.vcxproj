@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="driver.c" />
+    <ClCompile Include="font.c" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="service.asm">
@@ -58,9 +59,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.dll</TargetExt>
-    <IncludePath>$(SolutionDir)\carbkrnl\inc\;$(VC_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)\carbkrnl\inc\;$(VC_IncludePath);$(SolutionDir)\ports\freetype\include\;</IncludePath>
     <ReferencePath />
-    <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
+    <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\;I:\repos\osdev\carbon_v2\ports\freetype</LibraryPath>
     <LibraryWPath />
     <SourcePath>$(VC_SourcePath);</SourcePath>
     <GenerateManifest>false</GenerateManifest>
@@ -104,7 +105,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>carbkrnl.lib;kdcom.lib</AdditionalDependencies>
+      <AdditionalDependencies>ntdll.lib;freetype.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ManifestFile />
       <AllowIsolation />

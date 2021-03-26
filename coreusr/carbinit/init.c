@@ -59,54 +59,6 @@ NtProcessStartup(
     wcscpy( WindowClass.ClassName, L"BITCH" );
     WindowClass.WndProc = NULL;
 
-    FT_Error Error;
-    static FT_Face  FontFace;
-
-    RtlDebugPrint( L"Bogster.\n" );
-    Error = FT_Init_FreeType( &FreeTypeLibrary );
-    RtlDebugPrint( L"Init: %d\n", Error );
-
-
-#if 0
-    Error = FT_New_Face( FreeTypeLibrary,
-                         "C:/SYSTEM/FONTS/COUSINE.TTF",
-                         0,
-                         &FontFace );
-#else
-
-    FILE* font = fopen( "C:/SYSTEM/FONTS/ARIAL.TTF", "rb" );
-    HANDLE sect;
-    OBJECT_ATTRIBUTES oa = { 0 };
-    PVOID Mapped = NULL;
-
-    fseek( font, 0, SEEK_END );
-    ULONG Size = ftell( font );
-
-    NtCreateSection( &sect, SECTION_MAP_READ, &oa, 0, font->FileHandle );
-    NtMapViewOfSection( sect, NtCurrentProcess( ), &Mapped, 0, 0, PAGE_READ );
-
-    RtlDebugPrint( L"LastByte: %ul\n", *( ( PCHAR )Mapped + Size - 1 ) );
-    RtlDebugPrint( L"Mapped at %ull %ull\n", Mapped, Size );
-
-    Error = FT_New_Memory_Face( FreeTypeLibrary,
-                                Mapped,
-                                Size,
-                                0,
-                                &FontFace );
-    RtlDebugPrint( L"Face: %d\n", Error );
-#endif
-
-    /*
-    Error = FT_Set_Char_Size( FontFace,
-                              0,
-                              16 * 64,
-                              114,
-                              23 );*/
-    Error = FT_Set_Pixel_Sizes( FontFace,
-                                0,
-                                16 );
-    RtlDebugPrint( L"Char: %d\n", Error );
-
     NtRegisterClass( &WindowClass );
 
     //
@@ -125,7 +77,7 @@ NtProcessStartup(
                     0 );
     NtCreateWindow( &ButtonHandle,
                     WindowHandle,
-                    L"button",
+                    L"",
                     L"BUTTON",
                     280,
                     24,
@@ -144,65 +96,70 @@ NtProcessStartup(
 
     KUSER_MESSAGE Message;
     HANDLE ContextHandle;
-
+#if 0
     static ULONG32 bits[ ] = {
         0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
         0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
         0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
         0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
     };
+#endif
+    STATIC ULONG32 bits[ 4096 ];
+    PNT_FONT_HANDLE FontHandle;
 
+    NTSTATUS ntStatus = NtCreateFont( &FontHandle,
+                                      12,
+                                      0,
+                                      L"COUSINE.TTF" );
+    RtlDebugPrint( L"NtCreateFont: %ul\n", ntStatus );
+    RECT FontClip;
+
+    FontClip.Left = 0;
+    FontClip.Top = 12;
+    FontClip.Bottom = 300 - 12;
+    FontClip.Right = 400;
 
     while ( TRUE ) {
 
         NtWaitMessage( WindowHandle );
 
         if ( NtReceiveMessage( WindowHandle, &Message ) ) {
-            NtDefaultWindowProc( WindowHandle,
-                                 Message.MessageId,
-                                 Message.Param1,
-                                 Message.Param2 );
+
+            if ( Message.MessageId == WM_PAINT ) {
+
+                NtBeginPaint( &ContextHandle, WindowHandle );
+
+                NtDefaultWindowProc( WindowHandle,
+                                     Message.MessageId,
+                                     Message.Param1,
+                                     Message.Param2 );
+
+                NtDrawText( ContextHandle,
+                            FontHandle,
+                            L"This is some text drawn by user.dll via freetype.dll lol",
+                            &FontClip,
+                            0,
+                            0xFF000000 );
+
+                NtEndPaint( WindowHandle );
+
+            }
+            else {
+
+                NtDefaultWindowProc( WindowHandle,
+                                     Message.MessageId,
+                                     Message.Param1,
+                                     Message.Param2 );
+            }
         }
 
         if ( NtReceiveMessage( ButtonHandle, &Message ) ) {
 
-            if ( Message.MessageId == WM_PAINT ) {
 
-                NtBeginPaint( &ContextHandle, ButtonHandle );
-
-                NtDefaultWindowProc( ButtonHandle,
-                                     Message.MessageId,
-                                     Message.Param1,
-                                     Message.Param2 );
-#if 1
-                FT_GlyphSlot Slot;
-                Slot = FontFace->glyph;
-
-                Error = FT_Load_Char( FontFace, 'p', FT_LOAD_RENDER );
-
-                //RtlDebugPrint( L"Load Error: %d\n", Error );
-
-                //RtlDebugPrint( L"Pogin %d, %d\n", Slot->bitmap_left, Slot->bitmap_top );
-
-                NtBltBits( &Slot->bitmap,
-                           0,
-                           0,
-                           Slot->bitmap_left,
-                           Slot->bitmap_top,
-                           ContextHandle,
-                           0,
-                           0 );
-#endif
-                //NtBltBits( bits, 0, 0, 4, 4, ContextHandle, 0, 0 );
-
-                NtEndPaint( ButtonHandle );
-            }
-            else {
-                NtDefaultWindowProc( ButtonHandle,
-                                     Message.MessageId,
-                                     Message.Param1,
-                                     Message.Param2 );
-            }
+            NtDefaultWindowProc( ButtonHandle,
+                                 Message.MessageId,
+                                 Message.Param1,
+                                 Message.Param2 );
         }
 
 

@@ -422,6 +422,7 @@ typedef ULONG ACCESS_MASK, *PACCESS_MASK;
 #define PAGE_NOCACHE                (0x00800000)
 #define PAGE_READWRITE_EXECUTE      (0x07000000)
 
+#define SEC_READ                    (0x0000)
 #define SEC_EXECUTE                 (0x0001)
 #define SEC_WRITE                   (0x0002)
 #define SEC_NOCACHE                 (0x0004)

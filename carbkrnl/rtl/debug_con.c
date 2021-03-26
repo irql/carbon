@@ -487,8 +487,9 @@ RtlDebugPrint(
 
     RtlDebugConsoleUpdate( );
 
-#if 0
-    if ( KeQueryCurrentProcessor( ) != NULL && !KeQueryCurrentProcessor( )->InService ) {
+#if 1
+    if ( KeQueryCurrentProcessor( ) != NULL &&
+         !KeQueryCurrentProcessor( )->InService ) {
         VOID( *_KdPrint )(
             _In_ PWSTR Format,
             _In_ ...

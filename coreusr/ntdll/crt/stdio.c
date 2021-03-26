@@ -223,3 +223,30 @@ long int ftell( FILE* stream ) {
 
     return stream->Offset;
 }
+
+int vfprintf( FILE* stream, const char* format, va_list arg ) {
+
+    stream;
+
+    char buffer[ 512 ];
+    vsprintf( buffer, format, arg );
+
+    RtlDebugPrint( L"FT_Log: %as\n", buffer );
+
+    return 0;
+}
+
+int printf( const char* format, ... ) {
+
+    char buffer[ 512 ];
+    int r;
+    va_list args;
+
+    __crt_va_start( args, format );
+    r = vsprintf( buffer, format, args );
+    __crt_va_end( args );
+
+    RtlDebugPrint( L"%as", buffer );
+
+    return r;
+}

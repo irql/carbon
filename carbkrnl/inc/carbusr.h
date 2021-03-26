@@ -43,6 +43,12 @@ typedef unsigned long long uint64_t;
 #define NTSYSAPI DLLIMPORT
 #endif
 
+#ifdef USER_INTERNAL
+#define NTUSRAPI DLLEXPORT
+#else
+#define NTUSRAPI DLLIMPORT
+#endif
+
 NTSYSAPI
 NTSTATUS
 NtCreateFile(
@@ -242,10 +248,10 @@ NTSYSAPI size_t     mbstowcs( wchar_t* wcstr, const char* mbstr, size_t count );
 
 NTSYSAPI void       itow( int Value, wchar_t* Buffer, int Base );
 NTSYSAPI int        wtoi( const wchar_t* Buffer );
-NTSYSAPI int        vswprintf( wchar_t* Buffer, size_t Length, const wchar_t* Format, va_list List );
+NTSYSAPI int        vswprintf( wchar_t* Buffer, const wchar_t* Format, va_list List );
 NTSYSAPI int        swprintf( wchar_t* buffer, const wchar_t* format, ... );
 NTSYSAPI int        sprintf( char* buffer, const char* format, ... );
-NTSYSAPI int        vsprintf( char* Buffer, size_t Length, const char* Format, va_list List );
+NTSYSAPI int        vsprintf( char* Buffer, const char* Format, va_list List );
 
 NTSYSAPI int        atoi( const char* Buffer );
 
@@ -274,6 +280,8 @@ NTSYSAPI int        fclose( FILE* stream );
 NTSYSAPI size_t     fread( void* ptr, size_t size, size_t count, FILE* stream );
 NTSYSAPI int        fseek( FILE* stream, long int offset, int origin );
 NTSYSAPI long int   ftell( FILE* stream );
+NTSYSAPI int        vfprintf( FILE* stream, const char* format, va_list arg );
+NTSYSAPI int        printf( const char* format, ... );
 
 #define SEEK_SET ( 0 )
 #define SEEK_CUR ( 1 )
@@ -387,4 +395,34 @@ NtQueryInformationFile(
     _Out_ PVOID                  FileInformation,
     _In_  ULONG64                Length,
     _In_  FILE_INFORMATION_CLASS FileInformationClass
-);;
+);
+
+NTSYSAPI
+NTSTATUS
+NtDirectorySplit(
+    _In_  PWSTR InputBuffer,
+    _Out_ PWSTR ObjectName,
+    _Out_ PWSTR RootDirectory
+);
+
+typedef struct _NT_FONT_HANDLE *PNT_FONT_HANDLE;
+
+NTUSRAPI
+NTSTATUS
+NtCreateFont(
+    _Out_ PNT_FONT_HANDLE* FontHandle,
+    _In_  ULONG32          Height,
+    _In_  ULONG32          Width,
+    _In_  PWSTR            FaceName
+);
+
+NTUSRAPI
+NTSTATUS
+NtDrawText(
+    _In_ HANDLE          ContextHandle,
+    _In_ PNT_FONT_HANDLE FontHandle,
+    _In_ PWSTR           DrawText,
+    _In_ PRECT           Rect,
+    _In_ ULONG32         Flags,
+    _In_ ULONG32         Colour
+);

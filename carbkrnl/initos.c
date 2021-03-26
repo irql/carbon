@@ -498,6 +498,19 @@ KiInitThread(
         RTL_CONSTANT_STRING( L"\\KnownDlls\\D3D.DLL" ), { 0 }, OBJ_KERNEL_HANDLE };
     PspLoadKnownDll( &d3d_Handle, &d3d_File, &d3d_Section );
 
+    //
+    // because user.dll relies on this, i want it to be a knowndll
+    // it is the font driver for the system pretty much
+    //
+
+    HANDLE freetype_Handle;
+    OBJECT_ATTRIBUTES freetype_File = {
+        RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
+        RTL_CONSTANT_STRING( L"\\SYSTEM\\FREETYPE.DLL" ), OBJ_KERNEL_HANDLE };
+    OBJECT_ATTRIBUTES freetype_Section = {
+        RTL_CONSTANT_STRING( L"\\KnownDlls\\FREETYPE.DLL" ), { 0 }, OBJ_KERNEL_HANDLE };
+    PspLoadKnownDll( &freetype_Handle, &freetype_File, &freetype_Section );
+
     HANDLE user_Handle;
     OBJECT_ATTRIBUTES user_File = {
         RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
@@ -544,31 +557,31 @@ KiInitThread(
         }
 
         Flink = Flink->Flink;
-    } while ( Flink != MmNonPagedPoolHead.AllocatedTableLinks );
+} while ( Flink != MmNonPagedPoolHead.AllocatedTableLinks );
 #endif
 #if 0
-    HANDLE dwm_Handle;
-    OBJECT_ATTRIBUTES dwm_File = {
-        RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
-        RTL_CONSTANT_STRING( L"\\SYSTEM\\DWM.EXE" ), OBJ_KERNEL_HANDLE
-    };
+HANDLE dwm_Handle;
+OBJECT_ATTRIBUTES dwm_File = {
+    RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
+    RTL_CONSTANT_STRING( L"\\SYSTEM\\DWM.EXE" ), OBJ_KERNEL_HANDLE
+};
 
-    PspCreateUserProcess( &dwm_Handle,
-                          PROCESS_ALL_ACCESS,
-                          &dwm_File );
+PspCreateUserProcess( &dwm_Handle,
+                      PROCESS_ALL_ACCESS,
+                      &dwm_File );
 #endif
 
-    //ZwWaitForSingleObject( 0, 1500 );
+//ZwWaitForSingleObject( 0, 1500 );
 
 #if 0
-    while ( 1 ) {
+while ( 1 ) {
 
-        RtlDebugPrint( L"Sup dawg.\n" );
-        __debugbreak( );
-    }
+    RtlDebugPrint( L"Sup dawg.\n" );
+    __debugbreak( );
+                }
 #endif
 
-    //KiRecursiveDirectoryList( &ObRootDirectory, 1 );
+//KiRecursiveDirectoryList( &ObRootDirectory, 1 );
 
 }
 
