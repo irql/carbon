@@ -9,21 +9,17 @@ typedef struct _MM_VAD *PMM_VAD;
 
 typedef union _CR3 {
     struct {
-        //PCIDE = 0
         ULONG64 Reserved1 : 3;
         ULONG64 WriteThrough : 1;
         ULONG64 CacheDisable : 1;
         ULONG64 Reserved2 : 7;
         ULONG64 PageTable : 52;
-    };
+    } Pcid0;
 
-    /*
-    //PCIDE = 1
     struct {
         ULONG64 Pcid : 12;
         ULONG64 PageTable : 52;
-    };
-    */
+    } Pcid1;
 
     ULONG64     Long;
 } CR3, *PCR3;
@@ -642,4 +638,14 @@ MiRemoveVadByPointer(
 ULONG64
 MmCreateAddressSpace(
 
+);
+
+ULONG64
+MiAllocatePcid(
+
+);
+
+VOID
+MiFreePcid(
+    _In_ ULONG64 Pcid
 );

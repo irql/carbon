@@ -59,10 +59,10 @@ HalInsertTaskSegment(
 
     TaskSegment.Long0 = 0;
     TaskSegment.Long1 = 0;
-    TaskSegment.BaseLow = ( USHORT )( Base );
-    TaskSegment.BaseMid = ( UCHAR )( Base >> 16 );
-    TaskSegment.BaseHigh = ( UCHAR )( Base >> 24 );
-    TaskSegment.BaseUpper = ( ULONG )( Base >> 32 );
+    TaskSegment.BaseLow = Base;
+    TaskSegment.BaseMid = Base >> 16;
+    TaskSegment.BaseHigh = Base >> 24;
+    TaskSegment.BaseUpper = Base >> 32;
     TaskSegment.Type = SYSTEM_SEGMENT_TYPE_TSS;
     TaskSegment.Present = 1;
     TaskSegment.LimitLow = Length - 1;
@@ -75,15 +75,15 @@ HalInsertTaskSegment(
 VOID
 HalSetCodeSegmentBase(
     _Inout_ PKGDT_CODE_SEGMENT Entry,
-    _In_    PVOID           Base
+    _In_    PVOID              Base
 )
 {
     ULONG64 BaseAddress;
 
     BaseAddress = ( ULONG64 )Base;
 
-    Entry->BaseLow = ( USHORT )( BaseAddress );
-    Entry->BaseMid = ( UCHAR )( BaseAddress >> 16 );
-    Entry->BaseHigh = ( UCHAR )( BaseAddress >> 24 );
+    Entry->BaseLow = BaseAddress;
+    Entry->BaseMid = BaseAddress >> 16;
+    Entry->BaseHigh = BaseAddress >> 24;
     //Entry->BaseUpper = ( ULONG )( BaseAddress >> 32 );
 }

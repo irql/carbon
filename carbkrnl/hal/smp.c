@@ -16,10 +16,10 @@ HalEnableCpuFeatures(
 
 )
 {
-    //__writecr4( __readcr4( ) | ( 1 << 7 ) ); // pge.
-    __writemsr( IA32_MSR_EFER, __readmsr( IA32_MSR_EFER ) | ( 1 << 11 ) );
     __writemsr( IA32_MSR_GS_BASE, 0 );
     __writemsr( IA32_MSR_GS_KERNEL_BASE, 0 );
+
+
 }
 
 VOID
@@ -58,6 +58,7 @@ HalInitializeCpu0(
     TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
     TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->Ist[ 2 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
+    TaskState->Ist[ 3 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->IopbOffset = sizeof( KTASK_STATE );
     Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
                                                            TaskState,
@@ -100,6 +101,7 @@ HalProcessorStartupPrepare(
     TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
     TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->Ist[ 2 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
+    TaskState->Ist[ 3 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->IopbOffset = sizeof( KTASK_STATE );
     Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
                                                            TaskState,

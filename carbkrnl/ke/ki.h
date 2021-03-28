@@ -99,28 +99,30 @@ typedef struct _IO_LOCK_CONTEXT {
 } IO_LOCK_CONTEXT, *PIO_LOCK_CONTEXT;
 
 typedef struct _KPCB {
-    PVOID           Reserved;
-    ULONG64         ProcessorNumber;
-    ULONG64         ApicId;
-    BOOLEAN         InService;
-    KDESCRIPTOR_TABLE   Global;
-    KDESCRIPTOR_TABLE   Interrupt;
-    ULONG32         TaskStateDescriptor;
-    KTASK_STATE     TaskState;
+    PVOID             Reserved;
+    ULONG64           ProcessorNumber;
+    ULONG64           ApicId;
+    BOOLEAN           InService;
+    KDESCRIPTOR_TABLE Global;
+    KDESCRIPTOR_TABLE Interrupt;
+    ULONG32           TaskStateDescriptor;
+    KTASK_STATE       TaskState;
 
-    ULONG64         ThreadQueueLength;
-    PKTHREAD        ThreadQueue;
-    KSPIN_LOCK      ThreadQueueLock;
+    ULONG64           ThreadQueueLength;
+    PKTHREAD          ThreadQueue;
+    KSPIN_LOCK        ThreadQueueLock;
 
-    PKDPC           DpcQueue;
-    ULONG64         DpcQueueLength;
-    KSPIN_LOCK      DpcQueueLock;
-    BOOLEAN         SaveThread;
-    ULONG64         PreviousService;
-    ULONG32         SegGs;
+    PKDPC             DpcQueue;
+    ULONG64           DpcQueueLength;
+    KSPIN_LOCK        DpcQueueLock;
+    BOOLEAN           SaveThread;
+    ULONG64           PreviousService;
+    ULONG32           SegGs;
 
-    ULONG64         TickCount;
-    IO_LOCK_CONTEXT LockContext;
+    ULONG64           TickCount;
+    IO_LOCK_CONTEXT   LockContext;
+
+    ULONG64           ProcessorFeatures[ ROUND( KPF_MAXIMUM, 64 ) / 64 ];
 
 } KPCB, *PKPCB;
 

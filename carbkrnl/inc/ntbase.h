@@ -64,6 +64,26 @@ void _lgdt( void* );
 __int64 _InterlockedCompareExchange64( __int64 volatile * _Destination, __int64 _Exchange, __int64 _Comparand );
 __int64 _InterlockedIncrement64( __int64 volatile * );
 
+void __cpuid(
+    int cpuInfo[ 4 ],
+    int function_id
+);
+
+void __cpuidex(
+    int cpuInfo[ 4 ],
+    int function_id,
+    int subfunction_id
+);
+
+void __invlpg(
+    void* Address
+);
+
+void _invpcid(
+    unsigned __int32 type,
+    void* descriptor
+);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -299,6 +319,20 @@ typedef VOID( *PKDEFERRED_ROUTINE )(
 
 typedef ULONG64 KIRQL, *PKIRQL;
 typedef struct _KPCB *PKPCB;
+
+typedef enum _KPROCESSOR_FEATURE {
+    KPF_NX_ENABLED = 0,
+    KPF_PCID_ENABLED,
+    KPF_XSAVE_ENABLED,
+    KPF_PAGE1GB_ENABLED,
+    KPF_PKU_ENABLED,
+    KPF_PGE_ENABLED,
+    KPF_SMEP_ENABLED,
+    KPF_SMAP_ENABLED,
+    KPF_PAT_ENABLED,
+    KPF_FXSR_ENABLED,
+    KPF_MAXIMUM
+} KPROCESSOR_FEATURE, *PKPROCESSOR_FEATURE;
 
 typedef UCHAR KPROCESSOR_MODE, *PKPROCESSOR_MODE;
 typedef enum _MODE {

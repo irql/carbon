@@ -240,6 +240,7 @@ ZwCreateThread(
     }
     else {
         Process = PsInitialSystemProcess;
+        ProcessHandle = 0;
         ObReferenceObject( Process );
 
         // fix.

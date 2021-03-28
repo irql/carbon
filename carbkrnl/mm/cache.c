@@ -3,6 +3,77 @@
 
 #include <carbsup.h>
 #include "mi.h"
+#include "../hal/halp.h"
+
+// 
+// Initial value of 1 for pcid 0, this is the kernel's pcid
+//
+
+KSPIN_LOCK MiPcidLock = { 0 };
+ULONG64    MiPcidMap[ 64 ] = { 1 };
+
+FORCEINLINE
+VOID
+MiSetPcidBit(
+    _In_ ULONG64 Pcid,
+    _In_ BOOLEAN Long
+)
+{
+    if ( Long ) {
+
+        MiPcidMap[ Pcid / 64 ] |= ( 1ull << ( Pcid % 64 ) );
+    }
+    else {
+
+        MiPcidMap[ Pcid / 64 ] &= ~( 1ull << ( Pcid % 64 ) );
+    }
+}
+
+FORCEINLINE
+BOOLEAN
+MiGetPcidBit(
+    _In_ ULONG64 Pcid
+)
+{
+    return ( MiPcidMap[ Pcid / 64 ] >> ( Pcid % 64 ) ) & 1;
+}
+
+ULONG64
+MiAllocatePcid(
+
+)
+{
+    ULONG64 CurrentPcid;
+    KIRQL PreviousIrql;
+
+    KeAcquireSpinLock( &MiPcidLock, &PreviousIrql );
+
+    for ( CurrentPcid = 0; CurrentPcid < 4096; CurrentPcid++ ) {
+
+        if ( !MiGetPcidBit( CurrentPcid ) ) {
+
+            MiSetPcidBit( CurrentPcid, TRUE );
+            KeReleaseSpinLock( &MiPcidLock, PreviousIrql );
+            return CurrentPcid;
+        }
+    }
+
+    //
+    // what do we do when we run out of pcids?
+    //
+    // "least recently used" ?
+    //
+
+    KeBugCheck( STATUS_MEMORY_MANAGER );
+}
+
+VOID
+MiFreePcid(
+    _In_ ULONG64 Pcid
+)
+{
+    MiSetPcidBit( Pcid, FALSE );
+}
 
 VOID
 MmInitializeCaching(
@@ -48,13 +119,27 @@ MmInitializeCaching(
         if ( TypeMask & ( 1 << 11 ) ) {
 
             RtlDebugPrint( L"s%d %ull %ull\n", CurrentType, TypeBase, TypeMask );
-        }
-    }
+}
+}
 #endif
 
     //
-    // We also should setup pcids here
+    // These are the only features we utilize, if they exist
+    // When the pcb is created, these bits are set appropriately.
     //
 
-    //__writecr4( __readcr4( ) | ( 1 << 17 ) );
+    if ( KeProcessorFeatureEnabled( NULL, KPF_NX_ENABLED ) ) {
+
+        __writemsr( IA32_MSR_EFER, __readmsr( IA32_MSR_EFER ) | EFER_NXE );
+    }
+
+    if ( KeProcessorFeatureEnabled( NULL, KPF_PCID_ENABLED ) ) {
+
+        __writecr4( __readcr4( ) | CR4_PCIDE );
+    }
+
+    if ( KeProcessorFeatureEnabled( NULL, KPF_SMEP_ENABLED ) ) {
+
+        __writecr4( __readcr4( ) | CR4_SMEP );
+    }
 }

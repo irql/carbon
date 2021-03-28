@@ -33,7 +33,7 @@ NtInitializeSystemMessages(
     KeInitializeEvent( &SystemMessageEvent, FALSE );
 
     ZwCreateThread( &ThreadHandle,
-                    ZwCurrentProcess( ),
+                    0,
                     THREAD_ALL_ACCESS,
                     ( PKSTART_ROUTINE )NtSystemMessageThread,
                     NULL,

@@ -19,6 +19,7 @@ EXTERN      KiHardwareDispatch
 EXTERN      KiExceptionDispatch
 EXTERN      KiSwapContext
 EXTERN      KiIpiCall
+EXTERN      KiFatalFault
 
 ;
 ; Huuuuuuuuuuge bug. the stack is not aligned.
@@ -33,7 +34,8 @@ EXTERN      KiIpiCall
 ;newly aligned stack. The previous RSP will be automatically restored by a subsequent IRET.
 ;
 
-%DEFINE     KxTrapFrameLength 800
+%DEFINE     KxTrapFrameLength       800
+%DEFINE     KxExceptionRecordLength 304
 
 %MACRO      KiPushTrapFrame 0
     push    rax
@@ -183,6 +185,15 @@ KxSwapContext:
     iretq
 
 ALIGN       16
+KxExceptionFatalFault:
+    KiPushTrapFrame
+    mov     rcx, rsp
+    sub     rsp, 28h
+    call    KiFatalFault
+@KiYieldProcessor:
+    hlt
+    jmp     @KiYieldProcessor
+
 %ASSIGN     VECTOR 0
 %REP        256
 ALIGN       16
@@ -210,7 +221,11 @@ SECTION     .data
 
 ALIGN       16
 KiInterruptHandleBase:
-%REP        32
+%REP        7
+dq          KxExceptionInterrupt
+%ENDREP
+dq          KxExceptionFatalFault ; 0x08 - double fault
+%REP        24
 dq          KxExceptionInterrupt
 %ENDREP
 

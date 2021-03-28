@@ -183,7 +183,7 @@ typedef struct _KTRAP_FRAME {
 
 } KTRAP_FRAME, *PKTRAP_FRAME;
 
-C_ASSERT( ( sizeof( KTRAP_FRAME ) - 512 ) % 0x20 == 0 );
+C_ASSERT( ( ( sizeof( KTRAP_FRAME ) - 512 ) & 0x1F ) == 0 );
 C_ASSERT( ( sizeof( KTRAP_FRAME ) & 0xF ) == 0 );
 
 typedef struct _KSTARTUP {
@@ -390,6 +390,18 @@ EXTERN PUCHAR                                   HalIoApic;
 #define IA32_MSR_STAR                   0xC0000081
 #define IA32_MSR_LSTAR                  0xC0000082
 #define IA32_MSR_SFMASK                 0xC0000084
+
+#define CR4_PCIDE       ( 1 << 17 )
+#define CR4_PGE         ( 1 << 7 )
+#define CR4_PAE         ( 1 << 5 )
+#define CR4_PKE         ( 1 << 22 )
+#define CR4_LA57        ( 1 << 12 )
+#define CR4_UMIP        ( 1 << 11 )
+#define CR4_SMEP        ( 1 << 20 )
+#define CR4_SMAP        ( 1 << 21 )
+
+#define EFER_NXE        ( 1 << 11 )
+#define EFER_SCE        ( 1 << 0 )
 
 FORCEINLINE
 ULONG32

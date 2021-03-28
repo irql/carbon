@@ -12,8 +12,17 @@ MmCreateAddressSpace(
 )
 {
     ULONG64 Level4;
+    ULONG64 Pcid;
     PVOID MappedLevel4;
     ULONG64 PreviousAddressSpace;
+
+    Pcid = 0;
+
+    if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ),
+                                    KPF_PCID_ENABLED ) ) {
+
+        Pcid = MiAllocatePcid( );
+    }
 
     Level4 = MmAllocatePhysical( MmTypePageTable );
     MappedLevel4 = MmMapIoSpace( Level4, 0x1000 );
@@ -32,7 +41,7 @@ MmCreateAddressSpace(
     ( ( PPMLE )MappedLevel4 )[ PAGE_MAP_INDEX_WORKING_SET ].Write = 1;
 
     PreviousAddressSpace = MiGetAddressSpace( );
-    MiSetAddressSpace( Level4 );
+    MiSetAddressSpace( Level4 | Pcid );
 
     RtlZeroMemory( MiReferenceLevel4Entry( PAGE_MAP_INDEX_WORKING_SET ), 0x1000 );
 
@@ -53,7 +62,7 @@ MmCreateAddressSpace(
     MiSetAddressSpace( PreviousAddressSpace );
 
     MmUnmapIoSpace( MappedLevel4 );
-    return Level4;
+    return Level4 | Pcid;
 }
 
 NTSTATUS

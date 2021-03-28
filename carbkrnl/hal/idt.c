@@ -30,11 +30,21 @@ HalCreateInterrupt(
         Table[ i ].OffsetHigh = KxIntHandlerTable[ i ] >> 32;
         Table[ i ].Type = SYSTEM_SEGMENT_TYPE_INTERRUPT_GATE;
 
+        //
+        // wipet — Today at 15:51
+        // the 2 last checks are useless
+        // just noticed that
+        //
+
         if ( i == 0x20 ) {
 
             Table[ i ].Ist = 1;
         }
-        else if ( i < 0x20 && i != 0x29 && i != 0x2c ) {
+        else if ( i == 0x8 ) {
+
+            Table[ i ].Ist = 3;
+        }
+        else if ( i > 0x20 && i != 0x29 && i != 0x2c ) {
 
             Table[ i ].Ist = 2;
         }

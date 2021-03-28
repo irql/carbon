@@ -35,14 +35,21 @@ KiSwapContext(
     KeRaiseIrql( DISPATCH_LEVEL, &PreviousIrql );
 
     Processor = KeQueryCurrentProcessor( );
+
+    if ( KeQuerySpinLock( &KiDispatcherLock ) ||
+         Processor == NULL ) {
+
+        KeLowerIrql( PreviousIrql );
+        return;
+    }
+
     Thread = Processor->ThreadQueue;
     LastThread = Thread;
 
     // ~ 10ms a tick
     Processor->TickCount += 10;
 
-    if ( KeQuerySpinLock( &KiDispatcherLock ) ||
-         KeQuerySpinLock( &Processor->ThreadQueueLock ) ) {
+    if ( KeQuerySpinLock( &Processor->ThreadQueueLock ) ) {
 
         KeLowerIrql( PreviousIrql );
         return;

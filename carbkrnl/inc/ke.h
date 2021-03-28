@@ -41,6 +41,13 @@ KeQueryProcessorByNumber(
 );
 
 NTSYSAPI
+BOOLEAN
+KeProcessorFeatureEnabled(
+    _In_ PKPCB              Processor,
+    _In_ KPROCESSOR_FEATURE Feature
+);
+
+NTSYSAPI
 ULONG64
 KeQueryProcessorCount(
 

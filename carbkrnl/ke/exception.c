@@ -83,7 +83,7 @@ KiBugCheckFromRecord(
     //
     //
 
-    KeRaiseIrql( DISPATCH_LEVEL, &PreviousIrql );
+    KeRaiseIrql( IPI_LEVEL, &PreviousIrql );
 
     KeQueryCurrentProcessor( )->InService = TRUE;
     KeQueryCurrentProcessor( )->PreviousService = 0;
@@ -144,6 +144,31 @@ KiBugCheckFromRecord(
 #endif
 
     KiProcessorShutdown( ); // shutdown after kd invoked.
+
+    while ( 1 ) {
+
+        __halt( );
+    }
+}
+
+NORETURN
+VOID
+KiFatalFault(
+    _In_ PKTRAP_FRAME TrapFrame
+)
+{
+    KIRQL PreviousIrql;
+
+    _disable( );
+    KeRaiseIrql( IPI_LEVEL, &PreviousIrql );
+
+    KiProcessorShutdown( );
+
+    RtlDebugPrint( L"KiHandleFatalFault:\n"
+                   L"rip=%ull\n",
+                   L"rsp=%ull\n",
+                   TrapFrame->Rip,
+                   TrapFrame->Rsp );
 
     while ( 1 ) {
 
@@ -293,7 +318,7 @@ KiExceptionDispatch(
                 __halt( );
             }
         }
-    }
+}
 #endif
 
     //
