@@ -5,6 +5,52 @@
 #include "mi.h"
 #include "../hal/halp.h"
 
+//
+// first pcid is used by the kernel, poggers!
+//
+
+KSPIN_LOCK MiPcidLock = { 0 };
+ULONG64    MiPcidLruCache[ 16 ] = { 1 };
+
+ULONG64
+MiAllocatePcid(
+
+)
+{
+    ULONG64 CurrentPcid;
+    ULONG64 LruPcid;
+    ULONG64 UsePcid = ~0ull;
+    KIRQL PreviousIrql;
+
+    KeAcquireSpinLock( &MiPcidLock, &PreviousIrql );
+
+    for ( CurrentPcid = 0; CurrentPcid < 16; CurrentPcid++ ) {
+
+        if ( MiPcidLruCache[ CurrentPcid ] < UsePcid ) {
+
+            LruPcid = CurrentPcid;
+            UsePcid = MiPcidLruCache[ CurrentPcid ];
+        }
+    }
+
+    MiPcidLruCache[ LruPcid ]++;
+    KeReleaseSpinLock( &MiPcidLock, PreviousIrql );
+    return LruPcid;
+}
+
+VOID
+MiFreePcid(
+    _In_ ULONG64 Pcid
+)
+{
+    KIRQL PreviousIrql;
+    KeAcquireSpinLock( &MiPcidLock, &PreviousIrql );
+    MiPcidLruCache[ Pcid ]--;
+    KeReleaseSpinLock( &MiPcidLock, PreviousIrql );
+}
+
+#if 0
+
 // 
 // Initial value of 1 for pcid 0, this is the kernel's pcid
 //
@@ -72,8 +118,13 @@ MiFreePcid(
     _In_ ULONG64 Pcid
 )
 {
+    KIRQL PreviousIrql;
+    KeAcquireSpinLock( &MiPcidLock, &PreviousIrql );
     MiSetPcidBit( Pcid, FALSE );
+    KeReleaseSpinLock( &MiPcidLock, PreviousIrql );
 }
+
+#endif
 
 VOID
 MmInitializeCaching(
