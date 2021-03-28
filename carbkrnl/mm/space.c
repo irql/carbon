@@ -132,7 +132,11 @@ ZwAllocateVirtualMemory(
         PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].PageFrameNumber =
             MmAllocateZeroedPhysicalWithPfn( MmTypeProcessPrivate, &Zeroed, &Pfn ) >> 12;
         PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Write = ( Protect & PAGE_WRITE ) == PAGE_WRITE;
-        PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].ExecuteDisable = ( Protect & PAGE_EXECUTE ) != PAGE_EXECUTE;
+
+        if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_NX_ENABLED ) ) {
+
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].ExecuteDisable = ( Protect & PAGE_EXECUTE ) != PAGE_EXECUTE;
+        }
 
         if ( ( Protect & PAGE_NOCACHE ) == PAGE_NOCACHE ) {
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Pat = 0;

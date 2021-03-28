@@ -331,8 +331,14 @@ MiFindFreeGranularPage(
                         PageTable[ MiIndexLevel1( PageAddress ) ].PageFrameNumber = Physical >> 12;
                         PageTable[ MiIndexLevel1( PageAddress ) ].Present = 1;
                         PageTable[ MiIndexLevel1( PageAddress ) ].Write = 1;
-                        PageTable[ MiIndexLevel1( PageAddress ) ].ExecuteDisable = Type == NonPagedPoolZeroed;
+
+                        if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_NX_ENABLED ) ) {
+
+                            PageTable[ MiIndexLevel1( PageAddress ) ].ExecuteDisable = Type == NonPagedPoolZeroed;
+                        }
+
                         if ( !Zeroed ) {
+
                             RtlZeroMemory( ( PVOID )PageAddress, 0x1000 );
                         }
                         GranularPages->Entries[ CurrentPage ].Page = PageAddress;
@@ -370,6 +376,11 @@ MiFindFreeGranularPage(
     PageTable[ MiIndexLevel1( PageAddress ) ].Present = 1;
     PageTable[ MiIndexLevel1( PageAddress ) ].Write = 1;
     PageTable[ MiIndexLevel1( PageAddress ) ].ExecuteDisable = Type == NonPagedPoolZeroed;
+    if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_NX_ENABLED ) ) {
+
+        PageTable[ MiIndexLevel1( PageAddress ) ].ExecuteDisable = Type == NonPagedPoolZeroed;
+    }
+
     if ( !Zeroed ) {
         RtlZeroMemory( ( PVOID )PageAddress, 0x1000 );
     }
@@ -458,7 +469,11 @@ MmMapIoSpaceSpecifyCache(
         PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].PageFrameNumber = ( Physical >> 12 ) + CurrentPage;
         PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Present = 1;
         PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Write = 1;
-        PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].ExecuteDisable = 1;
+
+        if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_NX_ENABLED ) ) {
+
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].ExecuteDisable = 1;
+        }
 
         switch ( Cache ) {
         default:
@@ -552,10 +567,17 @@ MmAllocatePoolWithTag(
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].PageFrameNumber = ( Physical >> 12 );
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Present = 1;
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Write = 1;
-                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].ExecuteDisable = 1;
+
+                if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_NX_ENABLED ) ) {
+
+                    PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].ExecuteDisable = 1;
+                }
+
                 if ( !Zeroed ) {
+
                     RtlZeroMemory( ( PVOID )( PageAddress + ( PageLength << 12 ) ), 0x1000 );
                 }
+
                 break;
             case NonPagedPoolExecute:
                 Physical = MmAllocatePhysical( MmTypeNonPagedPool );
@@ -571,7 +593,11 @@ MmAllocatePoolWithTag(
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].PageFrameNumber = ( Physical >> 12 );
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Present = 1;
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Write = 1;
-                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].ExecuteDisable = 1;
+
+                if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_NX_ENABLED ) ) {
+
+                    PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].ExecuteDisable = 1;
+                }
                 break;
             }
         }

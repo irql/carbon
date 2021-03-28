@@ -16,10 +16,8 @@ HalEnableCpuFeatures(
 
 )
 {
-    __writemsr( IA32_MSR_GS_BASE, 0 );
-    __writemsr( IA32_MSR_GS_KERNEL_BASE, 0 );
-
-
+    KiMsrWrite( IA32_MSR_GS_BASE, 0 );
+    KiMsrWrite( IA32_MSR_GS_KERNEL_BASE, 0 );
 }
 
 VOID
@@ -36,8 +34,6 @@ HalInitializeCpu0(
     KGDT_CODE_SEGMENT UserData = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
     KGDT_CODE_SEGMENT UserGsBase = { 0, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0 };
 
-    KiInitializeServiceCallTable( );
-
     Processor = KiCreatePcb( );
     Processor->ApicId = HalLocalApics[ 0 ]->ApicId;
 
@@ -45,7 +41,7 @@ HalInitializeCpu0(
                                                sizeof( KIDT_GATE[ 256 ] ),
                                                HAL_TAG ), &Processor->Interrupt );
 
-    __lidt( &Processor->Interrupt );
+    KiLoadInterrupt( &Processor->Interrupt );
 
     HalCreateGlobal( &Processor->Global );
 
@@ -64,11 +60,11 @@ HalInitializeCpu0(
                                                            TaskState,
                                                            sizeof( KTASK_STATE ) );
 
-    _lgdt( &Processor->Global );
-    __ltr( ( USHORT )Processor->TaskStateDescriptor );
-
-    __writemsr( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
-    _enable( );
+    KiLoadGlobal( &Processor->Global );
+    KiLoadTask( ( USHORT )Processor->TaskStateDescriptor );
+    KiMsrWrite( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
+    KiInitializeServiceCallTable( );
+    KiInterruptEnable( );
 
     HalLocalApicEnable( );
 }
@@ -85,7 +81,6 @@ HalProcessorStartupPrepare(
 
     HalEnableCpuFeatures( );
     MmInitializeCaching( );
-    KiInitializeServiceCallTable( );
 
     Processor = KiCreatePcb( );
     Processor->ApicId = KiCurrentInitCpu;
@@ -96,7 +91,7 @@ HalProcessorStartupPrepare(
     RtlCopyMemory( &Processor->Interrupt, &Processor0->Interrupt, sizeof( KDESCRIPTOR_TABLE ) );
     RtlCopyMemory( &Processor->Global, &Processor0->Global, sizeof( KDESCRIPTOR_TABLE ) );
 
-    __lidt( &Processor->Interrupt );
+    KiLoadInterrupt( &Processor->Interrupt );
 
     TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
     TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
@@ -109,18 +104,20 @@ HalProcessorStartupPrepare(
 
     Processor->SegGs = HalInsertCodeSegment( &Processor->Global, &UserGsBase );
 
-    _lgdt( &Processor->Global );
-    __ltr( ( USHORT )Processor->TaskStateDescriptor );
+    KiLoadGlobal( &Processor->Global );
+    KiLoadTask( ( USHORT )Processor->TaskStateDescriptor );
 
-    __writemsr( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
-    _enable( );
+    KiMsrWrite( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
+    KiInitializeServiceCallTable( );
+
+    KiInterruptEnable( );
 
     HalLocalApicEnable( );
     _InterlockedIncrement64( ( LONG64* )&KiCpuInitComplete );
     KeLowerIrql( PASSIVE_LEVEL );
     while ( 1 ) {
 
-        __halt( );
+        KiProcessorHalt( );
     }
 }
 
@@ -136,7 +133,7 @@ HalStartProcessors(
     PKSTARTUP ExecStartup = ( PKSTARTUP )( 0x1000 + ( CHAR* )HalProcessorStartupEnd - ( CHAR* )HalProcessorStartup );
 
     RtlCopyMemory( ExecBase, ( PVOID )HalProcessorStartup, ( ULONG )( ( CHAR* )HalProcessorStartupEnd - ( CHAR* )HalProcessorStartup ) );
-    ExecStartup->TableBase = ( ULONG32 )__readcr3( );
+    ExecStartup->TableBase = ( ULONG32 )MiGetAddressSpace( );
     ExecStartup->GdtBase = 0x1800;
     ExecStartup->GdtLimit = 23;
     ExecStartup->InitialJmp = ( ULONG64 )HalProcessorStartupPrepare;

@@ -15,12 +15,6 @@ EXTERN VOLATILE ULONG64 KiCurrentInitCpu;
 EXTERN VOLATILE ULONG64 KiCpuInitComplete;
 EXTERN KSPIN_LOCK KiDispatcherLock;
 
-__declspec( noinline )
-void p( ) {
-
-    __debugbreak( );
-}
-
 PWSTR
 RtlNameFromFile(
     _In_ PWSTR FileName
@@ -289,6 +283,10 @@ KiInitThread(
 
                 Import++;
             }
+
+            RtlDebugPrint( L"file=%s addr=%ull\n",
+                           Vad->FileObject->FileName.Buffer,
+                           Vad->Start );
             /*
             RtlDebugPrint( L"rd map=%s "
                            L"start=%ull "

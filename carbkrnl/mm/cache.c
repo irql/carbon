@@ -4,6 +4,7 @@
 #include <carbsup.h>
 #include "mi.h"
 #include "../hal/halp.h"
+#include "../ke/ki.h"
 
 //
 // first pcid is used by the kernel, poggers!
@@ -139,11 +140,11 @@ MmInitializeCaching(
     // they're set properly.
     //
 
-    Pat.Long = __readmsr( IA32_MSR_PAT );
+    Pat.Long = KiMsrRead( IA32_MSR_PAT );
     Pat.Pa0 = MEM_TYPE_WB;
     Pat.Pa1 = MEM_TYPE_WC;
     Pat.Pa2 = MEM_TYPE_UC;
-    __writemsr( IA32_MSR_PAT, Pat.Long );
+    KiMsrWrite( IA32_MSR_PAT, Pat.Long );
 
     //
     // This layout means 
@@ -170,8 +171,8 @@ MmInitializeCaching(
         if ( TypeMask & ( 1 << 11 ) ) {
 
             RtlDebugPrint( L"s%d %ull %ull\n", CurrentType, TypeBase, TypeMask );
-}
-}
+        }
+    }
 #endif
 
     //
@@ -181,16 +182,16 @@ MmInitializeCaching(
 
     if ( KeProcessorFeatureEnabled( NULL, KPF_NX_ENABLED ) ) {
 
-        __writemsr( IA32_MSR_EFER, __readmsr( IA32_MSR_EFER ) | EFER_NXE );
+        KiMsrWrite( IA32_MSR_EFER, KiMsrRead( IA32_MSR_EFER ) | EFER_NXE );
     }
 
     if ( KeProcessorFeatureEnabled( NULL, KPF_PCID_ENABLED ) ) {
 
-        __writecr4( __readcr4( ) | CR4_PCIDE );
+        KiCr4Write( KiCr4Read( ) | CR4_PCIDE );
     }
 
     if ( KeProcessorFeatureEnabled( NULL, KPF_SMEP_ENABLED ) ) {
 
-        __writecr4( __readcr4( ) | CR4_SMEP );
+        KiCr4Write( KiCr4Read( ) | CR4_SMEP );
     }
 }

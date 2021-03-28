@@ -83,6 +83,7 @@ typedef struct _KPROCESS {
     PLIST_ENTRY  StackLinks;
     ULONG64      StackCharge;
     ULONG64      StackCount;
+    KSPIN_LOCK   VadLock;
 } KPROCESS, *PKPROCESS;
 
 #pragma pack(push, 8)
@@ -279,3 +280,52 @@ KeInitializeKernelClock(
 #define E_XF E_XM
 #define E_VE KI_EXCEPTION_VIRTUAL_EXCEPTION
 #define E_SX KI_EXCEPTION_SECURITY_EXCEPTION
+
+#define KiMsrRead           __readmsr 
+#define KiMsrWrite          __writemsr
+#define KiInterruptEnable   _enable
+#define KiInterruptDisable  _disable
+#define KiLoadInterrupt     __lidt
+#define KiLoadGlobal        _lgdt
+#define KiLoadTask          __ltr
+#define KiProcessorHalt     __halt
+#define KiCpuid             __cpuidex
+//_mm_pause
+#define KiYieldProcessor   
+#define KiInvpcid           _invpcid
+#define KiInvlpg            __invlpg
+#define KiCr0Read           __readcr0
+#define KiCr0Write          __writecr0
+#define KiCr4Read           __readcr4
+#define KiCr4Write          __writecr4
+// MiSet/MiSet AddressSpace for cr3.
+
+#define CPUID_EAX 0
+#define CPUID_EBX 1
+#define CPUID_ECX 2
+#define CPUID_EDX 3
+
+FORCEINLINE
+VOID
+KiSafeCpuid(
+    _In_ int IdRegisters[ 4 ],
+    _In_ int Leaf,
+    _In_ int SubLeaf
+)
+{
+    if ( Leaf > 0x80000000 ) {
+
+        KiCpuid( IdRegisters, 0x80000000, 0 );
+
+        if ( Leaf > IdRegisters[ CPUID_EAX ] ) {
+
+            IdRegisters[ 0 ] = 0;
+            IdRegisters[ 1 ] = 0;
+            IdRegisters[ 2 ] = 0;
+            IdRegisters[ 3 ] = 0;
+            return;
+        }
+    }
+
+    KiCpuid( IdRegisters, Leaf, SubLeaf );
+}

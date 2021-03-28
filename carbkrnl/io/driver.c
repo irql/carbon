@@ -69,8 +69,6 @@ IoLoadDriver(
     PVOID ImageBaseAddress;
     HANDLE ProcessHandle;
 
-    //RtlDebugPrint( L"Loading %s\n", DriverObject->DriverName.Buffer );
-
     ntStatus = ObOpenObjectFromPointer( &ProcessHandle,
                                         PsInitialSystemProcess,
                                         PROCESS_ALL_ACCESS,
@@ -149,6 +147,10 @@ IoLoadDriver(
         MmFreePoolWithTag( SectionAttributes.ObjectName.Buffer, IO_TAG );
         return ntStatus;
     }
+
+    RtlDebugPrint( L"load=%s addr=%ull\n",
+                   DriverObject->DriverName.Buffer,
+                   ( ( PMM_VAD )DriverObject->DriverVad )->Start );
 
     // :halfmemeright: 
     // NOTE: if the module is not a /dll then it will be null

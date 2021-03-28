@@ -11,7 +11,7 @@ MmIpiAddressFlush(
     _In_ PVOID Address
 )
 {
-    __invlpg( Address );
+    KiInvlpg( Address );
 }
 
 VOID
@@ -27,8 +27,8 @@ MmFlushAddress(
     if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_PCID_ENABLED ) ) {
 
         InvpcidDescriptor.Address = Address;
-        InvpcidDescriptor.Pcid = __readcr3( ) & 0xFFF;
-        _invpcid( 0, &InvpcidDescriptor );
+        InvpcidDescriptor.Pcid = MiGetAddressSpace( ) & 0xFFF;
+        KiInvpcid( 0, &InvpcidDescriptor );
     }
     else {
 

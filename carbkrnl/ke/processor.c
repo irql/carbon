@@ -36,7 +36,8 @@ KiCreatePcb(
     KeEnableOnPresent( KPF_NX_ENABLED, FALSE );
     KeEnableOnPresent( KPF_PCID_ENABLED, FALSE );
     KeEnableOnPresent( KPF_SMEP_ENABLED, FALSE );
-    KeEnableOnPresent( KPF_FXSR_ENABLED, TRUE );
+    KeEnableOnPresent( KPF_FXSR_ENABLED, TRUE ); // uh? 
+    KeEnableOnPresent( KPF_SC_ENABLED, TRUE );
 
 #undef KeEnableOnPresent
 
@@ -70,10 +71,6 @@ KeProcessorFeatureEnabled(
     _In_ KPROCESSOR_FEATURE Feature
 )
 {
-#define CPUID_EAX 0
-#define CPUID_EBX 1
-#define CPUID_ECX 2
-#define CPUID_EDX 3
 
     int IdRegisters[ 4 ];
     int IdRegisters1[ 4 ];
@@ -91,33 +88,36 @@ KeProcessorFeatureEnabled(
 
         switch ( Feature ) { // 4.1.4 vol 3a
         case KPF_NX_ENABLED:
-            __cpuid( IdRegisters, 0x80000001 );
+            KiSafeCpuid( IdRegisters, 0x80000001, 0 );
             return ( IdRegisters[ CPUID_EDX ] >> 20 ) & 1;
         case KPF_PCID_ENABLED:
-            __cpuid( IdRegisters, 1 );
-            __cpuidex( IdRegisters1, 7, 0 );
+            KiSafeCpuid( IdRegisters, 1, 0 );
+            KiSafeCpuid( IdRegisters1, 7, 0 );
             return ( ( IdRegisters[ CPUID_ECX ] >> 17 ) & 1 ) && ( ( IdRegisters1[ CPUID_EBX ] >> 10 ) & 1 );
         case KPF_SMEP_ENABLED:
-            __cpuidex( IdRegisters, 7, 0 );
+            KiSafeCpuid( IdRegisters, 7, 0 );
             return ( IdRegisters[ CPUID_EBX ] >> 7 ) & 1;
         case KPF_SMAP_ENABLED:
-            __cpuidex( IdRegisters, 7, 0 );
+            KiSafeCpuid( IdRegisters, 7, 0 );
             return ( IdRegisters[ CPUID_EBX ] >> 20 ) & 1;
         case KPF_PKU_ENABLED:
-            __cpuidex( IdRegisters, 7, 0 );
+            KiSafeCpuid( IdRegisters, 7, 0 );
             return ( IdRegisters[ CPUID_ECX ] >> 3 ) & 1;
         case KPF_PAGE1GB_ENABLED:
-            __cpuid( IdRegisters, 0x80000001 );
+            KiSafeCpuid( IdRegisters, 0x80000001, 0 );
             return ( IdRegisters[ CPUID_EDX ] >> 26 ) & 1;
         case KPF_PAT_ENABLED:
-            __cpuid( IdRegisters, 1 );
+            KiSafeCpuid( IdRegisters, 1, 0 );
             return ( IdRegisters[ CPUID_EDX ] >> 16 ) & 1;
         case KPF_PGE_ENABLED:
-            __cpuid( IdRegisters, 1 );
+            KiSafeCpuid( IdRegisters, 1, 0 );
             return ( IdRegisters[ CPUID_EDX ] >> 13 ) & 1;
         case KPF_FXSR_ENABLED:
-            __cpuid( IdRegisters, 1 );
+            KiSafeCpuid( IdRegisters, 1, 0 );
             return ( IdRegisters[ CPUID_EDX ] >> 24 ) & 1;
+        case KPF_SC_ENABLED:
+            KiSafeCpuid( IdRegisters, 0x80000001, 0 );
+            return ( IdRegisters[ CPUID_EDX ] >> 11 ) & 1;
         default:
             __assume( 0 );
         }

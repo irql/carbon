@@ -776,7 +776,10 @@ MmMapViewOfSection(
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].User = 1;
         }
 
-        PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].ExecuteDisable = ( Protection & PAGE_EXECUTE ) != PAGE_EXECUTE;
+        if ( KeProcessorFeatureEnabled( KeQueryCurrentProcessor( ), KPF_NX_ENABLED ) ) {
+
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].ExecuteDisable = ( Protection & PAGE_EXECUTE ) != PAGE_EXECUTE;
+        }
 
         PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Write = ( Protection & PAGE_WRITE ) == PAGE_WRITE;
 

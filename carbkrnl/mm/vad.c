@@ -29,12 +29,15 @@ MiInsertVad(
 )
 {
     PMM_VAD Final;
+    KIRQL PreviousIrql;
+
+    KeAcquireSpinLock( &Process->VadLock, &PreviousIrql );
 
     Vad->Link = NULL;
     if ( Process->VadRoot == NULL ) {
 
         Process->VadRoot = Vad;
-
+        KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
         return;
     }
 
@@ -46,6 +49,7 @@ MiInsertVad(
     }
 
     Final->Link = Vad;
+    KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
 }
 
 PMM_VAD
@@ -55,9 +59,13 @@ MiFindVadByFullName(
 )
 {
     PMM_VAD CurrentVad;
+    KIRQL PreviousIrql;
+
+    KeAcquireSpinLock( &Process->VadLock, &PreviousIrql );
 
     if ( Process->VadRoot == NULL ) {
 
+        KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
         return NULL;
     }
 
@@ -66,12 +74,14 @@ MiFindVadByFullName(
     do {
         if ( RtlCompareUnicodeString( &CurrentVad->FileObject->FileName, FileName, FALSE ) == 0 ) {
 
+            KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
             return CurrentVad;
         }
 
         CurrentVad = CurrentVad->Link;
     } while ( CurrentVad != NULL );
 
+    KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
     return NULL;
 }
 
@@ -82,13 +92,16 @@ MiFindVadByShortName(
 )
 {
     PMM_VAD CurrentVad;
+    KIRQL PreviousIrql;
+
+    KeAcquireSpinLock( &Process->VadLock, &PreviousIrql );
 
     if ( Process->VadRoot == NULL ) {
 
+        KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
         return NULL;
     }
 
-    // might wana sync this
     CurrentVad = Process->VadRoot;
     do {
         if ( RtlCompareString( ShortName->Buffer,
@@ -96,12 +109,14 @@ MiFindVadByShortName(
                                FsRtlFileNameIndex( &CurrentVad->FileObject->FileName ),
                                TRUE ) == 0 ) {
 
+            KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
             return CurrentVad;
         }
 
         CurrentVad = CurrentVad->Link;
     } while ( CurrentVad != NULL );
 
+    KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
     return NULL;
 }
 
@@ -112,9 +127,13 @@ MiFindVadByAddress(
 )
 {
     PMM_VAD CurrentVad;
+    KIRQL PreviousIrql;
+
+    KeAcquireSpinLock( &Process->VadLock, &PreviousIrql );
 
     if ( Process->VadRoot == NULL ) {
 
+        KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
         return NULL;
     }
 
@@ -123,12 +142,14 @@ MiFindVadByAddress(
         if ( Address >= CurrentVad->Start &&
              Address < CurrentVad->End ) {
 
+            KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
             return CurrentVad;
         }
 
         CurrentVad = CurrentVad->Link;
     } while ( CurrentVad != NULL );
 
+    KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
     return NULL;
 }
 
@@ -140,6 +161,9 @@ MiRemoveVadByPointer(
 {
     PMM_VAD CurrentVad;
     PMM_VAD LastVad;
+    KIRQL PreviousIrql;
+
+    KeAcquireSpinLock( &Process->VadLock, &PreviousIrql );
 
     LastVad = Process->VadRoot;
     CurrentVad = Process->VadRoot;
@@ -159,5 +183,6 @@ MiRemoveVadByPointer(
         CurrentVad = CurrentVad->Link;
     }
 
+    KeReleaseSpinLock( &Process->VadLock, PreviousIrql );
     return;
 }

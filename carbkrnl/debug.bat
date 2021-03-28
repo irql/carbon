@@ -35,9 +35,9 @@ diskpart /s %cd%\dprt
 del dprt
 taskkill /f /im kdwin32.exe
 
-vmrun -T ws start "%cd%\vm\vmware\carbon_v2.vmx"
+!vmrun -T ws start "%cd%\vm\vmware\carbon_v2.vmx"
 .\x64\Release\kdwin32.exe
-!pause
+pause
 !vmrun -T ws stop "%cd%\vm\vmware\carbon_v2.vmx"
 
 rem vmrun -T ws reset "%cd%\vm\vmware\carbon_v2.vmx"

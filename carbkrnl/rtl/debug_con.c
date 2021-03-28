@@ -336,7 +336,7 @@ RtlDebugConsoleInit(
         PsInitialSystemProcess,
         &MappedFramebuffer, 0, 0,
         PAGE_READ | PAGE_WRITE );
-#if 1
+#if 0
     KIRQL PreviousIrql;
     PIO_INTERRUPT InterruptObject;
     OBJECT_ATTRIBUTES Interrupt = { 0 };

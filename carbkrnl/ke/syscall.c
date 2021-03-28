@@ -54,11 +54,11 @@ KiInitializeServiceCallTable(
 {
     STATIC BOOLEAN KiNtInitialized = FALSE;
 
-    __writemsr( IA32_MSR_EFER, __readmsr( IA32_MSR_EFER ) | EFER_SCE );
+    KiMsrWrite( IA32_MSR_EFER, KiMsrRead( IA32_MSR_EFER ) | EFER_SCE );
 
-    __writemsr( IA32_MSR_LSTAR, ( unsigned long long )KiFastSystemCall );
-    __writemsr( IA32_MSR_STAR, ( ( ( ULONG64 )GDT_USER_CODE64 - 16 ) << 48 ) | ( ( ( ULONG64 )GDT_KERNEL_CODE64 ) << 32 ) );
-    __writemsr( IA32_MSR_SFMASK, 0 );
+    KiMsrWrite( IA32_MSR_LSTAR, ( unsigned long long )KiFastSystemCall );
+    KiMsrWrite( IA32_MSR_STAR, ( ( ( ULONG64 )GDT_USER_CODE64 - 16 ) << 48 ) | ( ( ( ULONG64 )GDT_KERNEL_CODE64 ) << 32 ) );
+    KiMsrWrite( IA32_MSR_SFMASK, 0 );
 
     if ( !KiNtInitialized ) {
         KeInstallServiceDescriptorTable( 0,

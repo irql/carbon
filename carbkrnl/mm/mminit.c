@@ -105,9 +105,9 @@ MmInitializeMemoryManager(
     OriginalPhysical = DatabasePhysical;
     OriginalLength = DatabaseLength;
 
-    ( ( PPMLE )__readcr3( ) )[ PAGE_MAP_INDEX_PFN_DATABASE ].PageFrameNumber = DatabasePhysical >> 12;
-    ( ( PPMLE )__readcr3( ) )[ PAGE_MAP_INDEX_PFN_DATABASE ].Present = 1;
-    ( ( PPMLE )__readcr3( ) )[ PAGE_MAP_INDEX_PFN_DATABASE ].Write = 1;
+    ( ( PPMLE )MiGetAddressSpace( ) )[ PAGE_MAP_INDEX_PFN_DATABASE ].PageFrameNumber = DatabasePhysical >> 12;
+    ( ( PPMLE )MiGetAddressSpace( ) )[ PAGE_MAP_INDEX_PFN_DATABASE ].Present = 1;
+    ( ( PPMLE )MiGetAddressSpace( ) )[ PAGE_MAP_INDEX_PFN_DATABASE ].Write = 1;
     RtlZeroMemory( MiReferenceLevel4Entry( PAGE_MAP_INDEX_PFN_DATABASE ), 0x1000 );
     DatabasePhysical += 0x1000;
     DatabaseLength -= 0x1000;
@@ -187,9 +187,9 @@ MmInitializeMemoryManager(
     MmChangeDatabaseMemoryVaType( 0, 0x400000, MmTypeSystemLocked );
     MmChangeDatabaseMemoryVaType( OriginalPhysical, OriginalLength, MmTypeSystemLocked );
 
-    ( ( PPMLE )__readcr3( ) )[ PAGE_MAP_INDEX_WORKING_SET ].PageFrameNumber = MmAllocatePhysical( MmTypePageTable ) >> 12;
-    ( ( PPMLE )__readcr3( ) )[ PAGE_MAP_INDEX_WORKING_SET ].Present = 1;
-    ( ( PPMLE )__readcr3( ) )[ PAGE_MAP_INDEX_WORKING_SET ].Write = 1;
+    ( ( PPMLE )MiGetAddressSpace( ) )[ PAGE_MAP_INDEX_WORKING_SET ].PageFrameNumber = MmAllocatePhysical( MmTypePageTable ) >> 12;
+    ( ( PPMLE )MiGetAddressSpace( ) )[ PAGE_MAP_INDEX_WORKING_SET ].Present = 1;
+    ( ( PPMLE )MiGetAddressSpace( ) )[ PAGE_MAP_INDEX_WORKING_SET ].Write = 1;
     RtlZeroMemory( MiReferenceLevel4Entry( PAGE_MAP_INDEX_WORKING_SET ), 0x1000 );
 
     MiReferenceLevel4Entry( PAGE_MAP_INDEX_WORKING_SET )[ 0 ].PageFrameNumber = MmAllocatePhysical( MmTypePageTable ) >> 12;
@@ -202,12 +202,11 @@ MmInitializeMemoryManager(
     MiReferenceLevel3Entry( PAGE_MAP_INDEX_WORKING_SET, 0 )[ 0 ].Write = 1;
     RtlZeroMemory( MiReferenceLevel2Entry( PAGE_MAP_INDEX_WORKING_SET, 0, 0 ), 0x1000 );
 
-    MiReferenceLevel2Entry( PAGE_MAP_INDEX_WORKING_SET, 0, 0 )[ 0 ].PageFrameNumber = __readcr3( ) >> 12;
+    MiReferenceLevel2Entry( PAGE_MAP_INDEX_WORKING_SET, 0, 0 )[ 0 ].PageFrameNumber = MiGetAddressSpace( ) >> 12;
     MiReferenceLevel2Entry( PAGE_MAP_INDEX_WORKING_SET, 0, 0 )[ 0 ].Present = 1;
     MiReferenceLevel2Entry( PAGE_MAP_INDEX_WORKING_SET, 0, 0 )[ 0 ].Write = 1;
 
     MmAddressPageTable( 0 )[ MiIndexLevel1( 0 ) ].Long = 0;
-    //MmAddressPageTable( 511 )[ MiIndexLevel1( 511 ) ].Long = 0;
     MiReferenceLevel2Entry( 511, 511, 511 )[ 511 ].Long = 0; // highest address (prevents stuff like null - 1 writes)
     MmMatchQuotaZeroListEvent( );
 }
