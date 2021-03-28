@@ -73,12 +73,12 @@ NtRegisterClass(
     KeAcquireSpinLock( &ClassListLock, &PreviousIrql );
     if ( ClassList == NULL ) {
 
-        KeInitializeListHead( &NewClass->ClassLinks );
+        KeInitializeHeadList( &NewClass->ClassLinks );
         ClassList = &NewClass->ClassLinks;
     }
     else {
 
-        KeInsertEntryTail( ClassList, &NewClass->ClassLinks );
+        KeInsertTailList( ClassList, &NewClass->ClassLinks );
     }
     KeReleaseSpinLock( &ClassListLock, PreviousIrql );
 

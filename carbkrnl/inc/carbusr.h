@@ -197,7 +197,11 @@ NTSYSAPI NORETURN void __cdecl longjmp(
     _In_ int     _Value
 );
 
-#if 1
+#ifndef NTDLL_INTERNAL
+//
+// intrins
+//
+
 NTSYSAPI int        strcmp( const char* str1, const char* str2 );
 NTSYSAPI size_t     strlen( const char* str1 );
 NTSYSAPI char*      strcpy( char* destination, const char* source );
@@ -208,27 +212,26 @@ NTSYSAPI int        memcmp( const void* ptr1, const void* ptr2, size_t num );
 NTSYSAPI void*      memcpy( void* destination, const void* source, size_t num );
 NTSYSAPI void*      memset( void* mem, int v, size_t num );
 NTSYSAPI void*      memmove( void* destination, const void* source, size_t num );
+
+NTSYSAPI size_t     wcslen( const wchar_t* string );
+NTSYSAPI wchar_t*   wcscpy( wchar_t* destination, const wchar_t* source );
+
 #else
 
-#pragma intrinsic( strcmp )
-NTSYSAPI int        strcmp( const char* str1, const char* str2 );
-#pragma intrinsic( strlen )
-NTSYSAPI size_t     strlen( const char* str1 );
-#pragma intrinsic( strcpy )
-NTSYSAPI char*      strcpy( char* destination, const char* source );
-#pragma intrinsic( strcat )
-NTSYSAPI char*      strcat( char* destination, const char* source );
+int        strcmp( const char* str1, const char* str2 );
+size_t     strlen( const char* str1 );
+char*      strcpy( char* destination, const char* source );
+char*      strcat( char* destination, const char* source );
 
-#pragma intrinsic( memchr )
-NTSYSAPI void*      memchr( void* ptr, int value, size_t num );
-#pragma intrinsic( memcmp )
-NTSYSAPI int        memcmp( const void* ptr1, const void* ptr2, size_t num );
-#pragma intrinsic( memcpy )
-NTSYSAPI void*      memcpy( void* destination, const void* source, size_t num );
-#pragma intrinsic( memset )
-NTSYSAPI void*      memset( void* mem, int v, size_t num );
-#pragma intrinsic( memmove )
-NTSYSAPI void*      memmove( void* destination, const void* source, size_t num );
+void*      memchr( void* ptr, int value, size_t num );
+int        memcmp( const void* ptr1, void* ptr2, size_t num );
+void*      memcpy( void* destination, void* source, size_t num );
+void*      memset( void* mem, int v, size_t num );
+void*      memmove( void* destination, void* source, size_t num );
+
+size_t     wcslen( const wchar_t* string );
+wchar_t*   wcscpy( wchar_t* destination, const wchar_t* source );
+
 #endif
 
 NTSYSAPI int        strncmp( const char* str1, const char* str2, size_t num );
@@ -238,8 +241,6 @@ NTSYSAPI const char*strstr( const char *s1, const char *s2 );
 NTSYSAPI char*      strncpy( char* destination, const char* source, size_t num );
 NTSYSAPI long int   strtol( const char* str, char** end, int base );
 
-NTSYSAPI size_t     wcslen( const wchar_t* string );
-NTSYSAPI wchar_t*   wcscpy( wchar_t* destination, const wchar_t* source );
 NTSYSAPI wchar_t*   wcscat( wchar_t* destination, const wchar_t* source );
 NTSYSAPI wchar_t*   wcsdup( wchar_t* string );
 NTSYSAPI wchar_t*   wcsrev( wchar_t* String );
@@ -425,4 +426,10 @@ NtDrawText(
     _In_ PRECT           Rect,
     _In_ ULONG32         Flags,
     _In_ ULONG32         Colour
+);
+
+NTUSRAPI
+VOID
+NtInitializeUser(
+
 );

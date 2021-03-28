@@ -207,7 +207,7 @@ PspCreateUserProcess(
 
     MiSetAddressSpace( PreviousAddressSpace );
 
-    KeInsertEntryTail( &PsInitialSystemProcess->ProcessLinks, &Process->ProcessLinks );
+    KeInsertTailList( &PsInitialSystemProcess->ProcessLinks, &Process->ProcessLinks );
 
     ZwCreateThread( &ThreadHandle,
                     *ProcessHandle,

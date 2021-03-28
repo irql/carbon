@@ -18,6 +18,8 @@ HalEnableCpuFeatures(
 {
     //__writecr4( __readcr4( ) | ( 1 << 7 ) ); // pge.
     __writemsr( IA32_MSR_EFER, __readmsr( IA32_MSR_EFER ) | ( 1 << 11 ) );
+    __writemsr( IA32_MSR_GS_BASE, 0 );
+    __writemsr( IA32_MSR_GS_KERNEL_BASE, 0 );
 }
 
 VOID
@@ -44,7 +46,6 @@ HalInitializeCpu0(
                                                HAL_TAG ), &Processor->Interrupt );
 
     __lidt( &Processor->Interrupt );
-    _enable( );
 
     HalCreateGlobal( &Processor->Global );
 
@@ -55,9 +56,8 @@ HalInitializeCpu0(
     Processor->SegGs = HalInsertCodeSegment( &Processor->Global, &UserGsBase );
 
     TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
-    TaskState->Ist[ 0 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
-    TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
-    //TaskState->Rsp0 =  ( ULONG64 )PspCreateStack( 0, 0x8000 );
+    TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
+    TaskState->Ist[ 2 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->IopbOffset = sizeof( KTASK_STATE );
     Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
                                                            TaskState,
@@ -67,6 +67,7 @@ HalInitializeCpu0(
     __ltr( ( USHORT )Processor->TaskStateDescriptor );
 
     __writemsr( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
+    _enable( );
 
     HalLocalApicEnable( );
 }
@@ -95,12 +96,10 @@ HalProcessorStartupPrepare(
     RtlCopyMemory( &Processor->Global, &Processor0->Global, sizeof( KDESCRIPTOR_TABLE ) );
 
     __lidt( &Processor->Interrupt );
-    _enable( );
 
     TaskState = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KTASK_STATE ), HAL_TAG );
-    TaskState->Ist[ 0 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
-    TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 );
-    //TaskState->Rsp0 =  ( ULONG64 )PspCreateStack( 0, 0x8000 );
+    TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
+    TaskState->Ist[ 2 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->IopbOffset = sizeof( KTASK_STATE );
     Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
                                                            TaskState,
@@ -112,6 +111,7 @@ HalProcessorStartupPrepare(
     __ltr( ( USHORT )Processor->TaskStateDescriptor );
 
     __writemsr( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
+    _enable( );
 
     HalLocalApicEnable( );
     _InterlockedIncrement64( ( LONG64* )&KiCpuInitComplete );

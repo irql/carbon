@@ -27,6 +27,8 @@ NtProcessStartup(
 
     LdrInitializeProcess( );
 
+    NtInitializeUser( );
+
     char data[ 256 ] = { 0 };
 
     FILE* file;
@@ -54,8 +56,6 @@ NtProcessStartup(
               data,
               ftell( file ) );
 
-    RtlDebugPrint( BootString );
-
     wcscpy( WindowClass.ClassName, L"BITCH" );
     WindowClass.WndProc = NULL;
 
@@ -77,8 +77,8 @@ NtProcessStartup(
                     0 );
     NtCreateWindow( &ButtonHandle,
                     WindowHandle,
-                    L"",
-                    L"BUTTON",
+                    L"Brish",
+                    L"EDIT",
                     280,
                     24,
                     114,
@@ -108,15 +108,15 @@ NtProcessStartup(
     PNT_FONT_HANDLE FontHandle;
 
     NTSTATUS ntStatus = NtCreateFont( &FontHandle,
-                                      12,
+                                      11,
                                       0,
                                       L"MICROSS.TTF" );
     RtlDebugPrint( L"NtCreateFont: %ul\n", ntStatus );
     RECT FontClip;
 
     FontClip.Left = 0;
-    FontClip.Top = 12;
-    FontClip.Bottom = 300 - 12;
+    FontClip.Top = 14;
+    FontClip.Bottom = 300 - 14;
     FontClip.Right = 400;
 
     while ( TRUE ) {
@@ -133,14 +133,14 @@ NtProcessStartup(
                                      Message.MessageId,
                                      Message.Param1,
                                      Message.Param2 );
-
+#if 0
                 NtDrawText( ContextHandle,
                             FontHandle,
                             L"This is some text drawn by user.dll via freetype.dll lol",
                             &FontClip,
                             0,
                             0xFF000000 );
-
+#endif
                 NtEndPaint( WindowHandle );
 
             }
@@ -153,15 +153,20 @@ NtProcessStartup(
             }
         }
 
+#if 0
         if ( NtReceiveMessage( ButtonHandle, &Message ) ) {
-
-
             NtDefaultWindowProc( ButtonHandle,
                                  Message.MessageId,
                                  Message.Param1,
                                  Message.Param2 );
         }
+#endif
+        if ( NtReceiveMessage( ButtonHandle, &Message ) ) {
+            WND_PROC proc;
+            NtGetWindowProc( ButtonHandle, &proc );
+            proc( ( PKWND )ButtonHandle, Message.MessageId, Message.Param1, Message.Param2 );
 
+        }
 
         if ( NtReceiveMessage( StaticHandle, &Message ) ) {
             NtDefaultWindowProc( StaticHandle,

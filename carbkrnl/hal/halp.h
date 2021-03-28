@@ -76,21 +76,21 @@ C_ASSERT( sizeof( KGDT_SYSTEM_SEGMENT ) == 16 );
 
 typedef struct _KTASK_STATE {
     ULONG32 Reserved1;
-    ULONG64 Rsp0;
-    ULONG64 Rsp1;
-    ULONG64 Rsp2;
+    ULONG64 Rsp[ 3 ];
+    ULONG64 Ist[ 8 ];
     ULONG64 Reserved2;
-    ULONG64 Ist[ 7 ];
-    ULONG64 Reserved3;
-    ULONG32 IopbOffset;
+    USHORT  Reserved3;
+    USHORT  IopbOffset;
 } KTASK_STATE, *PKTASK_STATE;
 
 C_ASSERT( sizeof( KTASK_STATE ) == 0x68 );
+C_ASSERT( FIELD_OFFSET( KTASK_STATE, Rsp ) == 4 );
+C_ASSERT( FIELD_OFFSET( KTASK_STATE, Ist ) == 28 );
 
 typedef union _KIDT_GATE {
     struct {
         ULONG64 OffsetLow : 16;
-        ULONG64 CodeSelector : 16;
+        ULONG64 SegmentSelector : 16;
         ULONG64 Ist : 3;
         ULONG64 Reserved : 5;
         ULONG64 Type : 4;
@@ -184,6 +184,7 @@ typedef struct _KTRAP_FRAME {
 } KTRAP_FRAME, *PKTRAP_FRAME;
 
 C_ASSERT( ( sizeof( KTRAP_FRAME ) - 512 ) % 0x20 == 0 );
+C_ASSERT( ( sizeof( KTRAP_FRAME ) & 0xF ) == 0 );
 
 typedef struct _KSTARTUP {
     ULONG32 TableBase;

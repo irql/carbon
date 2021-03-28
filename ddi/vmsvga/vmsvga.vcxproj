@@ -11,12 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dc.c" />
     <ClCompile Include="ddi.c" />
     <ClCompile Include="driver.c" />
     <ClCompile Include="svga.c" />
     <ClCompile Include="svga3d.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dc.h" />
     <ClInclude Include="ddi.h" />
     <ClInclude Include="driver.h" />
     <ClInclude Include="svga.h" />

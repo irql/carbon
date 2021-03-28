@@ -3,8 +3,12 @@
   <ItemGroup>
     <ClCompile Include="driver.c" />
     <ClCompile Include="font.c" />
+    <ClCompile Include="textedit.c" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="service.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="user.h" />
   </ItemGroup>
 </Project>

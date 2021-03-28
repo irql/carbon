@@ -108,11 +108,11 @@ ObOpenObjectFromPointer(
 
     KeAcquireSpinLock( &Process->HandleTable.HandleLock, &PreviousIrql );
     if ( Process->HandleTable.HandleCount == 0 ) {
-        KeInitializeListHead( &NewHandle->HandleLinks );
+        KeInitializeHeadList( &NewHandle->HandleLinks );
         Process->HandleTable.HandleLinks = &NewHandle->HandleLinks;
     }
     else {
-        KeInsertEntryTail( Process->HandleTable.HandleLinks, &NewHandle->HandleLinks );
+        KeInsertTailList( Process->HandleTable.HandleLinks, &NewHandle->HandleLinks );
     }
     Process->HandleTable.HandleCount++;
     KeReleaseSpinLock( &Process->HandleTable.HandleLock, PreviousIrql );
@@ -161,7 +161,7 @@ ObCloseHandle(
                 Process->HandleTable.HandleLinks = NULL;
             }
             else {
-                KeRemoveListEntry( &Entry->HandleLinks );
+                KeRemoveList( &Entry->HandleLinks );
             }
             MmFreePoolWithTag( Entry, OB_TAG );
 

@@ -113,12 +113,12 @@ RtlpCommitHeap(
 
     if ( HeapHandle->CommittedCount == 0 ) {
 
-        KeInitializeListHead( &Commit->CommittedLinks );
+        KeInitializeHeadList( &Commit->CommittedLinks );
         HeapHandle->Committed = &Commit->CommittedLinks;
     }
     else {
 
-        KeInsertEntryTail( HeapHandle->Committed, &Commit->CommittedLinks );
+        KeInsertTailList( HeapHandle->Committed, &Commit->CommittedLinks );
     }
     HeapHandle->CommittedCount++;
 
@@ -196,12 +196,12 @@ RtlAllocateHeap(
 
         if ( HeapHandle->ReservedCount == 0 ) {
 
-            KeInitializeListHead( &Reserve->ReservedLinks );
+            KeInitializeHeadList( &Reserve->ReservedLinks );
             HeapHandle->Reserved = &Reserve->ReservedLinks;
         }
         else {
 
-            KeInsertEntryTail( HeapHandle->Reserved, &Reserve->ReservedLinks );
+            KeInsertTailList( HeapHandle->Reserved, &Reserve->ReservedLinks );
         }
         HeapHandle->ReservedCount++;
 
@@ -264,7 +264,7 @@ RtlFreeHeap(
 
                         if ( Reserved->Bitmap == 1 ) {
 
-                            KeRemoveListEntry( &Reserved->ReservedLinks );
+                            KeRemoveList( &Reserved->ReservedLinks );
                             NtFreeVirtualMemory( NtCurrentProcess( ),
                                                  Reserved,
                                                  0x1000 );

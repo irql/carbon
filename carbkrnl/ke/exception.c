@@ -264,8 +264,9 @@ KiExceptionDispatch(
         HandleCapable = TRUE;
     }
 
-    RtlDebugPrint( L"excpt: %d rip=%ull rsp=%ull\n",
-                   TrapFrame->Interrupt, TrapFrame->Rip, TrapFrame->Rsp );
+    RtlDebugPrint( L"excpt: %d rip=%ull rsp=%ull cr2=%ull err=%ull\n",
+                   TrapFrame->Interrupt, TrapFrame->Rip, TrapFrame->Rsp,
+                   __readcr2( ), TrapFrame->Error );
 
 #if 0
     InterruptingService = KeQueryCurrentProcessor( )->InService;

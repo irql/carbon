@@ -9,7 +9,7 @@
 
 #ifndef USER_INTERNAL
 #define NTUSERAPI DLLEXPORT
-#elif !defined( NTUSER_INTERNAL )
+#elif !defined( NTUSER_INTERNAL ) 
 #define NTUSERAPI DLLIMPORT
 #else
 #define NTUSERAPI
@@ -118,6 +118,7 @@ NtCreateWindow(
 typedef struct _WND_INFO {
     ULONG32    MenuId;
     WCHAR      Name[ 512 ];
+    RECT       Rect;
 
 } WND_INFO, *PWND_INFO;
 
@@ -256,4 +257,24 @@ NTUSERAPI
 ULONG64
 NtGetTickCount(
 
+);
+
+NTUSERAPI
+VOID
+NtClearDC(
+    _In_ HANDLE  ContextHandle,
+    _In_ ULONG32 x,
+    _In_ ULONG32 y,
+    _In_ ULONG32 w,
+    _In_ ULONG32 h,
+    _In_ ULONG32 Color
+);
+
+NTUSERAPI
+VOID
+NtSetPixel(
+    _In_ HANDLE  ContextHandle,
+    _In_ ULONG32 x,
+    _In_ ULONG32 y,
+    _In_ ULONG32 Color
 );

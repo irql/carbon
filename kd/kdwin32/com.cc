@@ -19,41 +19,66 @@ KdpReadDebuggee(
 )
 {
     KD_STATUS Status;
-    PKD_PACKET Packet = ( PKD_PACKET )_alloca( sizeof( KD_PACKET ) + Length );//OslAllocate( sizeof( KD_PACKET ) + Length );//
-    struct {
-        ULONG64 Process;
-        ULONG64 Address;
-        ULONG64 Length;
-    } ReadSend;
+    CHAR PacketBuffer[ sizeof( KD_PACKET ) + 0x1000 ];
+    PKD_PACKET Packet = ( PKD_PACKET )&PacketBuffer;
+    //_alloca( sizeof( KD_PACKET ) + min( Length, 0x1000 ) );//OslAllocate( sizeof( KD_PACKET ) + Length );//
 
-    ReadSend.Process = ( ULONG64 )KdpProcess;
-    ReadSend.Address = Address;
-    ReadSend.Length = Length;
+    do {
+
+        struct {
+            ULONG64 Process;
+            ULONG64 Address;
+            ULONG64 Length;
+        } ReadSend;
+
+        ReadSend.Process = ( ULONG64 )KdpProcess;
+        ReadSend.Address = Address;
+        if ( Length > 0x1000 ) {
+            ReadSend.Length = 0x1000;
+        }
+        else {
+            ReadSend.Length = Length;
+        }
 #if 0
-    //KdSendPacket( KdPacketRead, &ReadSend, sizeof( ReadSend ) );
-    OslSendPacket( KdPacketRead, &ReadSend, sizeof( ReadSend ) );
-    while ( OslReceivePacket( KdPacketAcknowledge, Packet, sizeof( KD_PACKET ) ) != KdStatusSuccess )
-        ;
+        //KdSendPacket( KdPacketRead, &ReadSend, sizeof( ReadSend ) );
+        OslSendPacket( KdPacketRead, &ReadSend, sizeof( ReadSend ) );
+        while ( OslReceivePacket( KdPacketAcknowledge, Packet, sizeof( KD_PACKET ) ) != KdStatusSuccess )
+            ;
 
-    while ( OslReceivePacket( KdPacketRead, Packet, sizeof( KD_PACKET ) + ( ULONG32 )Length ) != KdStatusSuccess )
-        ;
-    OslSendPacket( KdPacketAcknowledge, NULL, 0 );
+        while ( OslReceivePacket( KdPacketRead, Packet, sizeof( KD_PACKET ) + ( ULONG32 )Length ) != KdStatusSuccess )
+            ;
+        OslSendPacket( KdPacketAcknowledge, NULL, 0 );
 #else
-    Status = KdSendPacketResponse( KdPacketRead,
-                                   &ReadSend,
-                                   sizeof( ReadSend ),
-                                   KdPacketRead,
-                                   Packet,
-                                   sizeof( KD_PACKET ) + ( ULONG32 )Length );
-    if ( Status != KdStatusSuccess ) {
+        Status = KdSendPacketResponse( KdPacketRead,
+                                       &ReadSend,
+                                       sizeof( ReadSend ),
+                                       KdPacketRead,
+                                       Packet,
+                                       sizeof( KD_PACKET ) + 0x1000 );
+        if ( Status != KdStatusSuccess ) {
 
-        OslWriteConsole( L"failed to read addr=%p status=%d length=%d process=%p\n",
-                         ReadSend.Address, Status, ReadSend.Length, ReadSend.Process );
-        return Status;
-    }
+            OslWriteConsole( L"failed to read addr=%p status=%d length=%d process=%p\n",
+                             ReadSend.Address, Status, ReadSend.Length, ReadSend.Process );
+            //__debugbreak( );
+            return Status;
+        }
 #endif
 
-    RtlCopyMemory( Buffer, &Packet->u[ 0 ].PacketRead.Return.Data, Length );
+        if ( Length > 0x1000 ) {
+
+            RtlCopyMemory( Buffer, &Packet->u[ 0 ].PacketRead.Return.Data, 0x1000 );
+            Length -= 0x1000;
+        }
+        else {
+
+            RtlCopyMemory( Buffer, &Packet->u[ 0 ].PacketRead.Return.Data, Length );
+            Length = 0;
+        }
+
+        Buffer = ( PUCHAR )Buffer + 0x1000;
+        Address += 0x1000;
+
+    } while ( Length != 0 );
 
     return KdStatusSuccess;
 }

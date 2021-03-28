@@ -5,6 +5,7 @@
     <ClCompile Include="svga.c" />
     <ClCompile Include="svga3d.c" />
     <ClCompile Include="ddi.c" />
+    <ClCompile Include="dc.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="svga.h" />
@@ -13,5 +14,6 @@
     <ClInclude Include="svga3d_reg.h" />
     <ClInclude Include="driver.h" />
     <ClInclude Include="ddi.h" />
+    <ClInclude Include="dc.h" />
   </ItemGroup>
 </Project>

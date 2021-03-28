@@ -22,11 +22,11 @@ IopInsertFileObject(
     KIRQL PreviousIrql;
     KeAcquireSpinLock( &IopFileListLock, &PreviousIrql );
     if ( IopFileList == NULL ) {
-        KeInitializeListHead( &FileObject->FileList );
+        KeInitializeHeadList( &FileObject->FileList );
         IopFileList = &FileObject->FileList;
     }
     else {
-        KeInsertEntryHead( IopFileList, &FileObject->FileList );
+        KeInsertHeadList( IopFileList, &FileObject->FileList );
     }
     IopFileCharge++;
     KeReleaseSpinLock( &IopFileListLock, PreviousIrql );
@@ -44,7 +44,7 @@ IopRemoveFileObject(
         IopFileList = NULL;
     }
     else {
-        KeRemoveListEntry( &FileObject->FileList );
+        KeRemoveList( &FileObject->FileList );
     }
     KeReleaseSpinLock( &IopFileListLock, PreviousIrql );
 }

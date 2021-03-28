@@ -262,11 +262,11 @@ ObCreateObject(
 
     KeAcquireSpinLock( &ObjectType->ObjectListLock, &PreviousIrql );
     if ( ObjectType->ObjectList == NULL ) {
-        KeInitializeListHead( &ObjectHeader->ObjectList );
+        KeInitializeHeadList( &ObjectHeader->ObjectList );
         ObjectType->ObjectList = &ObjectHeader->ObjectList;
     }
     else {
-        KeInsertEntryTail( ObjectType->ObjectList, &ObjectHeader->ObjectList );
+        KeInsertTailList( ObjectType->ObjectList, &ObjectHeader->ObjectList );
     }
     ObjectType->ObjectCount++;
     KeReleaseSpinLock( &ObjectType->ObjectListLock, PreviousIrql );
@@ -301,7 +301,7 @@ ObDestroyObject(
         ObjectType->ObjectList = NULL;
     }
     else {
-        KeRemoveListEntry( &ObjectHeader->ObjectList );
+        KeRemoveList( &ObjectHeader->ObjectList );
     }
 #endif
     KeReleaseSpinLock( &ObjectType->ObjectListLock, PreviousIrql );

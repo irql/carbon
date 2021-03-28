@@ -23,6 +23,15 @@ EXTERN      KiIpiCall
 ;
 ; Huuuuuuuuuuge bug. the stack is not aligned.
 ;
+; nvm lol
+;
+;In legacy mode, the stack pointer may be at any alignment when an interrupt or exception causes a stack frame to
+;be pushed. This causes the stack frame and succeeding pushes done by an interrupt handler to be at arbitrary
+;alignments. In IA-32e mode, the RSP is aligned to a 16-byte boundary before pushing the stack frame. The stack
+;frame itself is aligned on a 16-byte boundary when the interrupt handler is called. The processor can arbitrarily
+;realign the new RSP on interrupts because the previous (possibly unaligned) RSP is unconditionally saved on the
+;newly aligned stack. The previous RSP will be automatically restored by a subsequent IRET.
+;
 
 %DEFINE     KxTrapFrameLength 800
 
@@ -51,13 +60,6 @@ EXTERN      KiIpiCall
     push    rax
     mov     rax, gs
     push    rax
-
-    mov     rax, 16
-    mov     ds, rax
-    mov     es, rax
-    mov     fs, rax
-    mov     gs, rax
-    mov     es, rax
 
     mov     rax, cr3
     push    rax
@@ -139,7 +141,6 @@ KxHardwareInterrupt:
 
 ALIGN       16
 KxExceptionInterrupt:
-    sti
     KiPushTrapFrame
     mov     rcx, rsp
     sub     rsp, 28h
@@ -184,8 +185,8 @@ KxSwapContext:
 ALIGN       16
 %ASSIGN     VECTOR 0
 %REP        256
+ALIGN       16
 KxHandleInt%+VECTOR:
-    cli
     %IF     VECTOR != 8 && \
             VECTOR != 10 && \
             VECTOR != 11 && \
@@ -241,6 +242,7 @@ SECTION     .rdata
 ; Table of raw handlers for the idt
 ;
 
+ALIGN       16
 KxIntHandlerTable:
 %ASSIGN     VECTOR 0
 %REP        256

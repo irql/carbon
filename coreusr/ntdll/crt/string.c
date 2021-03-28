@@ -11,14 +11,12 @@
 #pragma comment(linker, "/export:strcmp")
 #pragma function(strcmp)
 int strcmp( const char* str1, const char* str2 ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     while ( *str1 && *str2 && *str1 == *str2 )
         str1++, str2++;
     return *str1 - *str2;
 }
 
 int strncmp( const char* str1, const char* str2, size_t num ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     while ( num-- && *str1 && *str2 && *str1 == *str2 )
         str1++, str2++;
     return *str1 - *str2;
@@ -27,7 +25,6 @@ int strncmp( const char* str1, const char* str2, size_t num ) {
 #pragma comment(linker, "/export:strlen")
 #pragma function(strlen)
 size_t strlen( const char* str1 ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     size_t i = 0;
 
     while ( str1[ i ] )
@@ -39,7 +36,6 @@ size_t strlen( const char* str1 ) {
 #pragma comment(linker, "/export:strcpy")
 #pragma function(strcpy)
 char* strcpy( char* destination, const char* source ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     char* temp = destination;
 
     while ( *source )
@@ -51,7 +47,6 @@ char* strcpy( char* destination, const char* source ) {
 #pragma comment(linker, "/export:strcat")
 #pragma function(strcat)
 char* strcat( char* destination, const char* source ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     char* temp = destination;
 
     while ( *destination )
@@ -61,13 +56,11 @@ char* strcat( char* destination, const char* source ) {
 }
 
 char* strdup( char* string ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
 
     return strcpy( malloc( strlen( string ) + 1 ), string );
 }
 
 long int strtol( const char* str, char** end, int base ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     int i;
     int sign;
     long int val;
@@ -131,7 +124,6 @@ long int strtol( const char* str, char** end, int base ) {
 }
 
 const char* strrchr( const char* str, int character ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     const char* o;
 
     o = str;
@@ -153,9 +145,8 @@ const char* strrchr( const char* str, int character ) {
 }
 
 const char* strstr( const char *s1, const char *s2 ) {
-    //RtlDebugPrint( L"[log] %as %as %as\n", __FUNCTION__, s1, s2 );
-
     int i;
+
     while ( *s1 ) {
 
         for ( i = 0; s2[ i ]; i++ ) {
@@ -168,7 +159,6 @@ const char* strstr( const char *s1, const char *s2 ) {
 
         if ( s2[ i ] == 0 ) {
 
-            //RtlDebugPrint( L"Found at %as\n", s1 );
             return s1;
         }
 
@@ -179,7 +169,6 @@ const char* strstr( const char *s1, const char *s2 ) {
 }
 
 char* strncpy( char* destination, const char* source, size_t num ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     char* o;
 
     o = destination;
@@ -205,8 +194,7 @@ char* strncpy( char* destination, const char* source, size_t num ) {
 
 #pragma comment(linker, "/export:memcmp")
 #pragma function(memcmp)
-int memcmp( const void* ptr1, const void* ptr2, size_t num ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
+int memcmp( const void* ptr1, void* ptr2, size_t num ) {
     const unsigned char* m1 = ptr1;
     const unsigned char* m2 = ptr2;
 
@@ -217,8 +205,7 @@ int memcmp( const void* ptr1, const void* ptr2, size_t num ) {
 
 #pragma comment(linker, "/export:memcpy")
 #pragma function(memcpy)
-void* memcpy( void* destination, const void* source, size_t num ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
+void* memcpy( void* destination, void* source, size_t num ) {
     const unsigned char* m1 = source;
     unsigned char* m2 = destination;
 
@@ -230,8 +217,6 @@ void* memcpy( void* destination, const void* source, size_t num ) {
 #pragma comment(linker, "/export:memset")
 #pragma function(memset)
 void* memset( void* mem, int v, size_t num ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
-
     unsigned char* m2 = mem;
 
     while ( num-- )
@@ -241,9 +226,8 @@ void* memset( void* mem, int v, size_t num ) {
 
 #pragma comment(linker, "/export:memmove")
 #pragma function(memmove)
-void* memmove( void* destination, const void* source, size_t num ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
-    const unsigned char* m2 = source;
+void* memmove( void* destination, void* source, size_t num ) {
+    unsigned char* m2 = source;
     unsigned char* m1 = destination;
 
     if ( m1 > m2 && ( unsigned )( m1 - m2 ) < num ) {
@@ -267,7 +251,6 @@ void* memmove( void* destination, const void* source, size_t num ) {
 #pragma comment(linker, "/export:memchr")
 #pragma function(memchr)
 void* memchr( void* ptr, int value, size_t num ) {
-    //RtlDebugPrint( L"[log] %as\n", __FUNCTION__ );
     unsigned char* m1;
 
     m1 = ptr;

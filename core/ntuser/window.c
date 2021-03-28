@@ -120,6 +120,8 @@ NtCreateWindow(
     PWND_CLASS WindowClass;
     RECT Rect;
 
+    RtlDebugPrint( L"CW ret: %ull\n", _AddressOfReturnAddress( ) );
+
     ParentObject = NULL;
     WindowObject = NULL;
 
@@ -380,7 +382,7 @@ NtSendDirectMessage(
                                   0,
                                   0 );
         //ZwSignalEvent( UpdateEvent, TRUE );
-    }
+}
 
     // mhh, not sure about how refs should work with these
     // decided to just leave a reference for the message
@@ -524,6 +526,7 @@ NtGetWindowInfo(
     __try {
 
         RtlCopyMemory( WindowInfo, &WindowObject->WindowInfo, sizeof( WND_INFO ) );
+        RtlCopyMemory( &WindowInfo->Rect, &WindowObject->BackContext->ClientArea, sizeof( RECT ) );
     }
     __except ( EXCEPTION_EXECUTE_HANDLER ) {
 

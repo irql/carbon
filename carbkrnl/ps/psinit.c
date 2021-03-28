@@ -39,7 +39,7 @@ PsInitializeProcessSystem(
     Process->DirectoryTableBase = __readcr3( );
     Process->VadRoot = NULL;
     Process->ProcessId = KeGenerateUniqueId( );
-    KeInitializeListHead( &Process->ProcessLinks );
+    KeInitializeHeadList( &Process->ProcessLinks );
     PsInitialSystemProcess = Process;
 
 }

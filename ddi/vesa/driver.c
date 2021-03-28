@@ -221,6 +221,50 @@ NtDdiVesaSetPixel(
     }
 }
 
+VOID
+NtDdiVesaClear(
+    _In_ PDEVICE_OBJECT DeviceObject,
+    _In_ PDC            Context,
+    _In_ ULONG32        x,
+    _In_ ULONG32        y,
+    _In_ ULONG32        w,
+    _In_ ULONG32        h,
+    _In_ ULONG32        Color
+)
+{
+    DeviceObject;
+
+    ULONG32 pointx;
+    ULONG32 pointy;
+
+    pointx = 0;
+    pointy = 0;
+
+    for ( ; pointy < h; ) {
+
+        // SPEEEEEEEEEEEEEEEEED
+        if (
+            ( ( LONG32 )x + ( LONG32 )pointx ) <= Context->ClientArea.Right - Context->ClientArea.Left &&
+            ( ( LONG32 )y + ( LONG32 )pointy ) <= Context->ClientArea.Bottom - Context->ClientArea.Top &&
+            ( ( LONG32 )x + ( LONG32 )pointx ) >= 0 &&
+            ( ( LONG32 )y + ( LONG32 )pointy ) >= 0 ) {
+            VesaBuffer( Context->DeviceSpecific,
+                        x + pointx,
+                        y + pointy,
+                        Context->ClientArea.Right - Context->ClientArea.Left ) = Color;
+
+        }
+
+        pointx++;
+
+        if ( pointx >= w ) {
+
+            pointx = 0;
+            pointy++;
+        }
+    }
+}
+
 NTSTATUS
 DriverLoad(
     _In_ PDRIVER_OBJECT DriverObject
@@ -252,6 +296,7 @@ DriverLoad(
     D3dHal->NtDdiBltDC = NtDdiVesaBlt;
     D3dHal->NtDdiBltBitsDC = NtDdiVesaBltBits;
     D3dHal->NtDdiSetPixelDC = NtDdiVesaSetPixel;
+    D3dHal->NtDdiClearDC = NtDdiVesaClear;
 
     DdiDeviceObject->DeviceCharacteristics &= ~DEV_INITIALIZING;
 

@@ -129,8 +129,6 @@ NtCreateFont(
         return ntStatus;
     }
 
-    RtlDebugPrint( L"mapped at %ull\n", FontMap );
-
     Error = FT_Init_FreeType( &Library );
 
     if ( Error != 0 ) {
@@ -246,8 +244,8 @@ NtDrawText(
         }
 
         NtBltBits( Bits,
-                   0,
-                   0,
+                   0,//Rect->Left,
+                   0,//Rect->Right,
                    bm.width,
                    bm.rows,
                    ContextHandle,

@@ -237,7 +237,7 @@ KdpUnwindPrologue(
                 TargetContext->Rsp += FrameOffset;
                 break;
 
-            case UWOP_SAVE_NONVOL:; // be careful of the stack base. TODO: should that be stack base + stack length?
+            case UWOP_SAVE_NONVOL:; // incorrect
                 CurrentCode++;
                 FrameOffset = ( ULONG32 )UnwindInfo->UnwindCode[ CurrentCode ].FrameOffset * 8;
                 GeneralRegisters[ OpInfo ] = KdpReadULong64( StackBase + FrameOffset );//*( PULONG64 )( StackBase + FrameOffset );
@@ -295,10 +295,13 @@ KdpUnwindPrologue(
         ntStatus = KdpUnwindPrologue( Thread,
                                       TargetContext,
                                       TargetBase,
-                                      ( PIMAGE_RUNTIME_FUNCTION )(
-                                      ( ULONG64 )TargetBase +
-                                          FIELD_OFFSET( UNWIND_INFO, UnwindCode[ UnwindInfo->CountOfCodes + ( UnwindInfo->CountOfCodes & 1 ) ] ) ) );
-        //( PIMAGE_RUNTIME_FUNCTION )( &UnwindInfo->UnwindCode[ UnwindInfo->CountOfCodes + ( UnwindInfo->CountOfCodes & 1 ) ] ) );
+                                      ( PIMAGE_RUNTIME_FUNCTION )( &UnwindInfo->UnwindCode[ UnwindInfo->CountOfCodes + ( UnwindInfo->CountOfCodes & 1 ) ] ) );
+        /*
+        ( PIMAGE_RUNTIME_FUNCTION )(
+        ( ULONG64 )TargetBase +
+            FIELD_OFFSET( UNWIND_INFO, UnwindCode[ UnwindInfo->CountOfCodes + ( UnwindInfo->CountOfCodes & 1 ) ] ) ) );
+*/
+//( PIMAGE_RUNTIME_FUNCTION )( &UnwindInfo->UnwindCode[ UnwindInfo->CountOfCodes + ( UnwindInfo->CountOfCodes & 1 ) ] ) );
         OslFree( UnwindInfo );
         return ntStatus;
     }

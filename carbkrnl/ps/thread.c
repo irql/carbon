@@ -93,9 +93,12 @@ PspCreateStack(
     else {
 
         Base = MmAllocatePoolWithTag( NonPagedPoolZeroedExecute,
-                                      Length + sizeof( PS_SYSTEM_STACK ),
+                                      Length,
                                       PS_TAG );
-        Stack = ( PPS_SYSTEM_STACK )( ( PUCHAR )Base + Length );
+
+        Stack = MmAllocatePoolWithTag( NonPagedPool,
+                                       sizeof( PS_SYSTEM_STACK ),
+                                       PS_TAG );
 
         Process = PsInitialSystemProcess;
     }
@@ -109,18 +112,23 @@ PspCreateStack(
 
     if ( Process->StackCount == 0 ) {
 
-        KeInitializeListHead( &Stack->StackLinks );
+        KeInitializeHeadList( &Stack->StackLinks );
         Process->StackLinks = &Stack->StackLinks;
     }
     else {
 
-        KeInsertEntryTail( Process->StackLinks, &Stack->StackLinks );
+        KeInsertTailList( Process->StackLinks, &Stack->StackLinks );
     }
     Process->StackCount++;
 
     KeReleaseSpinLock( &Process->StackLock, PreviousIrql );
 
-    return Base;
+    if ( Process != PsInitialSystemProcess ) {
+
+        ObDereferenceObject( Process );
+    }
+
+    return ( PVOID )Stack->Address;
 }
 
 VOID
@@ -319,15 +327,15 @@ ZwCreateThread(
 
     KeAcquireSpinLock( &Processor->ThreadQueueLock, &PreviousIrql );
 
-    KeInsertEntryTail( &Processor->ThreadQueue->ThreadQueue, &Thread->ThreadQueue );
+    KeInsertTailList( &Processor->ThreadQueue->ThreadQueue, &Thread->ThreadQueue );
     Processor->ThreadQueueLength++;
 
     if ( Process->ThreadCount == 0 ) {
-        KeInitializeListHead( &Thread->ThreadLinks );
+        KeInitializeHeadList( &Thread->ThreadLinks );
         Process->ThreadLinks = &Thread->ThreadLinks;
     }
     else {
-        KeInsertEntryTail( Process->ThreadLinks, &Thread->ThreadLinks );
+        KeInsertTailList( Process->ThreadLinks, &Thread->ThreadLinks );
     }
     Process->ThreadCount++;
 
@@ -417,7 +425,7 @@ PsTerminateThread(
     Thread->ThreadState = THREAD_STATE_TERMINATING;
 
     Thread->Process->ThreadCount--;
-    KeRemoveListEntry( &Thread->ThreadLinks );
+    KeRemoveList( &Thread->ThreadLinks );
     KeReleaseSpinLock( &Thread->ThreadLock, PreviousIrql );
 
     if ( Thread == CurrentThread ) {
@@ -836,8 +844,8 @@ PsSetThreadProcessor(
     OldProcessor->ThreadQueueLength--;
     NewProcessor->ThreadQueueLength++;
 
-    KeRemoveListEntry( &Thread->ThreadLinks );
-    KeInsertEntryTail( &NewProcessor->ThreadQueue->ThreadQueue, &Thread->ThreadLinks );
+    KeRemoveList( &Thread->ThreadLinks );
+    KeInsertTailList( &NewProcessor->ThreadQueue->ThreadQueue, &Thread->ThreadLinks );
     Thread->ProcessorNumber = ProcessorNumber;
 
     KeReleaseSpinLockAtDpcLevel( &OldProcessor->ThreadQueueLock );

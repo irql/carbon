@@ -38,11 +38,11 @@ ObCreateObjectType(
     ( *ObjectType )->Cleanup = Cleanup;
 
     if ( ObTypeList == NULL ) {
-        KeInitializeListHead( &( *ObjectType )->TypeList );
+        KeInitializeHeadList( &( *ObjectType )->TypeList );
         ObTypeList = &( *ObjectType )->TypeList;
     }
     else {
-        KeInsertEntryTail( ObTypeList, &( *ObjectType )->TypeList );
+        KeInsertTailList( ObTypeList, &( *ObjectType )->TypeList );
     }
 
     return STATUS_SUCCESS;

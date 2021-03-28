@@ -324,3 +324,75 @@ NtDdiSetPixel(
         y,
         Color );
 }
+
+VOID
+NtSetPixel(
+    _In_ HANDLE  ContextHandle,
+    _In_ ULONG32 x,
+    _In_ ULONG32 y,
+    _In_ ULONG32 Color
+)
+{
+    NTSTATUS ntStatus;
+    PDC Context;
+
+    ntStatus = ObReferenceObjectByHandle( &Context,
+                                          ContextHandle,
+                                          0,
+                                          UserMode,
+                                          NtDeviceContext );
+    if ( !NT_SUCCESS( ntStatus ) ) {
+
+        return;
+    }
+
+    NtDdiSetPixel( Context, x, y, Color );
+    ObDereferenceObject( Context );
+}
+
+VOID
+NtDdiClearDC(
+    _In_ PDC     Context,
+    _In_ ULONG32 x,
+    _In_ ULONG32 y,
+    _In_ ULONG32 w,
+    _In_ ULONG32 h,
+    _In_ ULONG32 Color
+)
+{
+    DdGetAdapterD3dHal( Context->DeviceObject )->NtDdiClearDC(
+        Context->DeviceObject,
+        Context,
+        x,
+        y,
+        w,
+        h,
+        Color );
+}
+
+VOID
+NtClearDC(
+    _In_ HANDLE  ContextHandle,
+    _In_ ULONG32 x,
+    _In_ ULONG32 y,
+    _In_ ULONG32 w,
+    _In_ ULONG32 h,
+    _In_ ULONG32 Color
+)
+{
+    NTSTATUS ntStatus;
+    PDC Context;
+
+    ntStatus = ObReferenceObjectByHandle( &Context,
+                                          ContextHandle,
+                                          0,
+                                          UserMode,
+                                          NtDeviceContext );
+    if ( !NT_SUCCESS( ntStatus ) ) {
+
+        return;
+    }
+
+    NtDdiClearDC( Context, x, y, w, h, Color );
+    ObDereferenceObject( Context );
+}

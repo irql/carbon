@@ -11,38 +11,42 @@ EXTERN ULONG64 KiInterruptHandleBase[ ];
 
 VOID
 HalCreateInterrupt(
-    _Inout_ PKIDT_GATE     Table,
+    _Inout_ PKIDT_GATE         Table,
     _Out_   PKDESCRIPTOR_TABLE Idtr
 )
 {
     ULONG64 i = 0;
 
+    /*
+    Because IA-32 architecture tasks are not re-entrant, an interrupt-handler task must disable
+    interrupts between the time it completes handling the interrupt and the time it executes the IRET
+    instruction. This action prevents another interrupt from occurring while the interrupt task’s TSS is
+    still marked busy, which would cause a general-protection (#GP) exception.
+    */
+
     for ( i = 0; i < 256; i++ ) {
         Table[ i ].OffsetLow = KxIntHandlerTable[ i ];
         Table[ i ].OffsetMid = KxIntHandlerTable[ i ] >> 16;
         Table[ i ].OffsetHigh = KxIntHandlerTable[ i ] >> 32;
+        Table[ i ].Type = SYSTEM_SEGMENT_TYPE_INTERRUPT_GATE;
 
         if ( i == 0x20 ) {
 
             Table[ i ].Ist = 1;
         }
-        else if ( i < 0x20 && i != 0x2c && i != 0x29 ) {
+        else if ( i < 0x20 && i != 0x29 && i != 0x2c ) {
 
             Table[ i ].Ist = 2;
         }
         else {
 
+            Table[ i ].Type = SYSTEM_SEGMENT_TYPE_TRAP_GATE;
             Table[ i ].Ist = 0;
         }
 
-        //Table[ i ].Ist = 1;
-        //Table[ i ].Ist = i == 0x8;
-
-        //Table[ i ].Ist = i == 0x20 ? 1 : 2;
-        Table[ i ].CodeSelector = GDT_KERNEL_CODE64;
+        Table[ i ].SegmentSelector = GDT_KERNEL_CODE64;
         Table[ i ].PrivilegeLevel = 0;
         Table[ i ].Present = 1;
-        Table[ i ].Type = SYSTEM_SEGMENT_TYPE_INTERRUPT_GATE;
     }
 
     Table[ 0x29 ].PrivilegeLevel = 3; // fast fail

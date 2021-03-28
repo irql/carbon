@@ -9,14 +9,23 @@ typedef struct _MM_VAD *PMM_VAD;
 
 typedef union _CR3 {
     struct {
+        //PCIDE = 0
         ULONG64 Reserved1 : 3;
         ULONG64 WriteThrough : 1;
         ULONG64 CacheDisable : 1;
-        ULONG64 PageTable : 36;
-        ULONG64 Reserved3 : 16;
+        ULONG64 Reserved2 : 7;
+        ULONG64 PageTable : 52;
     };
 
-    ULONG64     Value;
+    /*
+    //PCIDE = 1
+    struct {
+        ULONG64 Pcid : 12;
+        ULONG64 PageTable : 52;
+    };
+    */
+
+    ULONG64     Long;
 } CR3, *PCR3;
 
 typedef union _PMLE {
@@ -374,7 +383,7 @@ MmInsertPfnListEntry(
     Flink->Blink = &Pfn->PfnLinks;
     Head->Head->Flink = &Pfn->PfnLinks;
 #endif
-    KeInsertEntryTail( Head->Head, &Pfn->PfnLinks );
+    KeInsertTailList( Head->Head, &Pfn->PfnLinks );
     Head->Total++;
 }
 

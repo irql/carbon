@@ -530,6 +530,15 @@ typedef VOID( *PDDI_BLT_BITS_DC )(
     _In_ ULONG32,
     _In_ ULONG32
     );
+typedef VOID( *PDDI_CLEAR_DC )(
+    _In_ PDEVICE_OBJECT,
+    _In_ PDC,
+    _In_ ULONG32,
+    _In_ ULONG32,
+    _In_ ULONG32,
+    _In_ ULONG32,
+    _In_ ULONG32
+    );
 
 typedef struct _D3DHAL {
     ULONG64                   D3dHalVersion;
@@ -560,6 +569,7 @@ typedef struct _D3DHAL {
     PDDI_BLT_DC               NtDdiBltDC;
     PDDI_SET_PIXEL_DC         NtDdiSetPixelDC;
     PDDI_BLT_BITS_DC          NtDdiBltBitsDC;
+    PDDI_CLEAR_DC             NtDdiClearDC;
 
 } D3DHAL, *PD3DHAL;
 

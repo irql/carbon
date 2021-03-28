@@ -157,10 +157,10 @@ MiCreatePoolTableAllocatedPages(
 #endif
 
     if ( MmNonPagedPoolHead.AllocatedTableCount > 0 ) {
-        KeInsertEntryHead( MmNonPagedPoolHead.AllocatedTableLinks, &Table->Header.PoolLinks );
+        KeInsertHeadList( MmNonPagedPoolHead.AllocatedTableLinks, &Table->Header.PoolLinks );
     }
     else {
-        KeInitializeListHead( &Table->Header.PoolLinks );
+        KeInitializeHeadList( &Table->Header.PoolLinks );
         MmNonPagedPoolHead.AllocatedTableLinks = &Table->Header.PoolLinks;
     }
     MmNonPagedPoolHead.AllocatedTableCount++;
@@ -276,11 +276,11 @@ MiCreatePoolTableGranularPages(
 
     if ( MmNonPagedPoolHead.GranularTableCount > 0 ) {
 
-        KeInsertEntryHead( MmNonPagedPoolHead.GranularTableLinks, &Table->Header.PoolLinks );
+        KeInsertHeadList( MmNonPagedPoolHead.GranularTableLinks, &Table->Header.PoolLinks );
     }
     else {
 
-        KeInitializeListHead( &Table->Header.PoolLinks );
+        KeInitializeHeadList( &Table->Header.PoolLinks );
         MmNonPagedPoolHead.GranularTableLinks = &Table->Header.PoolLinks;
     }
     MmNonPagedPoolHead.GranularTableCount++;

@@ -43,7 +43,7 @@ KeInitializeKernelCore(
         Thread->TrapFrame.Cr3 = __readcr3( );
         Thread->TrapFrame.EFlags = 0x202;
         Thread->TrapFrame.Rip = ( ULONG64 )KiIdleThread;
-        Thread->TrapFrame.Rsp = Thread->StackBase + Thread->StackLength - 0x30;
+        Thread->TrapFrame.Rsp = Thread->StackBase + Thread->StackLength - 0x28;
         Thread->TrapFrame.SegCs = GDT_KERNEL_CODE64;
         Thread->TrapFrame.SegSs = GDT_KERNEL_DATA;
         Thread->TrapFrame.SegDs = GDT_KERNEL_DATA;
@@ -57,14 +57,14 @@ KeInitializeKernelCore(
         Processor->ThreadQueueLength++;
         Processor->ThreadQueue = Thread;
 
-        KeInitializeListHead( &Thread->ThreadQueue );
+        KeInitializeHeadList( &Thread->ThreadQueue );
 
         if ( ProcessorNumber == 0 ) {
-            KeInitializeListHead( &Thread->ThreadLinks );
+            KeInitializeHeadList( &Thread->ThreadLinks );
             PsInitialSystemProcess->ThreadLinks = &Thread->ThreadLinks;
         }
         else {
-            KeInsertEntryTail( PsInitialSystemProcess->ThreadLinks, &Thread->ThreadLinks );
+            KeInsertTailList( PsInitialSystemProcess->ThreadLinks, &Thread->ThreadLinks );
         }
 
         PsInitialSystemProcess->ThreadCount++;

@@ -197,59 +197,71 @@ typedef struct _LIST_ENTRY {
 
 FORCEINLINE
 VOID
-KeInsertEntryHead(
+KeInsertHeadList(
     _In_ PLIST_ENTRY ListHead,
     _In_ PLIST_ENTRY Entry
 )
 {
-    PLIST_ENTRY NextEntry;
+    PLIST_ENTRY Flink;
 
-    NextEntry = ListHead->Flink;
-    Entry->Flink = NextEntry;
+    Flink = ListHead->Flink;
+    Entry->Flink = Flink;
     Entry->Blink = ListHead;
-    NextEntry->Blink = Entry;
+    Flink->Blink = Entry;
     ListHead->Flink = Entry;
 }
 
 FORCEINLINE
 VOID
-KeInsertEntryTail(
+KeInsertTailList(
     _In_ PLIST_ENTRY ListHead,
     _In_ PLIST_ENTRY Entry
 )
 {
-    PLIST_ENTRY PrevEntry;
+    PLIST_ENTRY Blink;
 
-    PrevEntry = ListHead->Blink;
+    Blink = ListHead->Blink;
     Entry->Flink = ListHead;
-    Entry->Blink = PrevEntry;
-    PrevEntry->Flink = Entry;
+    Entry->Blink = Blink;
+    Blink->Flink = Entry;
     ListHead->Blink = Entry;
 }
 
 FORCEINLINE
 VOID
-KeRemoveListEntry(
+KeRemoveList(
     _In_ PLIST_ENTRY Entry
 )
 {
+    PLIST_ENTRY Flink;
+    PLIST_ENTRY Blink;
 
-    Entry->Blink->Flink = Entry->Flink;
-    Entry->Flink->Blink = Entry->Blink;
+    Flink = Entry->Flink;
+    Blink = Entry->Blink;
+
+    Flink->Blink = Blink;
+    Blink->Flink = Flink;
+}
+
+FORCEINLINE
+VOID
+KeInitializeHeadList(
+    _In_ PLIST_ENTRY Entry
+)
+{
 
     Entry->Flink = Entry;
     Entry->Blink = Entry;
 }
 
 FORCEINLINE
-VOID
-KeInitializeListHead(
+BOOLEAN
+KeEmptyList(
     _In_ PLIST_ENTRY Entry
 )
 {
 
-    Entry->Flink = Entry;
-    Entry->Blink = Entry;
+    return ( BOOLEAN )( Entry == Entry->Flink );
 }
 
 //

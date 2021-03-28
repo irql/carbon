@@ -117,27 +117,9 @@ KiInitThread(
 
     RtlDebugPrint( L"Bru'al\n" );
 
-    //KeInitializeKernelClock( );
+    KeInitializeKernelClock( );
     IoInitializeIoManager( );
     MmPhase1InitializeMemoryManager( );
-
-#if 0
-    HANDLE SectionHandle;
-    PVOID BaseAddress;
-
-    BaseAddress = NULL;
-    ZwCreateSection( &SectionHandle, SECTION_ALL_ACCESS, NULL, SEC_WRITE | SEC_EXECUTE | SEC_WRITECOMBINE, 0 );
-    ZwResizeSection( SectionHandle, 0x8000 );
-    ZwMapViewOfSection( SectionHandle, NtCurrentProcess( ), &BaseAddress, 0, 0, PAGE_READ | PAGE_WRITE | PAGE_EXECUTE );
-    RtlDebugPrint( L"View of section mapped to %#ULL\n", BaseAddress );
-    ZwUnmapViewOfSection( NtCurrentProcess( ), BaseAddress );
-    ZwClose( SectionHandle );
-
-    BaseAddress = NULL;
-    ZwAllocateVirtualMemory( NtCurrentProcess( ), &BaseAddress, 0x8000, PAGE_READ | PAGE_WRITE );
-    RtlDebugPrint( L"Allocated at %ull\n", BaseAddress );
-    ZwFreeVirtualMemory( NtCurrentProcess( ), BaseAddress, 0x8000 );
-#endif
 
     PRD_FILE_LIST Rd = ( PRD_FILE_LIST )( ULONG64 )( BootInfo->FileList & 0xFFFF );
 
@@ -405,32 +387,6 @@ KiInitThread(
     KeAcquireSpinLock( &PsInitialSystemProcess->WorkingSetLock, &PreviousIrql );
     MmInsertWorkingSet( &Entry );
     KeReleaseSpinLock( &PsInitialSystemProcess->WorkingSetLock, PreviousIrql );
-#if 0
-    OBJECT_ATTRIBUTES pogAttributes = { RTL_CONSTANT_STRING( L"\\??\\BootDevice" ), RTL_CONSTANT_STRING( L"\\SYSTEM\\SYSTEM" ), 0 };
-
-    HANDLE handletorealevent;
-
-    CHAR BUFFER[ 14 ] = { 0 };
-
-
-    PKEVENT realevent;
-    OBJECT_ATTRIBUTES pogog = { 0 };
-    ObCreateObject( &realevent, KeEventObject, &pogog, sizeof( KEVENT ) );
-    KeInitializeEvent( realevent, FALSE );
-    ObOpenObjectFromPointer( &handletorealevent, realevent, GENERIC_ALL );
-
-    ntStatus = ZwCreateFile( &FileHandle,
-                             &FileStatus,
-                             GENERIC_ALL,
-                             &pogAttributes,
-                             FILE_OPEN_IF,
-                             FILE_SHARE_READ,
-                             0u );
-    ZwReadFile( FileHandle, handletorealevent, &FileStatus, BUFFER, 14, 0 );
-    RtlDebugPrint( L"async operation requested! %as %d\n", BUFFER, KeGetCurrentIrql( ) );
-    KeWaitForSingleObject( realevent, WAIT_TIMEOUT_INFINITE );
-    RtlDebugPrint( L"async operation completion event signalled! %as\n", BUFFER );
-#endif
 
     OBJECT_ATTRIBUTES dxgi = {
         RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
@@ -521,57 +477,7 @@ KiInitThread(
 
     PspCreateInitialUserProcess( );
 
-    KSYSTEM_TIME SystemTime;
-    KeQuerySystemTime( &SystemTime );
-#if 0
-    RtlDebugPrint( L"booted on %.2d/%.2d/20%.2d at %.2d:%.2d:%.2d",
-                   SystemTime.Day,
-                   SystemTime.Month,
-                   SystemTime.Year,
-                   SystemTime.Hour,
-                   SystemTime.Minute,
-                   SystemTime.Second );
-#endif
-#if 0
-    PMM_POOL_TABLE_ALLOCATED_PAGES AllocatedPages;
-    PLIST_ENTRY Flink;
-    ULONG32 CurrentPage;
-
-    Flink = MmNonPagedPoolHead.AllocatedTableLinks;
-    do {
-        AllocatedPages = CONTAINING_RECORD( Flink, MM_POOL_TABLE_ALLOCATED_PAGES, Header.PoolLinks );
-
-        if ( AllocatedPages->Header.TableType == TableAllocated ) {
-
-            for ( CurrentPage = 0; CurrentPage < 169; CurrentPage++ ) {
-
-                if ( AllocatedPages->Entries[ CurrentPage ].Type != UnusedPool &&
-                     AllocatedPages->Entries[ CurrentPage ].Tag != 'OIMM' ) {
-                    char p[ 5 ];
-                    *( ULONG32* )p = AllocatedPages->Entries[ CurrentPage ].Tag;
-                    p[ 4 ] = 0;
-                    if ( *( ULONG* )( AllocatedPages->Entries[ CurrentPage ].Address + AllocatedPages->Entries[ CurrentPage ].Length - 4 ) != AllocatedPages->Entries[ CurrentPage ].Tag )
-                        RtlDebugPrint( L"CORRUPTED %ull %as\n", AllocatedPages->Entries[ CurrentPage ].Address, p );
-                }
-            }
-        }
-
-        Flink = Flink->Flink;
-    } while ( Flink != MmNonPagedPoolHead.AllocatedTableLinks );
-#endif
-#if 0
-    HANDLE dwm_Handle;
-    OBJECT_ATTRIBUTES dwm_File = {
-        RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
-        RTL_CONSTANT_STRING( L"\\SYSTEM\\DWM.EXE" ), OBJ_KERNEL_HANDLE
-    };
-
-    PspCreateUserProcess( &dwm_Handle,
-                          PROCESS_ALL_ACCESS,
-                          &dwm_File );
-#endif
-
-    //ZwWaitForSingleObject( 0, 1500 );
+    //ZwWaitForSingleObject( 0, 6000 );
 
 #if 0
     while ( 1 ) {
@@ -607,7 +513,7 @@ KiSystemStartup(
         BspIdt[ i ].OffsetMid = KxIntHandlerTable[ i ] >> 16;
         BspIdt[ i ].OffsetHigh = KxIntHandlerTable[ i ] >> 32;
         BspIdt[ i ].Ist = 0;
-        BspIdt[ i ].CodeSelector = GDT_KERNEL_CODE64;
+        BspIdt[ i ].SegmentSelector = GDT_KERNEL_CODE64;
         BspIdt[ i ].Present = 1;
         BspIdt[ i ].Type = IDT_GATE_TYPE_INTERRUPT64;
     }
@@ -647,7 +553,7 @@ KiSystemStartup(
     Thread->ProcessorNumber = PspGetThreadProcessor( );
     Thread->ExitCode = ( ULONG64 )-1;
     Thread->TrapFrame.Cr3 = __readcr3( );
-    Thread->TrapFrame.Rsp = Thread->StackBase + Thread->StackLength - 0x30;
+    Thread->TrapFrame.Rsp = Thread->StackBase + Thread->StackLength - 0x28;
     *( ULONG64* )Thread->TrapFrame.Rsp = ( ULONG64 )PspSystemThreadReturn;
     Thread->TrapFrame.EFlags = 0x202;
     Thread->TrapFrame.Rip = ( ULONG64 )KiInitThread;
@@ -665,10 +571,10 @@ KiSystemStartup(
 
     KeAcquireSpinLock( &Processor->ThreadQueueLock, &PreviousIrql );
 
-    KeInsertEntryTail( &Processor->ThreadQueue->ThreadQueue, &Thread->ThreadQueue );
+    KeInsertTailList( &Processor->ThreadQueue->ThreadQueue, &Thread->ThreadQueue );
     Processor->ThreadQueueLength++;
 
-    KeInsertEntryTail( PsInitialSystemProcess->ThreadLinks, &Thread->ThreadLinks );
+    KeInsertTailList( PsInitialSystemProcess->ThreadLinks, &Thread->ThreadLinks );
     PsInitialSystemProcess->ThreadCount++;
 
     KeReleaseSpinLock( &Processor->ThreadQueueLock, PreviousIrql );

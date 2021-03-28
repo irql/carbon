@@ -453,7 +453,7 @@ OslProcessStartup(
     //Sleep( 500 );
 
     CreateThread( NULL,
-                  0,
+                  0x40000,
                   ( LPTHREAD_START_ROUTINE )KdpInputThread,
                   NULL,
                   0,
@@ -462,7 +462,7 @@ OslProcessStartup(
     //Sleep( 200 );
 
     CreateThread( NULL,
-                  0,
+                  0x40000,
                   ( LPTHREAD_START_ROUTINE )KdpProcessThread,
                   NULL,
                   0,

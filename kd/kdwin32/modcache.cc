@@ -177,12 +177,12 @@ KdpCacheModule(
     OslAcquireModuleCacheLock( );
     if ( KdpCacheModules == NULL ) {
 
-        KeInitializeListHead( &Cached->CacheLinks );
+        KeInitializeHeadList( &Cached->CacheLinks );
         KdpCacheModules = &Cached->CacheLinks;
     }
     else {
 
-        KeInsertEntryTail( KdpCacheModules, &Cached->CacheLinks );
+        KeInsertTailList( KdpCacheModules, &Cached->CacheLinks );
     }
     OslReleaseModuleCacheLock( );
 

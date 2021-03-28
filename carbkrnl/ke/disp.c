@@ -80,7 +80,7 @@ KiSwapContext(
 
                 Thread->ThreadState = THREAD_STATE_TERMINATED;
                 /*
-                KeRemoveListEntry( &Thread->ThreadQueue );
+                KeRemoveList( &Thread->ThreadQueue );
                 Processor->ThreadQueueLength--;
 
                 KiEnsureAllProcessorsReady( );
@@ -202,7 +202,7 @@ KiSwapContext(
     HalSetCodeSegmentBase(
         ( PKGDT_CODE_SEGMENT )( Processor->Global.Base + Processor->SegGs ),
         Thread->Process->Peb );
-    Processor->TaskState.Rsp0 = Thread->KernelStackBase + Thread->KernelStackLength;
+    Processor->TaskState.Rsp[ 0 ] = Thread->KernelStackBase + Thread->KernelStackLength;
 
     KeLowerIrql( PreviousIrql );
     return;

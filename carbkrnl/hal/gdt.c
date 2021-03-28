@@ -65,7 +65,7 @@ HalInsertTaskSegment(
     TaskSegment.BaseUpper = ( ULONG )( Base >> 32 );
     TaskSegment.Type = SYSTEM_SEGMENT_TYPE_TSS;
     TaskSegment.Present = 1;
-    TaskSegment.LimitLow = Length;
+    TaskSegment.LimitLow = Length - 1;
 
     TaskRegister = HalInsertSystemSegment( Gdtr, &TaskSegment );
 
