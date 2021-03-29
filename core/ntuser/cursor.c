@@ -21,6 +21,19 @@ NtSetCursorPosition(
     // it's signed because mouse drivers will use signed
     //
 
+    ULONG32 Cursor[ ] = {
+        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
+        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
+        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
+        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
+    };
+
+    ULONG32 OldX;
+    ULONG32 OldY;
+
+    OldX = NtCursorPositionX;
+    OldY = NtCursorPositionY;
+
     if ( posx < 0 ) {
         posx = 0;
     }
@@ -41,7 +54,24 @@ NtSetCursorPosition(
         NtCursorPositionX = posx;
         NtCursorPositionY = posy;
 
-        NtDrawCursor( );
+        NtDdiBlt( Composed,
+                  OldX,
+                  OldY,
+                  4,
+                  4,
+                  NtScreenDC,
+                  OldX,
+                  OldY );
+
+        NtDdiBltBits( Cursor,
+                      0,
+                      0,
+                      4,
+                      4,
+                      NtScreenDC,
+                      NtCursorPositionX,
+                      NtCursorPositionY );
+
     }
 }
 
@@ -60,35 +90,4 @@ NtGetCursorPosition(
 
         RtlRaiseException( STATUS_ACCESS_VIOLATION );
     }
-}
-
-VOID
-NtDrawCursor(
-
-)
-{
-    ULONG32 Cursor[ ] = {
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-    };
-
-    NtDdiBlt( Composed,
-              0,
-              0,
-              Composed->ClientArea.Right,
-              Composed->ClientArea.Bottom,
-              NtScreenDC,
-              0,
-              0 );
-
-    NtDdiBltBits( Cursor,
-                  0,
-                  0,
-                  4,
-                  4,
-                  NtScreenDC,
-                  NtCursorPositionX,
-                  NtCursorPositionY );
 }

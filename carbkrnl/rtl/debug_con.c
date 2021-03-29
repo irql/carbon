@@ -271,12 +271,12 @@ UCHAR Font8x16[ 4096 ] = {
     0x00, 0x00, 0x24, 0x24, 0x00, 0x00, 0x42, 0x42, 0x42, 0x42, 0x42, 0x26, 0x1a, 0x02, 0x02, 0x3c,
 };
 
-ULONG32         DisplayWidth;
-ULONG32         DisplayHeight;
-ULONG32         BitsPerPixel;
-ULONG32         Framebuffer;
-DLLEXPORT PULONG32        MappedFramebuffer = NULL;
-BOOLEAN         Ready = FALSE;
+DLLEXPORT ULONG32  DisplayWidth;
+DLLEXPORT ULONG32  DisplayHeight;
+DLLEXPORT ULONG32  BitsPerPixel;
+DLLEXPORT ULONG32  Framebuffer;
+DLLEXPORT PULONG32 MappedFramebuffer = NULL;
+BOOLEAN            Ready = FALSE;
 
 ULONG64         CharScrolled = 0;
 #pragma section(".bss")

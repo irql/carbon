@@ -211,7 +211,7 @@ KeInstallServiceDescriptorTable(
 );
 
 VOID
-KiInitializeServiceCallTable(
+KiServiceCallInitialize(
 
 );
 

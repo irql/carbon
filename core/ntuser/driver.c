@@ -33,6 +33,9 @@ DriverLoad(
 {
     DriverObject;
     WND_CLASS Poggers;
+    ULONG32 Width;
+    ULONG32 Height;
+    ULONG32 BitDepth;
 
     //
     // Same idea as windows, have elements call into a dll
@@ -67,6 +70,10 @@ DriverLoad(
 
     NtRegisterClass( &Poggers );
 
+    NtGetMode( &Width,
+               &Height,
+               &BitDepth );
+
     HANDLE WindowHandle;
     NtCreateWindow( &WindowHandle,
                     0,
@@ -74,8 +81,8 @@ DriverLoad(
                     L"Yeah im pogin",
                     0,
                     0,
-                    1280,
-                    720,
+                    Width,
+                    Height,
                     0 );
 
 

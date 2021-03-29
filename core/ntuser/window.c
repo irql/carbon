@@ -30,7 +30,7 @@ NtInitializeUserWindows(
     HANDLE ThreadHandle;
     UNICODE_STRING WindowObjectName = RTL_CONSTANT_STRING( L"Window" );
     UNICODE_STRING DeviceContextName = RTL_CONSTANT_STRING( L"DeviceContext" );
-    RECT ScreenRect = { 0, 0, 1280, 720 };
+    RECT ScreenRect = { 0, 0, 0, 0 };
 
     //
     // Need to add a cleanup to close event handle and clear queue
@@ -575,6 +575,8 @@ NtUpdateDisplayThread(
     PKWND CurrentWindow;
     PKWND ChildWindow;
     KIRQL PreviousIrql;
+    ULONG32 CurrentX;
+    ULONG32 CurrentY;
 
     NtDdiCreateDC( &Composed,
                    &NtScreenDC->ClientArea );
@@ -647,7 +649,6 @@ NtUpdateDisplayThread(
         }
         KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
 
-#if 0
         NtDdiBlt( Composed,
                   0,
                   0,
@@ -656,11 +657,9 @@ NtUpdateDisplayThread(
                   NtScreenDC,
                   0,
                   0 );
-#endif
-        // blits too
-        NtDrawCursor( );
 
-
+        NtGetCursorPosition( &CurrentX, &CurrentY );
+        NtSetCursorPosition( CurrentX, CurrentY );
     }
 }
 

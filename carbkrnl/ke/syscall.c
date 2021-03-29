@@ -48,11 +48,11 @@ KeInstallServiceDescriptorTable(
 }
 
 VOID
-KiInitializeServiceCallTable(
+KiServiceCallInitialize(
 
 )
 {
-    STATIC BOOLEAN KiNtInitialized = FALSE;
+    STATIC BOOLEAN KiSystemService = FALSE;
 
     KiMsrWrite( IA32_MSR_EFER, KiMsrRead( IA32_MSR_EFER ) | EFER_SCE );
 
@@ -60,12 +60,12 @@ KiInitializeServiceCallTable(
     KiMsrWrite( IA32_MSR_STAR, ( ( ( ULONG64 )GDT_USER_CODE64 - 16 ) << 48 ) | ( ( ( ULONG64 )GDT_KERNEL_CODE64 ) << 32 ) );
     KiMsrWrite( IA32_MSR_SFMASK, 0 );
 
-    if ( !KiNtInitialized ) {
+    if ( !KiSystemService ) {
         KeInstallServiceDescriptorTable( 0,
                                          sizeof( KiNtServiceTable ) / sizeof( KSYSTEM_SERVICE ),
                                          KiNtServiceTable );
 
-        KiNtInitialized = TRUE;
+        KiSystemService = TRUE;
     }
 
 }

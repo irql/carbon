@@ -63,7 +63,7 @@ HalInitializeCpu0(
     KiLoadGlobal( &Processor->Global );
     KiLoadTask( ( USHORT )Processor->TaskStateDescriptor );
     KiMsrWrite( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
-    KiInitializeServiceCallTable( );
+    KiServiceCallInitialize( );
     KiInterruptEnable( );
 
     HalLocalApicEnable( );
@@ -108,7 +108,7 @@ HalProcessorStartupPrepare(
     KiLoadTask( ( USHORT )Processor->TaskStateDescriptor );
 
     KiMsrWrite( IA32_MSR_GS_KERNEL_BASE, ( ULONG64 )Processor );
-    KiInitializeServiceCallTable( );
+    KiServiceCallInitialize( );
 
     KiInterruptEnable( );
 

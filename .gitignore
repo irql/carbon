@@ -8,7 +8,6 @@ x64/
 x86/
 
 .vs/
-vm/
 
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
@@ -54,3 +53,15 @@ carbon_v2.vhd/
 ports/
 fonts/
 carbkrnl/config
+*.gz
+Logs
+*.vbox-prev
+*.vmxf
+*.vmsd
+nvram
+*.lck
+*.ini
+BIOS-bochs-latest
+BIOS-bochs-legacy
+VGABIOS-lgpl-latest
+Pog.TXT

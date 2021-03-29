@@ -396,3 +396,31 @@ NtClearDC(
     NtDdiClearDC( Context, x, y, w, h, Color );
     ObDereferenceObject( Context );
 }
+
+VOID
+NtGetMode(
+    _In_ ULONG32* Width,
+    _In_ ULONG32* Height,
+    _In_ ULONG32* BitDepth
+)
+{
+    DdGetAdapterD3dHal( NtScreenDC->DeviceObject )->NtDdiGetMode(
+        NtScreenDC->DeviceObject,
+        Width,
+        Height,
+        BitDepth );
+}
+
+NTSTATUS
+NtSetMode(
+    _In_ ULONG32 Width,
+    _In_ ULONG32 Height,
+    _In_ ULONG32 BitDepth
+)
+{
+    return DdGetAdapterD3dHal( NtScreenDC->DeviceObject )->NtDdiSetMode(
+        NtScreenDC->DeviceObject,
+        Width,
+        Height,
+        BitDepth );
+}

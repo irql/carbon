@@ -22,6 +22,10 @@ I8042MouseInterrupt(
 
     I8042MouseByte[ I8042MouseCycle ] = __inbyte( I8042_CONTROLLER_CMD1 );
 
+    ULONG32 Width;
+    ULONG32 Height;
+    ULONG32 BitDepth;
+
     switch ( I8042MouseCycle ) {
     case 0:
 
@@ -73,6 +77,8 @@ I8042MouseInterrupt(
         //
         // TODO: dont hardcode these, write an api
         //
+
+        NtGetMode( &Width, &Height, &BitDepth );
 
         if ( I8042MousePositionX > 1280 ) {
 

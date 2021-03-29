@@ -9,6 +9,9 @@
 #define VesaBuffer( _, x, y, w ) ( ( ULONG32* )( _ ) )[ (y) * (w) + (x) ] 
 
 DLLIMPORT PULONG32 MappedFramebuffer;
+DLLIMPORT ULONG32  DisplayWidth;
+DLLIMPORT ULONG32  DisplayHeight;
+DLLIMPORT ULONG32  BitsPerPixel;
 
 ULONG32
 NtDdiVesaAlphaBlend(
@@ -45,6 +48,10 @@ NtDdiVesaInitializeDC(
     if ( !ScreenDC ) {
 
         DeviceContext->DeviceSpecific = MappedFramebuffer;
+        DeviceContext->ClientArea.Left = 0;
+        DeviceContext->ClientArea.Top = 0;
+        DeviceContext->ClientArea.Bottom = DisplayHeight;
+        DeviceContext->ClientArea.Right = DisplayWidth;
         ScreenDC = TRUE;
         return;
     }
@@ -123,7 +130,7 @@ NtDdiVesaBlt(
                                                  dstx + pointx,
                                                  dsty + pointy,
                                                  DestinationContext->ClientArea.Right - DestinationContext->ClientArea.Left ) );
-        }
+    }
 
         pointx++;
 
@@ -132,7 +139,7 @@ NtDdiVesaBlt(
             pointx = 0;
             pointy++;
         }
-    }
+}
 }
 
 VOID
@@ -187,7 +194,7 @@ NtDdiVesaBltBits(
                                                  dsty + pointy,
                                                  context->ClientArea.Right - context->ClientArea.Left ) );
 
-        }
+    }
 
         pointx++;
 
@@ -196,7 +203,7 @@ NtDdiVesaBltBits(
             pointx = 0;
             pointy++;
         }
-    }
+}
 }
 
 VOID
@@ -265,6 +272,35 @@ NtDdiVesaClear(
     }
 }
 
+VOID
+NtDdiVesaGetMode(
+    _In_ PDEVICE_OBJECT DeviceObject,
+    _In_ ULONG32*       Width,
+    _In_ ULONG32*       Height,
+    _In_ ULONG32*       BitDepth
+)
+{
+    DeviceObject;
+    *Width = DisplayWidth;
+    *Height = DisplayHeight;
+    *BitDepth = BitsPerPixel;
+}
+
+NTSTATUS
+NtDdiVesaSetMode(
+    _In_ PDEVICE_OBJECT DeviceObject,
+    _In_ ULONG32        Width,
+    _In_ ULONG32        Height,
+    _In_ ULONG32        BitDepth
+)
+{
+    DeviceObject;
+    Width;
+    Height;
+    BitDepth;
+    return DXSTATUS_UNSUPPORTED;
+}
+
 NTSTATUS
 DriverLoad(
     _In_ PDRIVER_OBJECT DriverObject
@@ -297,6 +333,9 @@ DriverLoad(
     D3dHal->NtDdiBltBitsDC = NtDdiVesaBltBits;
     D3dHal->NtDdiSetPixelDC = NtDdiVesaSetPixel;
     D3dHal->NtDdiClearDC = NtDdiVesaClear;
+
+    D3dHal->NtDdiGetMode = NtDdiVesaGetMode;
+    D3dHal->NtDdiSetMode = NtDdiVesaSetMode;
 
     DdiDeviceObject->DeviceCharacteristics &= ~DEV_INITIALIZING;
 

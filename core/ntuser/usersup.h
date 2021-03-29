@@ -278,3 +278,19 @@ NtSetPixel(
     _In_ ULONG32 y,
     _In_ ULONG32 Color
 );
+
+NTAPI
+VOID
+NtGetMode(
+    _In_ ULONG32* Width,
+    _In_ ULONG32* Height,
+    _In_ ULONG32* BitDepth
+);
+
+NTAPI
+NTSTATUS
+NtSetMode(
+    _In_ ULONG32 Width,
+    _In_ ULONG32 Height,
+    _In_ ULONG32 BitDepth
+);

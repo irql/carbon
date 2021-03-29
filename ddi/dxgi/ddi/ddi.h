@@ -539,6 +539,18 @@ typedef VOID( *PDDI_CLEAR_DC )(
     _In_ ULONG32,
     _In_ ULONG32
     );
+typedef NTSTATUS( *PDDI_SET_MODE )(
+    _In_  PDEVICE_OBJECT,
+    _Out_ ULONG32,
+    _Out_ ULONG32,
+    _Out_ ULONG32
+    );
+typedef VOID( *PDDI_GET_MODE )(
+    _In_  PDEVICE_OBJECT,
+    _Out_ ULONG32*,
+    _Out_ ULONG32*,
+    _Out_ ULONG32*
+    );
 
 typedef struct _D3DHAL {
     ULONG64                   D3dHalVersion;
@@ -570,6 +582,9 @@ typedef struct _D3DHAL {
     PDDI_SET_PIXEL_DC         NtDdiSetPixelDC;
     PDDI_BLT_BITS_DC          NtDdiBltBitsDC;
     PDDI_CLEAR_DC             NtDdiClearDC;
+
+    PDDI_SET_MODE             NtDdiSetMode;
+    PDDI_GET_MODE             NtDdiGetMode;
 
 } D3DHAL, *PD3DHAL;
 

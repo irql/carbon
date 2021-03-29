@@ -64,16 +64,22 @@ KiBugCheckFromRecord(
 {
     KIRQL PreviousIrql;
 
+    VOID( *_KdDispatchException )(
+        _In_ PEXCEPTION_RECORD ExceptionRecord
+        );
+
+    UNICODE_STRING Kd = RTL_CONSTANT_STRING( L"KDCOM.SYS" );
+
     //
+    // If an exception happens inside an interrupt handler, this will
+    // be set to true, causing assertion failures on lock acquires,
+    // we set it to false, and allow KdDispatchException to handle it,
+    // then set it to true and bugcheck properly.
     //
 
-    if ( KdDebuggerEnabled &&
-         Record->Vad != NULL ) {
+    KeQueryCurrentProcessor( )->InService = FALSE;
 
-        VOID( *_KdDispatchException )(
-            _In_ PEXCEPTION_RECORD ExceptionRecord
-            );
-        UNICODE_STRING Kd = RTL_CONSTANT_STRING( L"KDCOM.SYS" );
+    if ( KdDebuggerEnabled ) {
 
         LdrGetExportAddressByName( ( PVOID )MiFindVadByShortName( PsInitialSystemProcess, &Kd )->Start,
                                    "KdDispatchException", ( PVOID* )&_KdDispatchException );
@@ -81,8 +87,6 @@ KiBugCheckFromRecord(
         _KdDispatchException( Record );
     }
 
-    //
-    //
 
     KeRaiseIrql( IPI_LEVEL, &PreviousIrql );
 
@@ -144,11 +148,11 @@ KiBugCheckFromRecord(
 
 #endif
 
-    KiProcessorShutdown( ); // shutdown after kd invoked.
+    KiProcessorShutdown( );
 
     while ( 1 ) {
 
-        __halt( );
+        KiProcessorHalt( );
     }
 }
 
@@ -160,7 +164,7 @@ KiFatalFault(
 {
     KIRQL PreviousIrql;
 
-    _disable( );
+    KiInterruptDisable( );
     KeRaiseIrql( IPI_LEVEL, &PreviousIrql );
 
     KiProcessorShutdown( );
@@ -173,7 +177,7 @@ KiFatalFault(
 
     while ( 1 ) {
 
-        __halt( );
+        KiProcessorHalt( );
     }
 }
 
@@ -485,4 +489,4 @@ KiExceptionDispatch(
     //
 
     KiBugCheckFromRecord( Record );
-}
+    }
