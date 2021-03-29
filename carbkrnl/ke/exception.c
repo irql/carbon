@@ -67,7 +67,8 @@ KiBugCheckFromRecord(
     //
     //
 
-    if ( KdDebuggerEnabled ) {
+    if ( KdDebuggerEnabled &&
+         Record->Vad != NULL ) {
 
         VOID( *_KdDispatchException )(
             _In_ PEXCEPTION_RECORD ExceptionRecord
@@ -241,6 +242,8 @@ KiExceptionDispatch(
 
     PPS_SYSTEM_STACK Stack;
     KPROCESSOR_MODE ExceptMode;
+    BOOLEAN ExceptInterrupt;
+
     ULONG64 HandleStack;
     BOOLEAN HandleCapable;
     BOOLEAN HandleComplete;
@@ -249,6 +252,25 @@ KiExceptionDispatch(
     HandleCapable = TRUE;
 
     ExceptMode = ( TrapFrame->SegCs & 1 ) == 1 ? UserMode : KernelMode;
+    ExceptInterrupt = KeQueryCurrentProcessor( )->InService;
+
+    if ( ExceptInterrupt ) {
+
+        Record = ( PEXCEPTION_RECORD )_alloca( sizeof( EXCEPTION_RECORD ) );
+        Record->Status = ( ULONG32 )TrapFrame->Interrupt;
+        Record->Code1 = 0;
+        Record->Code2 = 0;
+        Record->Code3 = 0;
+        Record->Code4 = 0;
+
+        Record->Thread = PsGetCurrentThread( );
+        Record->ProcessorMode = ExceptMode;
+        Record->ExceptionSeverity = ExceptionNormal;
+
+        RtlTrapFrameToContext( TrapFrame, &Record->ExceptionContext );
+
+        KiBugCheckFromRecord( Record );
+    }
 
     if ( ExceptMode == KernelMode ) {
 
@@ -318,7 +340,7 @@ KiExceptionDispatch(
                 __halt( );
             }
         }
-}
+    }
 #endif
 
     //
