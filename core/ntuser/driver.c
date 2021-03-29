@@ -55,6 +55,8 @@ DriverLoad(
     // apis to have basic os drivers for them, and then allow other drivers
     // to claim these devices and take ownership.
     //
+    // Phat issue: windows are sometimes unlinked when handling system messages ?
+    //
 
     KeInstallServiceDescriptorTable( 1,
                                      sizeof( NtUserServiceTable ) / sizeof( KSYSTEM_SERVICE ),
@@ -84,6 +86,7 @@ DriverLoad(
                     Width,
                     Height,
                     0 );
+    NtBroadcastDirectMessage( WM_PAINT, 0, 0 );
 
 
     return STATUS_SUCCESS;

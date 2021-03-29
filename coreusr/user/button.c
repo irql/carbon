@@ -114,10 +114,15 @@ NtClassButtonBaseProc(
                              ( ULONG64 )Info.Name,
                              512 );
 
+        NtSendMessage( WindowHandle, WM_PAINT, 0, 0 );
+
         break;
     default:
-        break;
+        return NtDefaultWindowProc( WindowHandle,
+                                    MessageId,
+                                    Param1,
+                                    Param2 );
     }
 
-    return TRUE;
+    return STATUS_SUCCESS;
 }

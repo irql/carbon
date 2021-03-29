@@ -16,8 +16,15 @@ KSPIN_LOCK    KiIpiLock = { 0 };
 #define TEST_EVENT( dpc_object )        ( ( dpc_object )->Type == DPC_OBJECT_EVENT && ( ( PKEVENT )( dpc_object ) )->Signaled )
 #define TEST_THREAD( dpc_object )       ( ( dpc_object )->Type == DPC_OBJECT_MUTEX && _InterlockedCompareExchange64( ( volatile long long* )&( ( PKMUTEX )( dpc_object ) )->Owner, ( long long )Thread, 0 ) == 0 )
 #define TEST_MUTEX( dpc_object )        ( ( dpc_object )->Type == DPC_OBJECT_THREAD && ( ( PKTHREAD )( dpc_object ) )->ThreadState == THREAD_STATE_TERMINATED )
-#define RESET_THREAD_STATE( thread )    if ( ( thread )->SuspendCount != 0 ) { \
-( thread )->ThreadState = THREAD_STATE_NOT_READY; } else { ( thread )->ThreadState = THREAD_STATE_READY; }
+#define RESET_THREAD_STATE( thread )                    \
+Thread->WaitTimeout = 0;                                \
+if ( ( thread )->SuspendCount != 0 ) {                  \
+                                                        \
+    ( thread )->ThreadState = THREAD_STATE_NOT_READY;   \
+} else {                                                \
+                                                        \
+    ( thread )->ThreadState = THREAD_STATE_READY;       \
+}
 
 VOID
 KiSwapContext(
@@ -46,7 +53,7 @@ KiSwapContext(
     Thread = Processor->ThreadQueue;
     LastThread = Thread;
 
-    // ~ 10ms a tick
+    Thread->ProcessorTime += 10;
     Processor->TickCount += 10;
 
     if ( KeQuerySpinLock( &Processor->ThreadQueueLock ) ) {
@@ -107,13 +114,12 @@ KiSwapContext(
 
                     if ( Thread->WaitTimeout <= Processor->TickCount ) {
 
-                        Thread->WaitTimeout = 0;
                         RESET_THREAD_STATE( Thread );
                     }
                 }
 
                 if ( Header != NULL &&
-                     Thread->WaitTimeout > 0 ) {
+                     Thread->WaitTimeout != 0 ) {
 
                     switch ( Header->Type ) {
                     case DPC_OBJECT_EVENT:;
@@ -139,8 +145,7 @@ KiSwapContext(
                         }
                         break;
                     default:
-                        //RtlDebugPrint( L"%d %ull %ull\n", Thread->ThreadId, Thread->TrapFrame.Rip, Thread->TrapFrame.Rsp );
-                        __debugbreak( );
+
                         NT_ASSERT( FALSE );
                     }
                 }
@@ -468,30 +473,20 @@ KeWaitForSingleObject(
 
     Thread->WaitObject = Object;
     if ( Timeout == WAIT_TIMEOUT_INFINITE ) {
+
         Thread->WaitTimeout = Timeout;
     }
     else {
+
         Thread->WaitTimeout = NtGetTickCount( ) + Timeout;
     }
     Thread->ThreadState = THREAD_STATE_WAITING;
 
     KeReleaseSpinLock( &Thread->ThreadLock, PreviousIrql );
 
-    if ( Object != NULL ) {
+    while ( Thread->WaitTimeout != 0 ) {
 
-        while ( !TEST_EVENT( DpcObject ) &&
-                !TEST_THREAD( DpcObject ) &&
-                !TEST_MUTEX( DpcObject ) ) {
-
-            KiLeaveQuantumEarly( );
-        }
-    }
-    else {
-
-        while ( Thread->WaitTimeout != 0 ) {
-
-            KiLeaveQuantumEarly( );
-        }
+        KiLeaveQuantumEarly( );
     }
 }
 

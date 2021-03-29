@@ -85,7 +85,7 @@ LdrpLoadUserModuleEx(
                                             SECTION_ALL_ACCESS,
                                             OBJ_KERNEL_HANDLE,
                                             KernelMode );
-        ObDereferenceObject( SectionObject );
+        ObDereferenceObject( SectionObject );;
     }
 
 LdrpProcedureFinished:;

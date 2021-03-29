@@ -99,11 +99,6 @@ I8042ScanToVirtual(
     }
     else {
 
-        if ( ScanTable[ Scancodes[ 0 ] ] == 0 ) {
-
-            RtlDebugPrint( L"Unrecognised SC: %ul\n", Scancodes[ 0 ] );
-        }
-
         return ScanTable[ Scancodes[ 0 ] ];
     }
 }

@@ -122,6 +122,25 @@ KdpGetThreadProcess(
                             &ProcessAddress ) == KdStatusSuccess ? ( PKPROCESS )ProcessAddress : NULL;
 }
 
+ULONG64
+KdpGetThreadId(
+    _In_ PKTHREAD Thread
+)
+{
+    STATIC LONG ThreadIdOffset = 0;
+    ULONG64 ThreadId;
+
+
+    if ( ThreadIdOffset == 0 ) {
+
+        DbgFieldOffset( KdpKernelContext, L"_KTHREAD", L"ThreadId", &ThreadIdOffset );
+    }
+
+    return KdpReadDebuggee( ( ULONG64 )Thread + ThreadIdOffset,
+                            sizeof( ULONG64 ),
+                            &ThreadId ) == KdStatusSuccess ? ThreadId : NULL;
+}
+
 
 //
 // Process should be a remote address
@@ -525,11 +544,12 @@ KdpHandleGuestException(
     KdpProcess = Process;
 
     OslWriteConsole( L"\n** EXCEPTION %d **\n"
-                     L"RIP=%p RSP=%p\n"
+                     L"RIP=%p RSP=%p TID=%d\n"
                      L"STACK FRAME:\n",
                      Exception->u[ 0 ].PacketException.Initial.Record.Status,
                      Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rip,
-                     Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rsp );
+                     Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rsp,
+                     KdpGetThreadId( Thread ) );
 
     do {
 

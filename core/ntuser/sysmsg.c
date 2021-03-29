@@ -41,66 +41,8 @@ NtInitializeSystemMessages(
                     &Thread,
                     0,
                     NULL );
-    //ZwClose( ThreadHandle );
+    ZwClose( ThreadHandle );
 }
-
-#ifdef OLD_SYS_MSG
-PKUSER_MESSAGE
-NtDequeueSystemMessage(
-
-)
-{
-    PKUSER_MESSAGE Last;
-    KIRQL PreviousIrql;
-
-    KeAcquireSpinLock( &SystemMessageQueueLock, &PreviousIrql );
-
-    Last = SystemMessageQueue;
-    SystemMessageQueue = SystemMessageQueue->MessageQueue;
-
-    KeReleaseSpinLock( &SystemMessageQueueLock, PreviousIrql );
-
-    if ( SystemMessageQueue == NULL ) {
-
-        // should already be false, but shut up
-        ZwSignalEvent( SystemMessageEvent, FALSE );
-    }
-
-    return Last;
-}
-
-VOID
-NtEnqueueSystemMessage(
-    _In_ PKUSER_MESSAGE Message
-)
-{
-    PKUSER_MESSAGE CurrentMessage;
-    KIRQL PreviousIrql;
-
-    KeAcquireSpinLock( &SystemMessageQueueLock, &PreviousIrql );
-
-    Message->MessageQueue = NULL;
-
-    if ( SystemMessageQueue == NULL ) {
-
-        SystemMessageQueue = Message;
-    }
-    else {
-
-        CurrentMessage = SystemMessageQueue;
-        while ( CurrentMessage->MessageQueue != NULL ) {
-
-            CurrentMessage = CurrentMessage->MessageQueue;
-        }
-
-        CurrentMessage->MessageQueue = Message;
-    }
-
-    KeReleaseSpinLock( &SystemMessageQueueLock, PreviousIrql );
-
-    ZwSignalEvent( SystemMessageEvent, TRUE );
-}
-#endif
 
 VOID
 NtSendSystemMessage(
@@ -109,17 +51,6 @@ NtSendSystemMessage(
     _In_ ULONG64 Param2
 )
 {
-#ifdef OLD_SYS_MSG
-    PKUSER_MESSAGE Message;
-
-    Message = NtAllocateUserMessage( );
-    Message->MessageId = MessageId;
-    Message->Param1 = Param1;
-    Message->Param2 = Param2;
-
-    NtEnqueueSystemMessage( Message );
-#endif
-
     KUSER_MESSAGE Message;
     Message.MessageId = MessageId;
     Message.Param1 = Param1;
@@ -134,27 +65,6 @@ NtReceiveSystemMessage(
     _In_ PKUSER_MESSAGE Buffer
 )
 {
-#ifdef OLD_SYS_MSG
-    PKUSER_MESSAGE Message;
-
-    ZwWaitForSingleObject( SystemMessageEvent, WAIT_TIMEOUT_INFINITE );
-
-    Message = NtDequeueSystemMessage( );
-    __try {
-
-        Buffer->MessageId = Message->MessageId;
-        Buffer->Param1 = Message->Param1;
-        Buffer->Param2 = Message->Param2;
-        NtFreeUserMessage( Message );
-    }
-    __except ( EXCEPTION_EXECUTE_HANDLER ) {
-
-        // BITCH
-        NtFreeUserMessage( Message );
-        RtlRaiseException( STATUS_ACCESS_VIOLATION );
-    }
-#endif
-
     KeWaitForSingleObject( &SystemMessageEvent, WAIT_TIMEOUT_INFINITE );
 
     NT_ASSERT( IoQueueDequeue( &SystemMessageQueue, Buffer ) );
@@ -173,6 +83,7 @@ NtSystemMessageThread(
     // jon is bussin
     KUSER_MESSAGE SystemMessage;
     KIRQL PreviousIrql;
+    PKWND LastFocus;
 
     STATIC ULONG32 PressX = 0;
     STATIC ULONG32 PressY = 0;
@@ -197,14 +108,20 @@ NtSystemMessageThread(
             if ( !PressSet ) {
                 PressWindow = NtWindowFromPoint( ( ULONG32 )SystemMessage.Param1, ( ULONG32 )SystemMessage.Param2 );
 
-                if ( PressWindow == RootWindow ) {
+
+                if ( PressWindow == RootWindow &&
+                     FocusWindow != PressWindow ) {
 
                     FocusWindow = PressWindow;
 
-                    ZwSignalEvent( UpdateEvent, TRUE );
+                    NtBroadcastDirectMessage( WM_PAINT,
+                                              0,
+                                              0 );
                 }
-                else if ( FocusWindow != PressWindow ) {
+                else if ( FocusWindow != PressWindow->Parent ) {
                     // add move flag check
+
+                    LastFocus = FocusWindow;
 
                     KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
                     FocusWindow = PressWindow->Parent;
@@ -213,12 +130,16 @@ NtSystemMessageThread(
                     NtInsertWindow( PressWindow->Parent );
                     KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
 
-                    NtSendDirectMessage( PressWindow->Parent,
-                                         WM_FOCUS,
-                                         0,
-                                         0 );
+                    if ( LastFocus != PressWindow->Parent ) {
 
-                    ZwSignalEvent( UpdateEvent, TRUE );
+                        NtSendDirectMessage( PressWindow->Parent,
+                                             WM_FOCUS,
+                                             0,
+                                             0 );
+                        NtBroadcastDirectMessage( WM_PAINT,
+                                                  0,
+                                                  0 );
+                    }
                 }
 
                 PressX = ( ULONG32 )SystemMessage.Param1;
@@ -236,6 +157,11 @@ NtSystemMessageThread(
 
             if ( PressSet ) {
 
+                NtSendDirectMessage( PressWindow,
+                                     WM_LMOUSEUP,
+                                     SystemMessage.Param1,
+                                     SystemMessage.Param2 );
+
                 if ( FocusWindow != RootWindow &&
                      FocusWindow == PressWindow ) {
                     PressXDist = ( ULONG32 )SystemMessage.Param1 - PressX;
@@ -248,14 +174,11 @@ NtSystemMessageThread(
 
                     FocusWindow->BackContext->ClientArea = FocusWindow->FrontContext->ClientArea;
 
-                    ZwSignalEvent( UpdateEvent, TRUE );
+                    NtBroadcastDirectMessage( WM_PAINT,
+                                              0,
+                                              0 );
                 }
                 PressSet = FALSE;
-
-                NtSendDirectMessage( PressWindow,
-                                     WM_LMOUSEUP,
-                                     SystemMessage.Param1,
-                                     SystemMessage.Param2 );
             }
             break;
         case WM_RMOUSEDOWN:;

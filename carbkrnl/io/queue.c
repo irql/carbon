@@ -113,7 +113,7 @@ IoQueueCreate(
     //
 
     Queue->QueueBase = ( ULONG64 )MmAllocatePoolWithTag( NonPagedPool, QueueLength * PacketLength, IO_TAG );
-    Queue->QueueLength = QueueLength * PacketLength;
+    Queue->QueueLength = QueueLength;
     Queue->QueueHead = 0;
     Queue->QueueTail = 0;
     Queue->PacketLength = PacketLength;

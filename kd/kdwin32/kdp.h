@@ -8,6 +8,11 @@ KdpGetThreadProcess(
     _In_ PKTHREAD Thread
 );
 
+ULONG64
+KdpGetThreadId(
+    _In_ PKTHREAD Thread
+);
+
 BOOLEAN
 KdpFindVadByAddress(
     _In_    PKPROCESS Process,

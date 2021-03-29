@@ -24,6 +24,7 @@ typedef struct _KWND {
 
     PDC            BackContext;
     PDC            FrontContext;
+    BOOLEAN        ContextUpdate;
     BOOLEAN        PaintBegan;
 
     PWND_CLASS     WindowClass;
@@ -101,9 +102,9 @@ NtInitializeUserWindows(
 
 );
 
-EXTERN PKWND        RootWindow;
-EXTERN PKWND        FocusWindow;
-EXTERN POBJECT_TYPE NtDeviceContext;
+EXTERN VOLATILE PKWND RootWindow;
+EXTERN VOLATILE PKWND FocusWindow;
+EXTERN POBJECT_TYPE   NtDeviceContext;
 
 NTSTATUS
 NtFindClassByName(
@@ -156,6 +157,16 @@ NtDdiBeginPaint(
 VOID
 NtDdiEndPaint(
     _In_ PKWND Window
+);
+
+VOID
+NtDdiClearDC(
+    _In_ PDC     Context,
+    _In_ ULONG32 x,
+    _In_ ULONG32 y,
+    _In_ ULONG32 w,
+    _In_ ULONG32 h,
+    _In_ ULONG32 Color
 );
 
 VOID

@@ -6,7 +6,7 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.virtualbox.org/" version="1.17-windows">
-  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-03-29T09:09:16Z">
+  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-03-29T19:44:05Z">
     <MediaRegistry>
       <HardDisks>
         <HardDisk uuid="{26f359b3-a3d5-4d19-9b1b-4ff49beedba8}" location="I:/repos/osdev/carbon_v2/carbon_v2.vhd" format="VHD" type="Normal"/>

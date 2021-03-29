@@ -124,9 +124,9 @@ NtDdiEndPaint(
               Window->FrontContext,
               0,
               0 );
-    ZwSignalEvent( UpdateEvent, TRUE );
-
+    Window->ContextUpdate = TRUE;
     Window->PaintBegan = FALSE;
+    ZwSignalEvent( UpdateEvent, TRUE );
 }
 
 VOID

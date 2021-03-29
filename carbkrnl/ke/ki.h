@@ -54,6 +54,7 @@ typedef struct _KTHREAD {
 
     KPROCESSOR_MODE PreviousMode;
     BOOLEAN     Syscall;
+    ULONG64     ProcessorTime;
 
 } KTHREAD, *PKTHREAD;
 

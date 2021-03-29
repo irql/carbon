@@ -6,8 +6,8 @@
 #include "usersup.h"
 #include "ntuser.h"
 
-PKWND          RootWindow;
-PKWND          FocusWindow;
+VOLATILE PKWND RootWindow;
+VOLATILE PKWND FocusWindow;
 
 POBJECT_TYPE   NtWindowObject;
 POBJECT_TYPE   NtDeviceContext;
@@ -325,6 +325,12 @@ NtBroadcastDirectMessage(
         KeReleaseSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
         CurrentWindow = CurrentWindow->Next;
     }
+
+    if ( MessageId == WM_PAINT ) {
+
+        RootWindow->ContextUpdate = TRUE;
+    }
+
     KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
 
 }
@@ -369,23 +375,6 @@ NtSendDirectMessage(
     KeReleaseSpinLock( &WindowObject->MessageQueueLock, PreviousIrql );
 
     ZwSignalEvent( WindowObject->MessageEvent, TRUE );
-
-    if ( MessageId != WM_PAINT ) {
-#if 0
-        NtSendDirectMessage( WindowObject,
-                             WM_PAINT,
-                             0,
-                             0 );
-#endif
-        NtBroadcastDirectMessage( WM_PAINT,
-                                  0,
-                                  0 );
-        //ZwSignalEvent( UpdateEvent, TRUE );
-    }
-
-    // mhh, not sure about how refs should work with these
-    // decided to just leave a reference for the message
-    //ObDereferenceObject( WindowObject );
 }
 
 BOOLEAN
@@ -582,12 +571,15 @@ NtUpdateDisplayThread(
     NtDdiCreateDC( &Composed,
                    &NtScreenDC->ClientArea );
 
+    int debug = 0;
+
     while ( TRUE ) {
 
         ZwWaitForSingleObject( UpdateEvent, WAIT_TIMEOUT_INFINITE );
-
+        ZwSignalEvent( UpdateEvent, FALSE );
         KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
         CurrentWindow = RootWindow;
+        debug = 0;
 
         while ( CurrentWindow != NULL ) {
 
@@ -602,41 +594,50 @@ NtUpdateDisplayThread(
 
                 KeAcquireSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
             }
-            else {
+            else if ( RootWindow->ContextUpdate ) {
 
-                CurrentWindow->WindowClass->DefWndProc( ( HANDLE )CurrentWindow,
-                                                        WM_PAINT,
-                                                        0,
-                                                        0 );
-                ZwSignalEvent( UpdateEvent, FALSE ); // this will be signalled by the WM_PAINT
+                RootWindow->WindowClass->DefWndProc( ( HANDLE )CurrentWindow,
+                                                     WM_PAINT,
+                                                     0,
+                                                     0 );
+                ZwSignalEvent( UpdateEvent, FALSE );
             }
 
-            NtDdiBlt( CurrentWindow->FrontContext,
-                      0,
-                      0,
-                      CurrentWindow->FrontContext->ClientArea.Right -
-                      CurrentWindow->FrontContext->ClientArea.Left,
-                      CurrentWindow->FrontContext->ClientArea.Bottom -
-                      CurrentWindow->FrontContext->ClientArea.Top,
-                      Composed,
-                      CurrentWindow->FrontContext->ClientArea.Left,
-                      CurrentWindow->FrontContext->ClientArea.Top );
+            if ( CurrentWindow->ContextUpdate ) {
+
+                NtDdiBlt( CurrentWindow->FrontContext,
+                          0,
+                          0,
+                          CurrentWindow->FrontContext->ClientArea.Right -
+                          CurrentWindow->FrontContext->ClientArea.Left,
+                          CurrentWindow->FrontContext->ClientArea.Bottom -
+                          CurrentWindow->FrontContext->ClientArea.Top,
+                          Composed,
+                          CurrentWindow->FrontContext->ClientArea.Left,
+                          CurrentWindow->FrontContext->ClientArea.Top );
+                CurrentWindow->ContextUpdate = FALSE;
+                debug++;
+            }
 
             ChildWindow = CurrentWindow->Child;
             while ( ChildWindow != NULL ) {
 
-                NtDdiBlt( ChildWindow->FrontContext,
-                          0,
-                          0,
-                          ChildWindow->FrontContext->ClientArea.Right -
-                          ChildWindow->FrontContext->ClientArea.Left,
-                          ChildWindow->FrontContext->ClientArea.Bottom -
-                          ChildWindow->FrontContext->ClientArea.Top,
-                          Composed,
-                          CurrentWindow->FrontContext->ClientArea.Left +
-                          ChildWindow->FrontContext->ClientArea.Left,
-                          CurrentWindow->FrontContext->ClientArea.Top +
-                          ChildWindow->FrontContext->ClientArea.Top );
+                if ( ChildWindow->ContextUpdate ) {
+                    NtDdiBlt( ChildWindow->FrontContext,
+                              0,
+                              0,
+                              ChildWindow->FrontContext->ClientArea.Right -
+                              ChildWindow->FrontContext->ClientArea.Left,
+                              ChildWindow->FrontContext->ClientArea.Bottom -
+                              ChildWindow->FrontContext->ClientArea.Top,
+                              Composed,
+                              CurrentWindow->FrontContext->ClientArea.Left +
+                              ChildWindow->FrontContext->ClientArea.Left,
+                              CurrentWindow->FrontContext->ClientArea.Top +
+                              ChildWindow->FrontContext->ClientArea.Top );
+                    ChildWindow->ContextUpdate = FALSE;
+                    debug++;
+                }
 
                 ChildWindow = ChildWindow->Child;
             }
@@ -649,7 +650,18 @@ NtUpdateDisplayThread(
             CurrentWindow = CurrentWindow->Next;
         }
         KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
+#if 1
+        wchar_t brutal[ 128 ];
+        RtlFormatBuffer( brutal, L"%d update: %d", NtGetTickCount( ), debug );
 
+        NtDdiClearDC( Composed, 0, 0, 150, 50, 0xFFFFFFFF );
+
+        NtSystemFont->Engine->Render( NtSystemFont,
+                                      Composed,
+                                      brutal,
+                                      &NtScreenDC->ClientArea,
+                                      0xFFFF0000 );
+#endif
         NtDdiBlt( Composed,
                   0,
                   0,
