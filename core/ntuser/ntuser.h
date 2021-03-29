@@ -33,6 +33,12 @@ typedef struct _KWND {
     PKWND          Child;
     PKWND          Parent;
 
+    //
+    // WM stuff
+    //
+
+    PVOID Font;
+
 } KWND, *PKWND;
 
 typedef struct _KUSER_MESSAGE {
@@ -82,7 +88,7 @@ typedef struct _WND_CLASS {
 
 } WND_CLASS, *PWND_CLASS;
 
-BOOLEAN
+NTSTATUS
 NtClassWindowBaseProc(
     _In_ PKWND   Window,
     _In_ ULONG32 MessageId,
@@ -196,6 +202,11 @@ typedef struct _KFONT_ENGINE {
 } KFONT_ENGINE, *PKFONT_ENGINE;
 
 typedef struct _KFONT {
+    //
+    // Completely deprecated, and only used 
+    // for very primitive dogshit, check user.dll
+    //
+
     HANDLE        FileHandle;
     HANDLE        SectionHandle;
     PVOID         FileMapping;

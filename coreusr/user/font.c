@@ -43,6 +43,12 @@ NtCreateFont(
     _In_  PWSTR            FaceName
 )
 {
+    //
+    // This function looks unoptimized but 
+    // its fine because NtMapViewOfSection &
+    // NtCreateFile caching.
+    //
+
     NTSTATUS ntStatus;
     HANDLE SectionHandle;
     HANDLE FileHandle;

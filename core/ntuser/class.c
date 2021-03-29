@@ -67,7 +67,7 @@ NtRegisterClass(
     }
     else {
         RtlCopyMemory( NewClass, Class, 152 ); // the size of the WND_CLASS inside usersup.h
-        NewClass->DefWndProc = NtClassWindowBaseProc;
+        NewClass->DefWndProc = ( WND_PROC )NtClassWindowBaseProc;
     }
 
     KeAcquireSpinLock( &ClassListLock, &PreviousIrql );
@@ -94,7 +94,7 @@ NtUnregisterClass(
 
 }
 
-BOOLEAN
+NTSTATUS
 NtDefaultWindowProc(
     _In_ HANDLE  WindowHandle,
     _In_ ULONG32 MessageId,
@@ -104,7 +104,7 @@ NtDefaultWindowProc(
 {
     NTSTATUS ntStatus;
     PKWND WindowObject;
-    BOOLEAN Return;
+    NTSTATUS Return;
 
     ntStatus = ObReferenceObjectByHandle( &WindowObject,
                                           WindowHandle,
@@ -118,13 +118,13 @@ NtDefaultWindowProc(
 
     if ( WindowObject->WindowClass->DefWndProc != NULL ) {
 
-        Return = WindowObject->WindowClass->DefWndProc( WindowObject,
+        Return = WindowObject->WindowClass->DefWndProc( ( HANDLE )WindowObject,
                                                         MessageId,
                                                         Param1,
                                                         Param2 );
     }
     else {
-        Return = TRUE;
+        Return = STATUS_SUCCESS;
     }
 
     ObDereferenceObject( WindowObject );

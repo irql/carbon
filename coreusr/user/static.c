@@ -6,7 +6,7 @@
 #include "user.h"
 
 NTSTATUS
-NtClassEditBaseProc(
+NtClassStaticBaseProc(
     _In_ HANDLE  WindowHandle,
     _In_ ULONG32 MessageId,
     _In_ ULONG64 Param1,
@@ -22,7 +22,6 @@ NtClassEditBaseProc(
     ULONG32 Height;
     WND_INFO Info;
     PNT_FONT_HANDLE FontHandle;
-    WCHAR Append[ 2 ] = { 0 };
 
     NtGetWindowInfo( WindowHandle, &Info );
 
@@ -37,7 +36,7 @@ NtClassEditBaseProc(
     switch ( MessageId ) {
     case WM_ACTIVATE:;
         NtCreateFont( &FontHandle,
-                      11,
+                      13,
                       0,
                       L"MICROSS.TTF" );
 
@@ -53,36 +52,6 @@ NtClassEditBaseProc(
         NtBeginPaint( &ContextHandle,
                       WindowHandle );
 
-        NtClearDC( ContextHandle, 0, 0, Width, Height, 0xFFFFFFFF );
-
-        for ( ULONG32 i = 0; i < Width - 1; i++ ) {
-            NtSetPixel( ContextHandle, i, 0, 0xFF808080 );
-        }
-
-        for ( ULONG32 i = 0; i < Height - 1; i++ ) {
-            NtSetPixel( ContextHandle, 0, i, 0xFF808080 );
-        }
-
-        for ( ULONG32 i = 0; i < Width - 2; i++ ) {
-            NtSetPixel( ContextHandle, i + 1, 1, 0xFF000000 );
-        }
-
-        for ( ULONG32 i = 0; i < Height - 2; i++ ) {
-            NtSetPixel( ContextHandle, 1, i + 1, 0xFF000000 );
-        }
-
-        for ( ULONG32 i = 0; i < Height - 2; i++ ) {
-            NtSetPixel( ContextHandle, 1, i + 1, 0xFF000000 );
-        }
-
-        for ( ULONG32 i = 0; i < Width - 2; i++ ) {
-            NtSetPixel( ContextHandle, i + 1, Height - 2, 0xFFC0C0C0 );
-        }
-
-        for ( ULONG32 i = 0; i < Height - 2; i++ ) {
-            NtSetPixel( ContextHandle, Width - 2, i + 1, 0xFFC0C0C0 );
-        }
-
         FontHandle = ( PNT_FONT_HANDLE )NtDefaultWindowProc( WindowHandle,
                                                              WM_GETFONT,
                                                              0,
@@ -96,30 +65,6 @@ NtClassEditBaseProc(
                     0xFF000000 );
 
         NtEndPaint( WindowHandle );
-        break;
-    case WM_KEYDOWN:;
-
-        if ( Param1 >= ' ' &&
-             Param1 <= '~' ||
-             Param1 == VK_ENTER ) {
-
-            Append[ 0 ] = ( WCHAR )Param1;
-            wcscat( Info.Name, Append );
-
-            NtDefaultWindowProc( WindowHandle,
-                                 WM_SETTEXT,
-                                 ( ULONG64 )Info.Name,
-                                 512 );
-        }
-        else if ( Param1 == VK_BACK && wcslen( Info.Name ) > 0 ) {
-
-            Info.Name[ wcslen( Info.Name ) - 1 ] = 0;
-            NtDefaultWindowProc( WindowHandle,
-                                 WM_SETTEXT,
-                                 ( ULONG64 )Info.Name,
-                                 512 );
-        }
-
         break;
     default:
         break;

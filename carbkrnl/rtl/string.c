@@ -645,3 +645,23 @@ PWSTR lstrstriW(
 
     return NULL; // Return NULL pointer if no matches.
 }
+
+wchar_t* wcsncpy( wchar_t* destination, const wchar_t* source, size_t num ) {
+    wchar_t* o;
+
+    o = destination;
+
+    while ( num && *source ) {
+
+        *destination++ = *source++;
+        num--;
+    }
+
+    while ( num ) {
+
+        *destination++ = 0;
+        num--;
+    }
+
+    return o;
+}

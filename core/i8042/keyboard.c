@@ -3,84 +3,85 @@
 
 #include <carbsup.h>
 #include "i8042.h"
+#include "../ntuser/usersup.h"
 
 UCHAR I8042KeyboardFlags = 0;
 
 UCHAR ScanTable[ 128 ] = {
-    0, 27, '1', '2', '3', '4', '5', '6', '7', '8',  /* 9 */
-    '9', '0', '-', '=', '\b',   /* Backspace */
-    '\t',           /* Tab */
-    'q', 'w', 'e', 'r', /* 19 */
-    't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',   /* Enter key */
-    0,          /* 29   - Control */
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',   /* 39 */
-    '\'', '`', 0,       /* Left shift */
-    '\\', 'z', 'x', 'c', 'v', 'b', 'n',         /* 49 */
+    0, 27, '1', '2', '3', '4', '5', '6', '7', '8',
+    '9', '0', '-', '=', VK_BACK,
+    VK_TAB,
+    'q', 'w', 'e', 'r',
+    't', 'y', 'u', 'i', 'o', 'p', '[', ']', VK_ENTER,
+    VK_CTRL,
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+    '\'', '`', 0,
+    '\\', 'z', 'x', 'c', 'v', 'b', 'n',
     'm', ',', '.', '/', 0,              /* Right shift */
     '*',
-    0,  /* Alt */
-    ' ',    /* Space bar */
+    VK_ALT,
+    ' ',
     0,  /* Caps lock */
-    0,  /* 59 - F1 key ... > */
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0,  /* < ... F10 */
+    VK_F1,
+    VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9,
+    VK_F10,
     0,  /* 69 - Num lock*/
     0,  /* Scroll Lock */
-    0,  /* Home key */
-    0,  /* Up Arrow */
-    0,  /* Page Up */
+    VK_HOME,
+    VK_UP,
+    VK_PGUP,
     '-',
-    0,  /* Left Arrow */
+    VK_LEFT,
     0,
-    0,  /* Right Arrow */
+    VK_RIGHT,
     '+',
-    0,  /* 79 - End key*/
-    0,  /* Down Arrow */
-    0,  /* Page Down */
-    0,  /* Insert Key */
-    0,  /* Delete Key */
-    0, 0, 0,
-    0,  /* F11 Key */
-    0,  /* F12 Key */
+    VK_END,
+    VK_DOWN,
+    VK_PGDOWN,
+    VK_INS,
+    VK_DEL,
+    0, 0, '\\', // on my keyboard this is \.
+    VK_F11,
+    VK_F12,
     0,  /* All other keys are undefined */
 };
 
 UCHAR ScanTableShift[ 128 ] = {
     0, 27, '!', '@', '#', '$', '%', '^', '&', '*',  /* 9 */
-    '(', ')', '_', '+', '\b',   /* Backspace */
-    '\t',           /* Tab */
+    '(', ')', '_', '+', VK_BACK,
+    VK_TAB,
     'Q', 'W', 'E', 'R', /* 19 */
-    'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',   /* Enter key */
-    0,          /* 29   - Control */
+    'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', VK_ENTER,
+    VK_CTRL,
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',   /* 39 */
     '\"', '~', 0,       /* Left shift */
     '|', 'Z', 'X', 'C', 'V', 'B', 'N',          /* 49 */
     'M', '<', '>', '?', 0,              /* Right shift */
     '*',
-    0,  /* Alt */
-    ' ',    /* Space bar */
+    VK_ALT,
+    ' ',
     0,  /* Caps lock */
-    0,  /* 59 - F1 key ... > */
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0,  /* < ... F10 */
+    VK_F1,
+    VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9,
+    VK_F10,
     0,  /* 69 - Num lock*/
     0,  /* Scroll Lock */
-    0,  /* Home key */
-    0,  /* Up Arrow */
-    0,  /* Page Up */
+    VK_HOME,
+    VK_UP,
+    VK_PGUP,
     '-',
-    0,  /* Left Arrow */
+    VK_LEFT,
     0,
-    0,  /* Right Arrow */
+    VK_RIGHT,
     '+',
-    0,  /* 79 - End key*/
-    0,  /* Down Arrow */
-    0,  /* Page Down */
-    0,  /* Insert Key */
-    0,  /* Delete Key */
-    0, 0, 0,
-    0,  /* F11 Key */
-    0,  /* F12 Key */
+    VK_END,
+    VK_DOWN,
+    VK_PGDOWN,
+    VK_INS,
+    VK_DEL,
+    0, 0, '|',
+    VK_F11,
+    VK_F12,
     0,  /* All other keys are undefined */
 };
 
@@ -98,6 +99,11 @@ I8042ScanToVirtual(
     }
     else {
 
+        if ( ScanTable[ Scancodes[ 0 ] ] == 0 ) {
+
+            RtlDebugPrint( L"Unrecognised SC: %ul\n", Scancodes[ 0 ] );
+        }
+
         return ScanTable[ Scancodes[ 0 ] ];
     }
 }
@@ -114,11 +120,6 @@ I8042KeyboardInterrupt(
 
     Scancode[ 0 ] = __inbyte( I8042_CONTROLLER_CMD1 );
     KeyState = ( Scancode[ 0 ] & 0x80 ) == 0x80 ? KeyStateRelease : KeyStatePress;
-    Scancode[ 0 ] &= ~0x80;
-
-    if ( Scancode[ 0 ] == 0x1f ) {
-        __debugbreak( );
-    }
 
     switch ( Scancode[ 0 ] ) {
     case 0x2A:
@@ -128,6 +129,8 @@ I8042KeyboardInterrupt(
         I8042KeyboardFlags &= ~KEY_FLAG_SHIFT;
         break;
     default:
+        Scancode[ 0 ] &= ~0x80;
+
         NtSendSystemMessage( KeyState == KeyStatePress ? WM_KEYDOWN : WM_KEYUP,
                              I8042ScanToVirtual( Scancode, 1 ),
                              I8042KeyboardFlags );

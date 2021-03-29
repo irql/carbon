@@ -4,6 +4,9 @@
     <ClCompile Include="driver.c" />
     <ClCompile Include="font.c" />
     <ClCompile Include="textedit.c" />
+    <ClCompile Include="static.c" />
+    <ClCompile Include="button.c" />
+    <ClCompile Include="winbase.c" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="service.asm" />

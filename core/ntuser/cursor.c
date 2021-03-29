@@ -48,31 +48,27 @@ NtSetCursorPosition(
         posy = NtScreenDC->ClientArea.Bottom;
     }
 
-    if ( ( ULONG32 )posx != NtCursorPositionX ||
-        ( ULONG32 )posy != NtCursorPositionY ) {
+    NtCursorPositionX = posx;
+    NtCursorPositionY = posy;
 
-        NtCursorPositionX = posx;
-        NtCursorPositionY = posy;
+    NtDdiBlt( Composed,
+              OldX,
+              OldY,
+              4,
+              4,
+              NtScreenDC,
+              OldX,
+              OldY );
 
-        NtDdiBlt( Composed,
-                  OldX,
-                  OldY,
+    NtDdiBltBits( Cursor,
+                  0,
+                  0,
                   4,
                   4,
                   NtScreenDC,
-                  OldX,
-                  OldY );
+                  NtCursorPositionX,
+                  NtCursorPositionY );
 
-        NtDdiBltBits( Cursor,
-                      0,
-                      0,
-                      4,
-                      4,
-                      NtScreenDC,
-                      NtCursorPositionX,
-                      NtCursorPositionY );
-
-    }
 }
 
 VOID

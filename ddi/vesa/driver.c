@@ -130,7 +130,7 @@ NtDdiVesaBlt(
                                                  dstx + pointx,
                                                  dsty + pointy,
                                                  DestinationContext->ClientArea.Right - DestinationContext->ClientArea.Left ) );
-    }
+        }
 
         pointx++;
 
@@ -139,7 +139,7 @@ NtDdiVesaBlt(
             pointx = 0;
             pointy++;
         }
-}
+    }
 }
 
 VOID
@@ -167,8 +167,8 @@ NtDdiVesaBltBits(
 
         // SPEEEEEEEEEEEEEEEEED
         if (
-            ( ( LONG32 )dstx + ( LONG32 )pointx ) <= context->ClientArea.Right - context->ClientArea.Left &&
-            ( ( LONG32 )dsty + ( LONG32 )pointy ) <= context->ClientArea.Bottom - context->ClientArea.Top &&
+            ( ( LONG32 )dstx + ( LONG32 )pointx ) < context->ClientArea.Right - context->ClientArea.Left &&
+            ( ( LONG32 )dsty + ( LONG32 )pointy ) < context->ClientArea.Bottom - context->ClientArea.Top &&
             ( ( LONG32 )dstx + ( LONG32 )pointx ) >= 0 &&
             ( ( LONG32 )dsty + ( LONG32 )pointy ) >= 0 ) {
 #if 0
@@ -194,7 +194,7 @@ NtDdiVesaBltBits(
                                                  dsty + pointy,
                                                  context->ClientArea.Right - context->ClientArea.Left ) );
 
-    }
+        }
 
         pointx++;
 
@@ -203,7 +203,7 @@ NtDdiVesaBltBits(
             pointx = 0;
             pointy++;
         }
-}
+    }
 }
 
 VOID
@@ -251,8 +251,8 @@ NtDdiVesaClear(
 
         // SPEEEEEEEEEEEEEEEEED
         if (
-            ( ( LONG32 )x + ( LONG32 )pointx ) <= Context->ClientArea.Right - Context->ClientArea.Left &&
-            ( ( LONG32 )y + ( LONG32 )pointy ) <= Context->ClientArea.Bottom - Context->ClientArea.Top &&
+            ( ( LONG32 )x + ( LONG32 )pointx ) < Context->ClientArea.Right - Context->ClientArea.Left &&
+            ( ( LONG32 )y + ( LONG32 )pointy ) < Context->ClientArea.Bottom - Context->ClientArea.Top &&
             ( ( LONG32 )x + ( LONG32 )pointx ) >= 0 &&
             ( ( LONG32 )y + ( LONG32 )pointy ) >= 0 ) {
             VesaBuffer( Context->DeviceSpecific,

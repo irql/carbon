@@ -261,3 +261,11 @@ ULONG64
 __chkstk(
 
 );
+
+NTSYSAPI
+wchar_t*
+wcsncpy(
+    wchar_t* destination,
+    const wchar_t* source,
+    size_t num
+);

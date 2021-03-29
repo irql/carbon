@@ -10,14 +10,22 @@ NtInitializeUser(
 
 )
 {
+    WND_CLASS EDIT_Class;
+    WND_CLASS STATIC_Class;
+    WND_CLASS BUTTON_Class;
 
+    EDIT_Class.WndProc = ( WND_PROC )NtClassEditBaseProc;
+    wcscpy( EDIT_Class.ClassName, L"EDIT" );
 
-    WND_CLASS TextEdit;
-    TextEdit.WndProc = ( WND_PROC )NtClassEditBaseProc;
-    wcscpy( TextEdit.ClassName, L"EDIT" );
+    STATIC_Class.WndProc = ( WND_PROC )NtClassStaticBaseProc;
+    wcscpy( STATIC_Class.ClassName, L"STATIC" );
 
-    NtRegisterClass( &TextEdit );
+    BUTTON_Class.WndProc = ( WND_PROC )NtClassButtonBaseProc;
+    wcscpy( BUTTON_Class.ClassName, L"BUTTON" );
 
+    NtRegisterClass( &EDIT_Class );
+    NtRegisterClass( &STATIC_Class );
+    NtRegisterClass( &BUTTON_Class );
 }
 
 VOID

@@ -61,7 +61,4 @@ Logs
 nvram
 *.lck
 *.ini
-BIOS-bochs-latest
-BIOS-bochs-legacy
-VGABIOS-lgpl-latest
 Pog.TXT

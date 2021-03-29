@@ -66,7 +66,7 @@ DriverLoad(
 
     lstrcpyW( Poggers.ClassName, L"Yeah im pogin" );
 
-    Poggers.DefWndProc = NtClassWindowBaseProc;
+    Poggers.DefWndProc = ( WND_PROC )NtClassWindowBaseProc;
 
     NtRegisterClass( &Poggers );
 

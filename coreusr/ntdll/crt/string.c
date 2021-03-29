@@ -296,6 +296,26 @@ wchar_t* wcscpy( wchar_t* destination, const wchar_t* source ) {
     return original;
 }
 
+wchar_t* wcsncpy( wchar_t* destination, const wchar_t* source, size_t num ) {
+    wchar_t* o;
+
+    o = destination;
+
+    while ( num && *source ) {
+
+        *destination++ = *source++;
+        num--;
+    }
+
+    while ( num ) {
+
+        *destination++ = 0;
+        num--;
+    }
+
+    return o;
+}
+
 #pragma comment(linker, "/export:wcscat")
 #pragma function( wcscat )
 wchar_t* wcscat( wchar_t* destination, const wchar_t* source ) {

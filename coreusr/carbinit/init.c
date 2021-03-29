@@ -17,47 +17,20 @@ NtProcessStartup(
 )
 {
     HANDLE WindowHandle;
-    HANDLE ButtonHandle;
+    HANDLE EditHandle;
     HANDLE StaticHandle;
+    HANDLE ButtonHandle;
 
     WND_CLASS WindowClass;
 
-    KSYSTEM_TIME SystemTime;
-    WCHAR BootString[ 512 ];
+    WND_PROC WndProc;
 
     LdrInitializeProcess( );
 
     NtInitializeUser( );
 
-    char data[ 256 ] = { 0 };
-
-    FILE* file;
-    file = fopen( "HI.TXT", "r" );
-    fseek( file, 5, SEEK_SET );
-    if ( file )
-        fread( data, 256, 1, file );
-
-    NtQuerySystemClock( &SystemTime );
-
-    fseek( file, 0, SEEK_END );
-
-    swprintf( BootString,
-              L"booted on %.2d/%.2d/20%.2d at %.2d:%.2d:%.2d\n"
-              L"THE REAL MALLOC: 0x%.8ull\n"
-              L"hi.txt reads: %as\n"
-              L"size: %d",
-              SystemTime.Day,
-              SystemTime.Month,
-              SystemTime.Year,
-              SystemTime.Hour,
-              SystemTime.Minute,
-              SystemTime.Second,
-              malloc( 500 ),
-              data,
-              ftell( file ) );
-
     wcscpy( WindowClass.ClassName, L"BITCH" );
-    WindowClass.WndProc = NULL;
+    WindowClass.WndProc = NtClassWinBaseProc;
 
     NtRegisterClass( &WindowClass );
 
@@ -68,56 +41,42 @@ NtProcessStartup(
 
     NtCreateWindow( &WindowHandle,
                     0,
-                    L"window title",
+                    L"L4X-Gaming-Coding-Editing",
                     L"BITCH",
                     50,
                     50,
                     400,
                     300,
                     0 );
-    NtCreateWindow( &ButtonHandle,
+    NtCreateWindow( &EditHandle,
                     WindowHandle,
-                    L"Brish",
+                    L"\\??\\C:\\SYSTEM",
                     L"EDIT",
-                    280,
+                    120 + 5 + 5,
                     24,
-                    114,
+                    240,
                     23,
                     0 );
     NtCreateWindow( &StaticHandle,
                     WindowHandle,
-                    BootString,
+                    L"File name:",
                     L"STATIC",
                     5,
                     24,
-                    270,
-                    100,
+                    120,
+                    24,
+                    0 );
+    NtCreateWindow( &ButtonHandle,
+                    WindowHandle,
+                    L"potentially a button",
+                    L"BUTTON",
+                    120 + 5 + 5,
+                    24 + 23 + 5,
+                    240,
+                    23,
                     0 );
 
     KUSER_MESSAGE Message;
-    HANDLE ContextHandle;
-#if 0
-    static ULONG32 bits[ ] = {
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-        0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-    };
-#endif
-    STATIC ULONG32 bits[ 4096 ];
-    PNT_FONT_HANDLE FontHandle;
-
-    NTSTATUS ntStatus = NtCreateFont( &FontHandle,
-                                      11,
-                                      0,
-                                      L"MICROSS.TTF" );
-    RtlDebugPrint( L"NtCreateFont: %ul\n", ntStatus );
-    RECT FontClip;
-
-    FontClip.Left = 0;
-    FontClip.Top = 14;
-    FontClip.Bottom = 300 - 14;
-    FontClip.Right = 400;
 
     while ( TRUE ) {
 
@@ -125,54 +84,26 @@ NtProcessStartup(
 
         if ( NtReceiveMessage( WindowHandle, &Message ) ) {
 
-            if ( Message.MessageId == WM_PAINT ) {
-
-                NtBeginPaint( &ContextHandle, WindowHandle );
-
-                NtDefaultWindowProc( WindowHandle,
-                                     Message.MessageId,
-                                     Message.Param1,
-                                     Message.Param2 );
-#if 0
-                NtDrawText( ContextHandle,
-                            FontHandle,
-                            L"This is some text drawn by user.dll via freetype.dll lol",
-                            &FontClip,
-                            0,
-                            0xFF000000 );
-#endif
-                NtEndPaint( WindowHandle );
-
-            }
-            else {
-
-                NtDefaultWindowProc( WindowHandle,
-                                     Message.MessageId,
-                                     Message.Param1,
-                                     Message.Param2 );
-            }
+            NtGetWindowProc( WindowHandle, &WndProc );
+            WndProc( WindowHandle, Message.MessageId, Message.Param1, Message.Param2 );
         }
 
-#if 0
-        if ( NtReceiveMessage( ButtonHandle, &Message ) ) {
-            NtDefaultWindowProc( ButtonHandle,
-                                 Message.MessageId,
-                                 Message.Param1,
-                                 Message.Param2 );
-        }
-#endif
-        if ( NtReceiveMessage( ButtonHandle, &Message ) ) {
-            WND_PROC proc;
-            NtGetWindowProc( ButtonHandle, &proc );
-            proc( ( PKWND )ButtonHandle, Message.MessageId, Message.Param1, Message.Param2 );
+        if ( NtReceiveMessage( EditHandle, &Message ) ) {
 
+            NtGetWindowProc( EditHandle, &WndProc );
+            WndProc( EditHandle, Message.MessageId, Message.Param1, Message.Param2 );
         }
 
         if ( NtReceiveMessage( StaticHandle, &Message ) ) {
-            NtDefaultWindowProc( StaticHandle,
-                                 Message.MessageId,
-                                 Message.Param1,
-                                 Message.Param2 );
+
+            NtGetWindowProc( StaticHandle, &WndProc );
+            WndProc( StaticHandle, Message.MessageId, Message.Param1, Message.Param2 );
+        }
+
+        if ( NtReceiveMessage( ButtonHandle, &Message ) ) {
+
+            NtGetWindowProc( ButtonHandle, &WndProc );
+            WndProc( ButtonHandle, Message.MessageId, Message.Param1, Message.Param2 );
         }
     }
 }

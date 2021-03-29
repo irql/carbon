@@ -132,7 +132,7 @@ extern "C" size_t               strlen( const char* );
 extern "C" int                  strcmp( const char*, const char* );
 #endif
 
-typedef unsigned long           NTSTATUS, *PNTSTATUS;
+typedef unsigned long long      NTSTATUS, *PNTSTATUS;
 
 typedef signed char             CHAR, *PCHAR, *PSTR;
 typedef signed short            SHORT, *PSHORT;

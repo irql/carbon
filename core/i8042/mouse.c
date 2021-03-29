@@ -80,14 +80,14 @@ I8042MouseInterrupt(
 
         NtGetMode( &Width, &Height, &BitDepth );
 
-        if ( I8042MousePositionX > 1280 ) {
+        if ( I8042MousePositionX > ( LONG32 )Width ) {
 
-            I8042MousePositionX = 1280;
+            I8042MousePositionX = Width;
         }
 
-        if ( I8042MousePositionY > 720 ) {
+        if ( I8042MousePositionY > ( LONG32 )Height ) {
 
-            I8042MousePositionY = 720;
+            I8042MousePositionY = Height;
         }
 
         if ( !( I8042PreviousByte0 & 1 ) ) {
@@ -95,9 +95,6 @@ I8042MouseInterrupt(
             //g_CursorVisible = TRUE;
             //g_TypingCursor = FALSE;
         }
-
-
-        //MappedFramebuffer[ I8042MousePositionY * 1280 + I8042MousePositionX ] = 0xFFFF0000;
 
         NtSetCursorPosition( I8042MousePositionX,
                              I8042MousePositionY );

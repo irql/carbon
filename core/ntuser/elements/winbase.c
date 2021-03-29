@@ -6,7 +6,7 @@
 #include "../usersup.h"
 #include "../ntuser.h"
 
-BOOLEAN
+NTSTATUS
 NtClassWindowBaseProc(
     _In_ PKWND   Window,
     _In_ ULONG32 MessageId,
@@ -100,7 +100,7 @@ NtClassWindowBaseProc(
                     ( ( ULONG32* )Context->DeviceSpecific )[ Width * 3 + 3 + i + ( j * Width ) ] = Window == FocusWindow ? 0xFF000082 : 0xFF808080;
                 }
             }
-
+#if 0
             RECT Clip;
 
             Clip.Left = 5;
@@ -113,6 +113,7 @@ NtClassWindowBaseProc(
                                           Window->WindowInfo.Name,
                                           &Clip,
                                           0xFFFFFFFF );
+#endif
         }
 
         if ( !PaintAlreadyBegan ) {
@@ -121,9 +122,26 @@ NtClassWindowBaseProc(
         }
 
         break;
+    case WM_SETFONT:;
+        Window->Font = ( PVOID )Param1;
+
+        break;
+    case WM_GETFONT:;
+
+        return ( NTSTATUS )Window->Font;
+    case WM_GETTEXT:
+
+        wcsncpy( ( wchar_t* )Param1, Window->WindowInfo.Name, Param2 );
+        Window->WindowInfo.Name[ 511 ] = 0;
+        break;
+    case WM_SETTEXT:
+
+        wcsncpy( Window->WindowInfo.Name, ( wchar_t* )Param1, Param2 );
+        Window->WindowInfo.Name[ 511 ] = 0;
+        break;
     default:
         break;
     }
 
-    return TRUE;
+    return STATUS_SUCCESS;
 }

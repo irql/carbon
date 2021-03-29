@@ -80,21 +80,22 @@ NtInitializeUserWindows(
                     0,
                     NULL );
     // ZwClose( ThreadHandle );
-
+#if 0
     WND_CLASS STATIC_Class;
 
     lstrcpyW( STATIC_Class.ClassName, L"STATIC" );
-    STATIC_Class.DefWndProc = NtClassStaticBaseProc;
+    STATIC_Class.DefWndProc = ( WND_PROC )NtClassStaticBaseProc;
     STATIC_Class.WndProc = NULL;
     NtRegisterClass( &STATIC_Class );
-
+#endif // user.dll replaced.
+#if 0
     WND_CLASS BUTTON_Class;
 
     lstrcpyW( BUTTON_Class.ClassName, L"BUTTON" );
-    BUTTON_Class.DefWndProc = NtClassButtonBaseProc;
+    BUTTON_Class.DefWndProc = ( WND_PROC )NtClassButtonBaseProc;
     BUTTON_Class.WndProc = NULL;
     NtRegisterClass( &BUTTON_Class );
-
+#endif // user.dll replaced.
 }
 
 NTSTATUS
@@ -603,7 +604,7 @@ NtUpdateDisplayThread(
             }
             else {
 
-                CurrentWindow->WindowClass->DefWndProc( CurrentWindow,
+                CurrentWindow->WindowClass->DefWndProc( ( HANDLE )CurrentWindow,
                                                         WM_PAINT,
                                                         0,
                                                         0 );

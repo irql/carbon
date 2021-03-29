@@ -69,15 +69,49 @@ NtSendSystemMessage(
     _In_ ULONG64 Param2
 );
 
-#define WM_KEYDOWN      0x01
-#define WM_KEYUP        0x02
-#define WM_LMOUSEDOWN   0x03
-#define WM_LMOUSEUP     0x04
-#define WM_RMOUSEDOWN   0x05
-#define WM_RMOUSEUP     0x06
-#define WM_PAINT        0x07
-#define WM_ACTIVATE     0x08
-#define WM_FOCUS        0x09
+#define WM_KEYDOWN          0x01
+#define WM_KEYUP            0x02
+#define WM_LMOUSEDOWN       0x03
+#define WM_LMOUSEUP         0x04
+#define WM_RMOUSEDOWN       0x05
+#define WM_RMOUSEUP         0x06
+#define WM_PAINT            0x07
+#define WM_ACTIVATE         0x08
+#define WM_FOCUS            0x09
+#define WM_SETTEXT          0x0A
+#define WM_GETTEXT          0x0B
+#define WM_GETTEXTLENGTH    0x0C
+#define WM_SETFONT          0x0D
+#define WM_GETFONT          0x0E
+
+#define VK_ENTER    '\n'
+#define VK_BACK     '\b'
+#define VK_TAB      '\t'
+#define VK_CTRL     0xF0
+#define VK_ALT      0xF1
+#define VK_UP       0xF2
+#define VK_DOWN     0xF3
+#define VK_LEFT     0xF4
+#define VK_RIGHT    0xF5
+#define VK_PGUP     0xF6
+#define VK_PGDOWN   0xF7
+#define VK_HOME     0xF8
+#define VK_DEL      0xF9
+#define VK_END      0xFA
+#define VK_INS      0xFB
+
+#define VK_F1       0xE0
+#define VK_F2       0xE1
+#define VK_F3       0xE2
+#define VK_F4       0xE3
+#define VK_F5       0xE4
+#define VK_F6       0xE5
+#define VK_F7       0xE6
+#define VK_F8       0xE7
+#define VK_F9       0xE8
+#define VK_F10      0xE9
+#define VK_F11      0xEA
+#define VK_F12      0xEB
 
 NTUSERAPI
 VOID
@@ -138,8 +172,8 @@ NtSetWindowInfo(
 
 typedef struct _WND_CLASS *PWND_CLASS;
 
-typedef BOOLEAN( *WND_PROC )(
-    _In_ PKWND   Window,
+typedef NTSTATUS( *WND_PROC )(
+    _In_ HANDLE  Window,
     _In_ ULONG32 MessageId,
     _In_ ULONG64 Param1,
     _In_ ULONG64 Param2
@@ -178,7 +212,7 @@ NtSendDirectMessage(
 );
 
 NTUSERAPI
-BOOLEAN
+NTSTATUS
 NtDefaultWindowProc(
     _In_ HANDLE  WindowHandle,
     _In_ ULONG32 MessageId,
