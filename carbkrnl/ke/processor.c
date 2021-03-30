@@ -38,6 +38,7 @@ KiCreatePcb(
     KeEnableOnPresent( KPF_SMEP_ENABLED, FALSE );
     KeEnableOnPresent( KPF_FXSR_ENABLED, TRUE ); // uh? 
     KeEnableOnPresent( KPF_SC_ENABLED, TRUE );
+    KeEnableOnPresent( KPF_SSE3_ENABLED, FALSE );
 
 #undef KeEnableOnPresent
 
@@ -118,6 +119,9 @@ KeProcessorFeatureEnabled(
         case KPF_SC_ENABLED:
             KiSafeCpuid( IdRegisters, 0x80000001, 0 );
             return ( IdRegisters[ CPUID_EDX ] >> 11 ) & 1;
+        case KPF_SSE3_ENABLED:
+            KiSafeCpuid( IdRegisters, 1, 0 );
+            return IdRegisters[ CPUID_ECX ] & 1;
         default:
             __assume( 0 );
         }

@@ -113,6 +113,7 @@
       <FixedBaseAddress>false</FixedBaseAddress>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <CLRImageType />
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
     <BuildLog>
       <Path />

@@ -48,15 +48,7 @@ NtProcessStartup(
                     400,
                     300,
                     0 );
-    NtCreateWindow( &EditHandle,
-                    WindowHandle,
-                    L"\\??\\C:\\SYSTEM",
-                    L"EDIT",
-                    120 + 5 + 5,
-                    24,
-                    240,
-                    23,
-                    0 );
+
     NtCreateWindow( &StaticHandle,
                     WindowHandle,
                     L"File name:",
@@ -66,6 +58,17 @@ NtProcessStartup(
                     120,
                     24,
                     0 );
+    NtCreateWindow( &EditHandle,
+                    WindowHandle,
+                    L"\\??\\C:\\SYSTEM",
+                    L"EDIT",
+                    120 + 5 + 5,
+                    24,
+                    240,
+                    23,
+                    0 );
+
+
     NtCreateWindow( &ButtonHandle,
                     WindowHandle,
                     L"potentially a button",

@@ -476,20 +476,20 @@ NtWaitMessage(
     do {
         CurrentWindow = WindowObject->Parent;
 
-        do {
-            ZwQueryEvent( CurrentWindow->MessageEvent, &Event );
-            if ( Event ) {
+        if ( !KeQuerySpinLock( &CurrentWindow->LinkLock ) ) {
+            do {
+                ZwQueryEvent( CurrentWindow->MessageEvent, &Event );
+                if ( Event ) {
 
-                return;
-            }
+                    return;
+                }
 
-            CurrentWindow = CurrentWindow->Child;
-        } while ( CurrentWindow != NULL );
+                CurrentWindow = CurrentWindow->Child;
+            } while ( CurrentWindow != NULL );
+        }
 
-        ZwWaitForSingleObject( WindowObject->Parent->MessageEvent, 100 );
+        ZwWaitForSingleObject( WindowObject->Parent->MessageEvent, 4 );
     } while ( TRUE );
-
-
 }
 
 VOID
@@ -571,7 +571,7 @@ NtUpdateDisplayThread(
     NtDdiCreateDC( &Composed,
                    &NtScreenDC->ClientArea );
 
-    int debug = 0;
+    //int debug = 0;
 
     while ( TRUE ) {
 
@@ -579,7 +579,7 @@ NtUpdateDisplayThread(
         ZwSignalEvent( UpdateEvent, FALSE );
         KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
         CurrentWindow = RootWindow;
-        debug = 0;
+        //debug = 0;
 
         while ( CurrentWindow != NULL ) {
 
@@ -616,7 +616,7 @@ NtUpdateDisplayThread(
                           CurrentWindow->FrontContext->ClientArea.Left,
                           CurrentWindow->FrontContext->ClientArea.Top );
                 CurrentWindow->ContextUpdate = FALSE;
-                debug++;
+                //debug++;
             }
 
             ChildWindow = CurrentWindow->Child;
@@ -636,7 +636,7 @@ NtUpdateDisplayThread(
                               CurrentWindow->FrontContext->ClientArea.Top +
                               ChildWindow->FrontContext->ClientArea.Top );
                     ChildWindow->ContextUpdate = FALSE;
-                    debug++;
+                    //debug++;
                 }
 
                 ChildWindow = ChildWindow->Child;
@@ -650,7 +650,7 @@ NtUpdateDisplayThread(
             CurrentWindow = CurrentWindow->Next;
         }
         KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
-#if 1
+#if 0
         wchar_t brutal[ 128 ];
         RtlFormatBuffer( brutal, L"%d update: %d", NtGetTickCount( ), debug );
 
@@ -737,6 +737,7 @@ NtWindowFromPoint(
         PointWindow = CurrentWindow;
         if ( CurrentWindow->Child != NULL ) {
 
+            KeAcquireSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
             LastWindow = CurrentWindow->Child;
             while ( LastWindow->Child != NULL ) {
 
@@ -787,6 +788,8 @@ NtWindowFromPoint(
 
                 PointWindow = ChildWindow;
             } while ( FALSE );
+
+            KeReleaseSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
         }
 
         KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
