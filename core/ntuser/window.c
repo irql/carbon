@@ -615,14 +615,15 @@ NtUpdateDisplayThread(
                           Composed,
                           CurrentWindow->FrontContext->ClientArea.Left,
                           CurrentWindow->FrontContext->ClientArea.Top );
-                CurrentWindow->ContextUpdate = FALSE;
+
                 //debug++;
             }
 
             ChildWindow = CurrentWindow->Child;
             while ( ChildWindow != NULL ) {
 
-                if ( ChildWindow->ContextUpdate ) {
+                if ( CurrentWindow->ContextUpdate ||
+                     ChildWindow->ContextUpdate ) {
                     NtDdiBlt( ChildWindow->FrontContext,
                               0,
                               0,
@@ -641,6 +642,8 @@ NtUpdateDisplayThread(
 
                 ChildWindow = ChildWindow->Child;
             }
+
+            CurrentWindow->ContextUpdate = FALSE;
 
             if ( CurrentWindow != RootWindow ) {
 
@@ -673,8 +676,8 @@ NtUpdateDisplayThread(
 
         NtGetCursorPosition( &CurrentX, &CurrentY );
         NtSetCursorPosition( CurrentX, CurrentY );
+        }
     }
-}
 
 PKWND
 NtWindowFromPoint(
