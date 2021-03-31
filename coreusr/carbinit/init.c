@@ -20,6 +20,7 @@ NtProcessStartup(
     HANDLE EditHandle;
     HANDLE StaticHandle;
     HANDLE ButtonHandle;
+    HANDLE ListViewHandle;
 
     WND_CLASS WindowClass;
 
@@ -78,6 +79,63 @@ NtProcessStartup(
                     240,
                     23,
                     0 );
+#if 0
+    NtCreateWindow( &ListViewHandle,
+                    WindowHandle,
+                    L"",
+                    L"LISTVIEW",
+                    5,
+                    24 + 23 + 5,
+                    120,
+                    99,
+                    0 );
+#endif
+
+    NtCreateWindow( &ListViewHandle,
+                    WindowHandle,
+                    L"",
+                    L"LISTVIEW",
+                    120 + 5 + 5,
+                    24 + 23 + 5 + 23 + 5,
+                    240,
+                    120,
+                    0 );
+
+    NtGetWindowProc( ListViewHandle, &WndProc );
+
+    CHAR Buffer[ 256 ];
+    PFILE_DIRECTORY_INFORMATION Directory = ( PFILE_DIRECTORY_INFORMATION )&Buffer;
+    NTSTATUS ntStatus;
+
+    FILE* filss = fopen( "C:\\SYSTEM\\", "r" );
+    IO_STATUS_BLOCK StatusBlock;
+    ULONG64 FileIndex = 0;
+
+    do {
+
+        ntStatus = NtQueryDirectoryFile( filss->FileHandle,
+                                         &StatusBlock,
+                                         Directory,
+                                         256,
+                                         FileDirectoryInformation,
+                                         NULL,
+                                         FileIndex,
+                                         TRUE );
+
+        if ( !NT_SUCCESS( ntStatus ) || !NT_SUCCESS( StatusBlock.Status ) ) {
+
+            RtlDebugPrint( L"Err: %" );
+            break;
+        }
+
+        RtlDebugPrint( L"File %s %d\n", Directory->FileName, FileIndex );
+        FileIndex++;
+
+        WndProc( ListViewHandle,
+                 LV_INSERTITEM,
+                 ( ULONG64 )wcsdup( Directory->FileName ),
+                 0 );
+    } while ( TRUE );
 
     KUSER_MESSAGE Message;
 
@@ -107,6 +165,12 @@ NtProcessStartup(
 
             NtGetWindowProc( ButtonHandle, &WndProc );
             WndProc( ButtonHandle, Message.MessageId, Message.Param1, Message.Param2 );
+        }
+
+        if ( NtReceiveMessage( ListViewHandle, &Message ) ) {
+
+            NtGetWindowProc( ListViewHandle, &WndProc );
+            WndProc( ListViewHandle, Message.MessageId, Message.Param1, Message.Param2 );
         }
     }
 }

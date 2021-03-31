@@ -1,8 +1,11 @@
 ﻿
 #pragma once
 
-#define I8042_CONTROLLER_CMD1               0x60
-#define I8042_CONTROLLER_CMD2               0x64
+//http://pdf.datasheetcatalog.com/datasheet/StandardMicrosystems/mXsstsv.pdf
+
+#define I8042_REG_OUTPUT                    0x60
+#define I8042_REG_STATUS                    0x64
+#define I8042_REG_COMMAND                   0x64
 
 #define I8042_CMD_WRITE_BYTE                0xD4
 
@@ -24,16 +27,20 @@
 #define I8042_CMD_SET_SCALING21             0xE7
 #define I8042_CMD_SET_SCALING11             0xE6
 
-#define I8042_ST_CMD1_BIT                   0x02
-#define I8042_ST_CMD2_BIT                   0x01
-#define I8042_ST_F_BIT                      0x20
-#define I8042_ST_V_BIT                      0x08
+#define I8042_ST_OUT_FULL                   0x01
+#define I8042_ST_IN_FULL                    0x02
+#define I8042_ST_SYSTEM                     0x04
+#define I8042_ST_COMMAND                    0x08 // 1 = command, 0 = data
+#define I8042_ST_INHIBIT                    0x10
+#define I8042_ST_AUX_OUT_FULL               0x20
+#define I8042_ST_TIMEOUT                    0x40
+#define I8042_ST_PARITY_ERR                 0x80
 
-typedef enum _I8042_DEVICE_TYPE {
-    I8042DeviceTypeMousePs2Standard = 0,
-    I8042DeviceTypeMouseWithScrollWheel = 3,
-    I8042DeviceTypeMouseWith5Buttons = 4,
-} I8042_DEVICE_TYPE, PI8042_DEVICE_TYPE;
+typedef enum _I8042_MOUSE_TYPE {
+    I8042MouseStandard = 0,
+    I8042MouseScroll = 3,
+    I8042Mouse5Button = 4,
+} I8042_MOUSE_TYPE, *PI8042_MOUSE_TYPE;
 
 #define KEY_FLAG_CTRL   0x80
 #define KEY_FLAG_SHIFT  0x40
@@ -65,13 +72,13 @@ I8042MouseWait(
 
     if ( Write ) {
         while ( TimeOut-- ) {
-            if ( ( __inbyte( I8042_CONTROLLER_CMD2 ) & I8042_ST_CMD2_BIT ) == 1 )
+            if ( ( __inbyte( I8042_REG_STATUS ) & I8042_ST_OUT_FULL ) == 1 )
                 return;
         }
     }
     else {
         while ( TimeOut-- ) {
-            if ( ( __inbyte( I8042_CONTROLLER_CMD2 ) & I8042_ST_CMD1_BIT ) == 0 )
+            if ( ( __inbyte( I8042_REG_STATUS ) & I8042_ST_IN_FULL ) == 0 )
                 return;
         }
     }
@@ -84,9 +91,9 @@ I8042MouseWrite(
 )
 {
     I8042MouseWait( 1 );
-    __outbyte( I8042_CONTROLLER_CMD2, I8042_CMD_WRITE_BYTE );
+    __outbyte( I8042_REG_STATUS, I8042_CMD_WRITE_BYTE );
     I8042MouseWait( 1 );
-    __outbyte( I8042_CONTROLLER_CMD1, Value );
+    __outbyte( I8042_REG_OUTPUT, Value );
 }
 
 FORCEINLINE
@@ -96,5 +103,10 @@ I8042MouseRead(
 )
 {
     I8042MouseWait( 0 );
-    return __inbyte( I8042_CONTROLLER_CMD1 );
+    return __inbyte( I8042_REG_OUTPUT );
 }
+
+VOID
+I8042MouseSetSampleRate(
+    _In_ UCHAR SampleRate
+);

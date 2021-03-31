@@ -113,7 +113,9 @@ FspBuildChainFromFile(
     PWCHAR FileNameLfn;
     ULONG64 FatFile;
     PFAT_FILE_CONTEXT File;
+    PFAT_DEVICE Fat;
 
+    Fat = FspFatDevice( Request->DeviceObject );
     File = FspFatFileContext( Request->FileObject );
     Type = FspValidateFileName( FileName );
 
@@ -148,6 +150,11 @@ FspBuildChainFromFile(
         File->Flags |= FILE_FLAG_ATTRIBUTE_SYSTEM;
     if ( Directory[ FatFile ].Short.Attributes & FAT32_READ_ONLY )
         File->Flags |= FILE_FLAG_ATTRIBUTE_READONLY;
+
+    if ( File->Flags & FILE_FLAG_DIRECTORY ) {
+
+        //Request->FileObject->FileLength = 512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster;
+    }
 
     FspBuildChain( DeviceObject,
         ( ULONG32 )Directory[ FatFile ].Short.ClusterHigh << 16 | Directory[ FatFile ].Short.ClusterLow,
@@ -208,10 +215,13 @@ FsOpenFat32File(
     Directory = MmAllocatePoolWithTag( NonPagedPool, 512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster, FAT_TAG );
     RtlCopyMemory( Directory, Fat->Root, 512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster );
 
-    if ( !NT_SUCCESS( ntStatus ) ) {
+    if ( Decomposed[ 0 ] == NULL ) {
 
-        MmFreePoolWithTag( Decomposed, '  bO' );
-        return STATUS_UNSUCCESSFUL;
+        File->Flags |= FILE_FLAG_DIRECTORY;
+        File->Length = 0; // hm
+        File->Chain = MmAllocatePoolWithTag( NonPagedPool, sizeof( ULONG32 ), FAT_TAG );
+        File->Chain[ 0 ] = Fat->Bpb.Dos7_01Bpb.RootDirectoryCluster;
+        File->ChainLength = 1;
     }
 
     for ( Part = 0; Decomposed[ Part ] != NULL; Part++ ) {
@@ -277,4 +287,154 @@ FsOpenFat32File(
     MmFreePoolWithTag( Directory, FAT_TAG );
     Request->IoStatus.Information = FILE_OPENED;
     return STATUS_SUCCESS;
+}
+
+NTSTATUS
+FsQueryIndexFile(
+    _In_  PDEVICE_OBJECT              DeviceObject,
+    _In_  PFAT_DIRECTORY              Directory,
+    _In_  ULONG64                     FileIndex,
+    _In_  ULONG64                     Length,
+    _Out_ PFILE_DIRECTORY_INFORMATION Information,
+    _Out_ ULONG64*                    ReturnLength
+)
+{
+    DeviceObject;
+
+    ULONG64 CurrentIndex;
+    ULONG64 CurrentEntry;
+    ULONG64 Char;
+
+    ULONG64 EntryShort = ~0ull;
+    ULONG64 EntryShortFound = ~0ull;
+    ULONG64 EntryLongFound = ~0ull;
+
+    ULONG64 FileNameIndex;
+
+    for ( CurrentEntry = 0, CurrentIndex = 0; Directory[ CurrentEntry ].Short.Name[ 0 ] != 0; CurrentEntry++ ) {
+
+        if ( ( UCHAR )Directory[ CurrentEntry ].Short.Name[ 0 ] == ( UCHAR )FAT32_DIRECTORY_ENTRY_FREE ) {
+
+            continue;
+        }
+
+        if ( Directory[ CurrentEntry ].Short.Attributes & FAT32_VOLUME_ID &&
+             Directory[ CurrentEntry ].Short.Attributes != FAT32_LFN ) {
+
+            continue;
+        }
+
+        if ( Directory[ CurrentEntry ].Short.Attributes == FAT32_LFN &&
+             Directory[ CurrentEntry ].Long.OrderOfEntry != 1 ) {
+
+            continue;
+        }
+
+        if ( CurrentIndex == FileIndex ) {
+
+            if ( Directory[ CurrentEntry ].Long.Attributes == FAT32_LFN ) {
+
+                EntryShort = CurrentEntry;
+                FileNameIndex = 0;
+                do {
+
+                    FileNameIndex += 13;
+
+                    if ( Directory[ CurrentEntry ].Long.OrderOfEntry & FAT32_LAST_LFN_ENTRY ) {
+
+                        *ReturnLength = FileNameIndex * sizeof( WCHAR ) + sizeof( WCHAR );
+                        break;
+                    }
+                    CurrentEntry--;
+
+                } while ( CurrentEntry != ( ULONG64 )-1 );
+
+                if ( Length >= sizeof( FILE_DIRECTORY_INFORMATION ) + *ReturnLength ) {
+
+                    CurrentEntry = EntryShort;
+                    FileNameIndex = 0;
+                    do {
+
+                        lstrncpyW( Information->FileName + FileNameIndex, Directory[ CurrentEntry ].Long.First5Chars, 5 );
+                        FileNameIndex += 5;
+                        lstrncpyW( Information->FileName + FileNameIndex, Directory[ CurrentEntry ].Long.Next6Chars, 6 );
+                        FileNameIndex += 6;
+                        lstrncpyW( Information->FileName + FileNameIndex, Directory[ CurrentEntry ].Long.Next2Chars, 2 );
+                        FileNameIndex += 2;
+
+                        if ( Directory[ CurrentEntry ].Long.OrderOfEntry & FAT32_LAST_LFN_ENTRY ) {
+
+                            Information->FileName[ FileNameIndex ] = 0;
+                            Information->FileNameLength = FileNameIndex;
+                            EntryLongFound = CurrentEntry;
+                            EntryShortFound = EntryShort + 1;
+                            break;
+                        }
+                        CurrentEntry--;
+
+                    } while ( CurrentEntry != ( ULONG64 )-1 );
+
+                    //EntryLongFound
+                    //EntryShortFound
+
+                    return STATUS_SUCCESS;
+                }
+                else {
+
+                    *ReturnLength += sizeof( FILE_DIRECTORY_INFORMATION );
+                    return STATUS_BUFFER_TOO_SMALL;
+                }
+            }
+            else {
+
+                if ( Length >= sizeof( FILE_DIRECTORY_INFORMATION ) + sizeof( WCHAR ) * 12 ) {
+
+                    Information->FileNameLength = 11;
+
+                    for ( Char = 0; Char < 8; Char++ ) {
+
+                        Information->FileName[ Char ] = Directory[ CurrentEntry ].Short.Name[ Char ];
+                    }
+                    Information->FileName[ 8 ] = 0;
+
+                    for ( Char = 7; Char != 0; Char-- ) {
+
+                        if ( Information->FileName[ Char ] == ' ' ) {
+
+                            Information->FileName[ Char ] = 0;
+                        }
+                        else {
+
+                            break;
+                        }
+                    }
+
+                    // we do a little trolling
+                    if ( ( Directory[ CurrentEntry ].Short.Attributes & FAT32_DIRECTORY ) == 0 &&
+                         *( ULONG32* )Directory[ CurrentEntry ].Short.Extension >> 8 != 0x202020 ) {
+
+                        Length = ++Char;
+                        *( ULONG32* )( Information->FileName + Length++ ) = '.';
+                        for ( Char = 0; Char < 3; Char++ ) {
+
+                            Information->FileName[ Length++ ] =
+                                Directory[ CurrentEntry ].Short.Extension[ Char ];
+                        }
+                        Information->FileName[ Length ] = 0;
+                    }
+                }
+                else {
+
+                    *ReturnLength = sizeof( FILE_DIRECTORY_INFORMATION ) + sizeof( WCHAR ) * 12;
+                    return STATUS_BUFFER_TOO_SMALL;
+                }
+            }
+
+            return STATUS_SUCCESS;
+        }
+
+        CurrentIndex++;
+    }
+
+    return STATUS_NO_MORE_FILES;
 }

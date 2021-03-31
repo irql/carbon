@@ -113,7 +113,7 @@ I8042KeyboardInterrupt(
     UCHAR     Scancode[ 4 ];
     KEY_STATE KeyState;
 
-    Scancode[ 0 ] = __inbyte( I8042_CONTROLLER_CMD1 );
+    Scancode[ 0 ] = __inbyte( I8042_REG_OUTPUT );
     KeyState = ( Scancode[ 0 ] & 0x80 ) == 0x80 ? KeyStateRelease : KeyStatePress;
 
     switch ( Scancode[ 0 ] ) {

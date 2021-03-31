@@ -262,7 +262,7 @@ FspFindDirectoryFile(
                 Entry--;
 
                 FileNameIndex += 13;
-            } while ( 1 );
+            } while ( TRUE );
 
             if ( LongNameFound != ( ULONG64 )-1 ) {
 

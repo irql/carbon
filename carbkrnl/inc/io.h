@@ -140,6 +140,8 @@ typedef struct _IO_STACK_LOCATION {
         struct {
             ULONG64 Length;
             FILE_INFORMATION_CLASS Info;
+            BOOLEAN SingleMode;
+            ULONG64 FileIndex;
         } DirectoryControl;
 
         struct {
@@ -537,4 +539,29 @@ NtQueryInformationFile(
     _Out_ PVOID                  FileInformation,
     _In_  ULONG64                Length,
     _In_  FILE_INFORMATION_CLASS FileInformationClass
+);
+
+NTSYSAPI
+NTSTATUS
+ZwQueryDirectoryFile(
+    _In_  HANDLE                 FileHandle,
+    _Out_ PIO_STATUS_BLOCK       StatusBlock,
+    _Out_ PVOID                  FileInformation,
+    _In_  ULONG64                Length,
+    _In_  FILE_INFORMATION_CLASS FileInformationClass,
+    _In_  PUNICODE_STRING        FileName,
+    _In_  ULONG64                FileIndex,
+    _In_  BOOLEAN                SingleMode
+);
+
+NTSTATUS
+NtQueryDirectoryFile(
+    _In_  HANDLE                 FileHandle,
+    _Out_ PIO_STATUS_BLOCK       StatusBlock,
+    _Out_ PVOID                  FileInformation,
+    _In_  ULONG64                Length,
+    _In_  FILE_INFORMATION_CLASS FileInformationClass,
+    _In_  PUNICODE_STRING        FileName,
+    _In_  ULONG64                FileIndex,
+    _In_  BOOLEAN                SingleMode
 );

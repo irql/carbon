@@ -209,6 +209,8 @@ NtDrawText(
 {
     Flags;
 
+    // fix *terrible* clipping
+
     FT_Error Error;
     LONG32 Left = Rect->Left;
     LONG32 Top = Rect->Top;
@@ -244,7 +246,15 @@ NtDrawText(
 
                     unsigned char bit = byte_value & ( 1 << ( 7 - bit_index ) );
 
-                    Bits[ row_start + bit_index ] = bit ? Colour : 0;
+                    if ( ( LONG32 )( byte_index * 8 + bit_index ) <= Rect->Right - Left &&
+                        ( LONG32 )y <= Rect->Bottom - Top ) {
+
+                        Bits[ row_start + bit_index ] = bit ? Colour : 0;
+                    }
+                    else {
+
+                        Bits[ row_start + bit_index ] = 0;
+                    }
                 }
             }
         }

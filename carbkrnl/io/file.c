@@ -681,3 +681,93 @@ NtQueryInformationFile(
         return STATUS_UNSUCCESSFUL;
     }
 }
+
+NTSTATUS
+ZwQueryDirectoryFile(
+    _In_  HANDLE                 FileHandle,
+    _Out_ PIO_STATUS_BLOCK       StatusBlock,
+    _Out_ PVOID                  FileInformation,
+    _In_  ULONG64                Length,
+    _In_  FILE_INFORMATION_CLASS FileInformationClass,
+    _In_  PUNICODE_STRING        FileName,
+    _In_  ULONG64                FileIndex,
+    _In_  BOOLEAN                SingleMode
+)
+{
+    FileName;
+    NTSTATUS ntStatus;
+    PIRP Request;
+    PIO_FILE_OBJECT FileObject;
+
+    ntStatus = ObReferenceObjectByHandle( &FileObject,
+                                          FileHandle,
+                                          0,
+                                          KernelMode,
+                                          IoFileObject );
+    if ( !NT_SUCCESS( ntStatus ) ) {
+
+        return ntStatus;
+    }
+
+    Request = IoAllocateIrp( FileObject->DeviceObject->StackLength );
+    Request->Process = PsGetCurrentProcess( );
+    Request->Thread = PsGetCurrentThread( );
+    Request->RequestorMode = PsGetPreviousMode( Request->Thread );
+    Request->DeviceObject = FileObject->DeviceObject;
+    Request->FileObject = FileObject;
+
+    ObReferenceObject( Request->Process );
+    ObReferenceObject( Request->Thread );
+
+    Request->SystemBuffer1 = FileInformation;
+
+    Request->StackLocation[ 0 ].MajorFunction = IRP_DIRECTORY_CONTROL;
+    Request->StackLocation[ 0 ].MinorFunction = 0;
+    Request->StackLocation[ 0 ].Parameters.DirectoryControl.Info = FileInformationClass;
+    Request->StackLocation[ 0 ].Parameters.DirectoryControl.Length = Length;
+    Request->StackLocation[ 0 ].Parameters.DirectoryControl.SingleMode = SingleMode;
+    Request->StackLocation[ 0 ].Parameters.DirectoryControl.FileIndex = FileIndex;
+
+    Request->IoCompletion = IoCompletionRoutine;
+    Request->User.Event = NULL;
+    Request->User.IoStatus = StatusBlock;
+
+    ntStatus = IoCallDriver( Request->DeviceObject, Request );
+
+    ObDereferenceObject( Request->Process );
+    ObDereferenceObject( Request->Thread );
+
+    IoFreeIrp( Request );
+    ObDereferenceObject( FileObject );
+
+    return ntStatus;
+}
+
+NTSTATUS
+NtQueryDirectoryFile(
+    _In_  HANDLE                 FileHandle,
+    _Out_ PIO_STATUS_BLOCK       StatusBlock,
+    _Out_ PVOID                  FileInformation,
+    _In_  ULONG64                Length,
+    _In_  FILE_INFORMATION_CLASS FileInformationClass,
+    _In_  PUNICODE_STRING        FileName,
+    _In_  ULONG64                FileIndex,
+    _In_  BOOLEAN                SingleMode
+)
+{
+    __try {
+
+        return ZwQueryDirectoryFile( FileHandle,
+                                     StatusBlock,
+                                     FileInformation,
+                                     Length,
+                                     FileInformationClass,
+                                     FileName,
+                                     FileIndex,
+                                     SingleMode );
+    }
+    __except ( EXCEPTION_EXECUTE_HANDLER ) {
+
+        return STATUS_UNSUCCESSFUL;
+    }
+}

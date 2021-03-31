@@ -475,6 +475,12 @@ KiInitThread(
 
     PspCreateInitialUserProcess( );
 
+    //
+    // To be implemented: 
+    // chapter 17 - debug junk
+    // chapter 18 - performance monitoring
+    //
+
     //ZwWaitForSingleObject( 0, 6000 );
 
 #if 0

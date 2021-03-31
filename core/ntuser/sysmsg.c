@@ -185,6 +185,8 @@ NtSystemMessageThread(
         case WM_RMOUSEUP:;
         case WM_KEYDOWN:;
         case WM_KEYUP:;
+        case WM_VSCROLL:;
+        case WM_HSCROLL:;
             if ( PressWindow != NULL ) {
                 NtSendDirectMessage( PressWindow,
                                      SystemMessage.MessageId,

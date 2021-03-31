@@ -345,5 +345,5 @@ size_t mbstowcs( wchar_t* wcstr, const char* mbstr, size_t count ) {
 
 wchar_t* wcsdup( wchar_t* string ) {
 
-    return wcscpy( malloc( wcslen( string ) + sizeof( WCHAR ) ), string );
+    return wcscpy( malloc( wcslen( string ) * sizeof( WCHAR ) + sizeof( WCHAR ) ), string );
 }

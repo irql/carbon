@@ -82,20 +82,8 @@ IoCallDriver(
     Request->CurrentStack = 0;
     CurrentDevice = DeviceObject;
     do {
-        /*
-        RtlDebugPrint( L"IoCallDriver: %ull %s %ull %d\n",
-                       CurrentDevice,
-                       CurrentDevice->DriverObject->DriverName.Buffer,
-                       CurrentDevice->DriverObject->MajorFunction
-                       [ Request->StackLocation[ Request->CurrentStack ].MajorFunction ],
-                       Request->StackLocation[ Request->CurrentStack ].MajorFunction );
-        *//*
-        RtlDebugPrint( L"\t\tIoCallDriver: [%s] next [%s] %ull\n",
-                       CurrentDevice->DriverObject->DriverName.Buffer,
-                       CurrentDevice->DeviceLink->DriverObject->DriverName.Buffer,
-                       CurrentDevice->DeviceLink );*/
 
-                       //IoCopyCurrentIrpStackToNext( Request );
+        //IoCopyCurrentIrpStackToNext( Request );
 
         ntStatus = CurrentDevice->DriverObject->MajorFunction
             [ Request->StackLocation[ Request->CurrentStack ].MajorFunction ](

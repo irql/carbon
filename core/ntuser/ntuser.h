@@ -39,6 +39,9 @@ typedef struct _KWND {
     //
 
     PVOID Font;
+    PVOID Uptr;
+    LONG64 ScrollH;
+    LONG64 ScrollW;
 
 } KWND, *PKWND;
 

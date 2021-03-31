@@ -7,6 +7,7 @@
     <ClCompile Include="static.c" />
     <ClCompile Include="button.c" />
     <ClCompile Include="winbase.c" />
+    <ClCompile Include="listview.c" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="service.asm" />

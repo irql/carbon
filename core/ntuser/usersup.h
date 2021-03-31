@@ -84,6 +84,17 @@ NtSendSystemMessage(
 #define WM_SETFONT          0x0D
 #define WM_GETFONT          0x0E
 
+#define WM_SETUPTR          0x0F
+#define WM_GETUPTR          0x10
+
+#define WM_GETSCROLLH       0x11
+#define WM_GETSCROLLW       0x12
+#define WM_SETSCROLLH       0x13
+#define WM_SETSCROLLW       0x14
+#define WM_VSCROLL          0x15
+#define WM_HSCROLL          0x16
+
+
 #define VK_ENTER    '\n'
 #define VK_BACK     '\b'
 #define VK_TAB      '\t'
@@ -328,3 +339,13 @@ NtSetMode(
     _In_ ULONG32 Height,
     _In_ ULONG32 BitDepth
 );
+
+typedef struct _LV_ITEM {
+    ULONG32          Id;
+    PWSTR            Name;
+
+    struct _LV_ITEM* Link;
+
+} LV_ITEM, *PLV_ITEM;
+
+#define LV_INSERTITEM 0xF0

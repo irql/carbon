@@ -4,6 +4,8 @@
 #include <carbsup.h>
 #include "i8042.h"
 
+EXTERN ULONG64 I8042MouseType;
+
 NTSTATUS
 DriverLoad(
     _In_ PDRIVER_OBJECT DriverObject
@@ -77,33 +79,52 @@ DriverLoad(
 
     KeRaiseIrql( DISPATCH_LEVEL, &PreviousIrql );
 
-    __outbyte( I8042_CONTROLLER_CMD2, 0xA8 );
+    __outbyte( I8042_REG_STATUS, 0xA8 );
 
     I8042MouseWait( 1 );
-    __outbyte( I8042_CONTROLLER_CMD2, 0x20 );
+    __outbyte( I8042_REG_STATUS, 0x20 );
 
     I8042MouseWait( 0 );
-    Status = ( __inbyte( I8042_CONTROLLER_CMD1 ) | ( 1 << 1 ) ) & ~( 1 << 5 );
+    Status = ( __inbyte( I8042_REG_OUTPUT ) | ( 1 << 1 ) ) & ~( 1 << 5 );
 
-    __inbyte( I8042_CONTROLLER_CMD1 );//Bochs sends 0xD8
-
-    I8042MouseWait( 1 );
-    __outbyte( I8042_CONTROLLER_CMD2, 0x60 );
+    __inbyte( I8042_REG_OUTPUT );//Bochs sends 0xD8
 
     I8042MouseWait( 1 );
-    __outbyte( I8042_CONTROLLER_CMD1, Status );
+    __outbyte( I8042_REG_STATUS, 0x60 );
+
+    I8042MouseWait( 1 );
+    __outbyte( I8042_REG_OUTPUT, Status );
     I8042MouseRead( );//might generate ACK
 
     I8042MouseWrite( I8042_CMD_SET_DEFAULTS );
     I8042MouseRead( );
-    /*
-    NtMouseWrite(I8042_CMD_GET_MOUSE_ID);
-    NtMouseRead();
 
-    if (NtMouseRead() != I8042DeviceTypeMousePs2Standard) {
 
-        DbgPrint("unrecognised mouse id.\n");
-    }*/
+    I8042MouseWrite( I8042_CMD_GET_MOUSE_ID );
+    I8042MouseRead( );
+
+    I8042MouseType = I8042MouseRead( );
+
+    if ( I8042MouseType != I8042MouseScroll ) {
+
+        I8042MouseSetSampleRate( 200 );
+        I8042MouseSetSampleRate( 100 );
+        I8042MouseSetSampleRate( 80 );
+        I8042MouseWrite( I8042_CMD_GET_MOUSE_ID );
+        I8042MouseRead( );
+
+        I8042MouseType = I8042MouseRead( );
+
+        //RtlDebugPrint( L"Cool Mouse: %d\n", I8042MouseType );
+
+        if ( I8042MouseType != I8042MouseScroll ) {
+
+            // so qemu sends 0x41 for mousetype?
+            // ignoring it is fine though.
+
+            I8042MouseType = I8042MouseScroll;//I8042MouseStandard;
+        }
+    }
 
     I8042MouseWrite( I8042_CMD_ENABLE_PACKET_STREAMING );
     I8042MouseRead( );

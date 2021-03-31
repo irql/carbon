@@ -168,6 +168,8 @@ DriverDispatch(
     PIO_STACK_LOCATION Current;
     PFAT_DEVICE Fat;
     PFAT_FILE_CONTEXT File;
+    PFAT_DIRECTORY Directory;
+    NTSTATUS ntStatus;
 
     //RtlDebugPrint( L"[fat] dispatch.\n" );
 
@@ -212,6 +214,54 @@ DriverDispatch(
 
             Request->IoStatus.Status = STATUS_SUCCESS;
             Request->IoStatus.Information = sizeof( FILE_BASIC_INFORMATION );
+            break;
+        default:
+
+            Request->IoStatus.Status = STATUS_INVALID_REQUEST;
+            Request->IoStatus.Information = 0;
+
+            break;
+        }
+
+        break;
+    case IRP_DIRECTORY_CONTROL:
+
+        switch ( Current->Parameters.DirectoryControl.Info ) {
+        case FileDirectoryInformation:;
+
+            if ( ( File->Flags & FILE_FLAG_DIRECTORY ) == 0 ) {
+
+                Request->IoStatus.Status = STATUS_INVALID_PATH;
+                Request->IoStatus.Information = 0;
+                break;
+            }
+
+
+            Directory = MmAllocatePoolWithTag( NonPagedPool,
+                                               512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,
+                                               FAT_TAG );
+
+            ntStatus = FspReadChain( DeviceObject,
+                                     File->Chain,
+                                     Directory,
+                                     512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,
+                                     0 );
+
+            if ( !NT_SUCCESS( ntStatus ) ) {
+
+                Request->IoStatus.Status = ntStatus;
+                Request->IoStatus.Information = 0;
+                break;
+            }
+
+            Request->IoStatus.Status = FsQueryIndexFile( DeviceObject,
+                                                         Directory,
+                                                         Current->Parameters.DirectoryControl.FileIndex,
+                                                         Current->Parameters.DirectoryControl.Length,
+                                                         Request->SystemBuffer1,
+                                                         &Request->IoStatus.Information );
+            MmFreePoolWithTag( Directory, FAT_TAG );
+
             break;
         default:
 

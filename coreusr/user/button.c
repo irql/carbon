@@ -29,8 +29,8 @@ NtClassButtonBaseProc(
     Height = Info.Rect.Bottom - Info.Rect.Top;
 
     FontClip.Left = 4 + 0;
-    FontClip.Right = Width - 4;
-    FontClip.Bottom = Height - 2 - 14;
+    FontClip.Right = Width - 8;
+    FontClip.Bottom = Height - 2 + 7;
     FontClip.Top = 2 + 14;
 
     switch ( MessageId ) {

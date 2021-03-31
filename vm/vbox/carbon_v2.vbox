@@ -6,15 +6,10 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.virtualbox.org/" version="1.17-windows">
-  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-03-29T19:44:05Z">
-    <MediaRegistry>
-      <HardDisks>
-        <HardDisk uuid="{26f359b3-a3d5-4d19-9b1b-4ff49beedba8}" location="I:/repos/osdev/carbon_v2/carbon_v2.vhd" format="VHD" type="Normal"/>
-      </HardDisks>
-    </MediaRegistry>
+  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-03-31T00:00:46Z">
     <ExtraData>
       <ExtraDataItem name="GUI/LastCloseAction" value="PowerOff"/>
-      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="197,125,640,522"/>
+      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="548,139,640,522"/>
       <ExtraDataItem name="GUI/LastScaleWindowPosition" value="640,280,640,480"/>
     </ExtraData>
     <Hardware>
@@ -47,7 +42,7 @@
       <AudioAdapter driver="DirectSound" enabled="true" enabledOut="true"/>
       <Clipboard/>
       <GuestProperties>
-        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="en_US" timestamp="1617005713567022200" flags=""/>
+        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="en_US" timestamp="1617101150822928100" flags=""/>
       </GuestProperties>
       <StorageControllers>
         <StorageController name="IDE" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">

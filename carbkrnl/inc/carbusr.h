@@ -442,3 +442,16 @@ NtClassWinBaseProc(
     _In_ ULONG64 Param1,
     _In_ ULONG64 Param2
 );
+
+NTSYSAPI
+NTSTATUS
+NtQueryDirectoryFile(
+    _In_  HANDLE                 FileHandle,
+    _Out_ PIO_STATUS_BLOCK       StatusBlock,
+    _Out_ PVOID                  FileInformation,
+    _In_  ULONG64                Length,
+    _In_  FILE_INFORMATION_CLASS FileInformationClass,
+    _In_  PUNICODE_STRING        FileName,
+    _In_  ULONG64                FileIndex,
+    _In_  BOOLEAN                SingleMode
+);

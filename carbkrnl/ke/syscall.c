@@ -26,6 +26,7 @@ KSYSTEM_SERVICE KiNtServiceTable[ ] = {
     SYSTEM_SERVICE( NtReleaseMutex, 0 ),
     SYSTEM_SERVICE( NtGetTickCount, 0 ),
     SYSTEM_SERVICE( NtQueryInformationFile, 1 ),
+    SYSTEM_SERVICE( NtQueryDirectoryFile, 4 ),
 
 };
 

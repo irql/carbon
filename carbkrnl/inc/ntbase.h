@@ -611,13 +611,23 @@ typedef struct _PEB {
 #define NtCurrentPeb( ) ( ( PPEB )( __readgsqword( 0 ) ) ) 
 
 typedef enum _FILE_INFORMATION_CLASS {
-    FileBasicInformation = 1
+    FileBasicInformation = 1,
+    FileDirectoryInformation,
 } FILE_INFORMATION_CLASS, *PFILE_INFORMATION_CLASS;
 
 typedef struct _FILE_BASIC_INFORMATION {
     // Ok
     ULONG64 FileLength;
 } FILE_BASIC_INFORMATION, *PFILE_BASIC_INFORMATION;
+
+typedef struct _FILE_DIRECTORY_INFORMATION {
+    ULONG32 NextEntry;
+    ULONG32 FileIndex;
+    ULONG32 FileAttributes;
+    ULONG64 FileNameLength;
+    WCHAR   FileName[ 0 ];
+
+} FILE_DIRECTORY_INFORMATION, *PFILE_DIRECTORY_INFORMATION;
 
 #pragma pack(push, 1)
 

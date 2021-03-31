@@ -29,8 +29,8 @@ NtClassWinBaseProc(
     Height = Info.Rect.Bottom - Info.Rect.Top;
 
     FontClip.Left = 5;
-    FontClip.Right = Width - 8;
-    FontClip.Bottom = 19 - 3 - 14;
+    FontClip.Right = Width - 10;
+    FontClip.Bottom = 23 - 1 + 8;
     FontClip.Top = 3 + 14;
 
     switch ( MessageId ) {
