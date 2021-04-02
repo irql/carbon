@@ -188,12 +188,21 @@ DriverDispatch(
 
     switch ( Current->MajorFunction ) {
     case IRP_MJ_CREATE:
-        //RtlDebugPrint( L"[fat] file: %s\n", Request->FileObject->FileName.Buffer );
-        Request->FileObject->FsContext1 = MmAllocatePoolWithTag( NonPagedPool, sizeof( FAT_FILE_CONTEXT ), FAT_TAG );
+
+        Request->FileObject->FsContext1 = MmAllocatePoolWithTag( NonPagedPool,
+                                                                 sizeof( FAT_FILE_CONTEXT ),
+                                                                 FAT_TAG );
         Request->IoStatus.Status = FsOpenFat32File( DeviceObject, Request );
         break;
     case IRP_MJ_READ:
-        //RtlDebugPrint( L"[fat] read request recieved.\n" );
+
+        if ( ( File->Flags & FILE_FLAG_DIRECTORY ) != 0 ) {
+
+            Request->IoStatus.Status = STATUS_INVALID_PATH;
+            Request->IoStatus.Information = 0;
+            break;
+        }
+
         Request->IoStatus.Status = FspReadChain( DeviceObject,
                                                  File->Chain,
                                                  Request->SystemBuffer1,
@@ -235,7 +244,6 @@ DriverDispatch(
                 Request->IoStatus.Information = 0;
                 break;
             }
-
 
             Directory = MmAllocatePoolWithTag( NonPagedPool,
                                                512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,

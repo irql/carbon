@@ -327,3 +327,11 @@ RtlAllocationSizeHeap(
     NtReleaseMutex( HeapHandle->HeapLock );
     return 0;
 }
+
+PVOID
+RtlGetCurrentHeap(
+
+)
+{
+    return NtCurrentPeb( )->ProcessHeap;
+}

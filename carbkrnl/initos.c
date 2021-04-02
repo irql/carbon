@@ -475,21 +475,22 @@ KiInitThread(
 
     PspCreateInitialUserProcess( );
 
+    HANDLE explorer_Handle;
+    OBJECT_ATTRIBUTES explorer_File = {
+        RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
+        RTL_CONSTANT_STRING( L"\\SYSTEM\\EXPLORER.EXE" ), OBJ_KERNEL_HANDLE };
+
+    ZwWaitForSingleObject( 0, 2000 );
+
+    PspCreateUserProcess( &explorer_Handle,
+                          PROCESS_ALL_ACCESS,
+                          &explorer_File );
+
     //
     // To be implemented: 
     // chapter 17 - debug junk
     // chapter 18 - performance monitoring
     //
-
-    //ZwWaitForSingleObject( 0, 6000 );
-
-#if 0
-    while ( 1 ) {
-
-        RtlDebugPrint( L"Sup dawg.\n" );
-        __debugbreak( );
-    }
-#endif
 
     //KiRecursiveDirectoryList( &ObRootDirectory, 1 );
 

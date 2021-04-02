@@ -535,8 +535,10 @@ KdpHandleGuestException(
     PKTHREAD Thread;
 
     PKD_CACHED_MODULE Cached;
+    ULONG64 Rsp;
+    ULONG64 Rip;
 
-    OslDelayExecution( 250 );
+    //OslDelayExecution( 250 );
 
     Thread = Exception->u[ 0 ].PacketException.Initial.Record.Thread;
     Process = KdpGetThreadProcess( Thread );
@@ -555,15 +557,18 @@ KdpHandleGuestException(
 
         Cached = KdpGetModuleByAddress( Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rip );
 
+        Rsp = Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rsp;
+        Rip = Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rip;
+
         if ( Cached == NULL ) {
 
             OslWriteConsole( L"              0x%p\n",
-                             Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rip );
+                             Rip );
         }
         else {
 
             hResult = DbgGetFunctionByAddress( Cached,
-                                               Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rip - Cached->Start,
+                                               Rip - Cached->Start,
                                                &FunctionName,
                                                &FileName,
                                                &LineNumber,
@@ -573,17 +578,21 @@ KdpHandleGuestException(
 
                 OslWriteConsole( L"  %30s 0x%p (0x%08x)\n",
                                  Cached->Name,
-                                 Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rip,
-                                 Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext.Rip - Cached->Start );
+                                 Rip,
+                                 Rip - Cached->Start );
             }
             else {
+
                 OslWriteConsole( L"  %30s %48s:%04d %s+%d\n", Cached->Name,
                                  FileName, LineNumber, FunctionName, FunctionDisplacement );
+                DbgPrintFunctionFrame( Cached, FunctionName,
+                                       Rsp );
             }
         }
 
         ntStatus = KdpUnwindFrame( Exception->u[ 0 ].PacketException.Initial.Record.Thread,
                                    &Exception->u[ 0 ].PacketException.Initial.Record.ExceptionContext );
+
     } while ( NT_SUCCESS( ntStatus ) );
 
     OslWriteConsole( L"\n" );

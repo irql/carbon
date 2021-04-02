@@ -5,6 +5,14 @@
 #include <carbusr.h>
 #include "user.h"
 
+typedef struct _LV_DATA {
+
+    ULONG64  SelectedItem;
+    ULONG64  ItemCount;
+    PLV_ITEM FirstItem;
+    ULONG64  LastTickCount;
+} LV_DATA, *PLV_DATA;
+
 NTSTATUS
 NtClassListViewBaseProc(
     _In_ HANDLE  WindowHandle,
@@ -19,11 +27,13 @@ NtClassListViewBaseProc(
     RECT FontClip;
     PNT_FONT_HANDLE FontHandle;
     PLV_ITEM CurrentItem;
+    PLV_ITEM CurrentItem1;
+    PLV_DATA ListView;
     WND_INFO Info;
     ULONG32 Width;
     ULONG32 Height;
     LONG64 Scroll;
-    ULONG64 ItemCount;
+    ULONG64 PreviousSelected;
 
     NtGetWindowInfo( WindowHandle, &Info );
 
@@ -37,6 +47,7 @@ NtClassListViewBaseProc(
 
     switch ( MessageId ) {
     case WM_ACTIVATE:;
+
         NtCreateFont( &FontHandle,
                       11,
                       0,
@@ -45,6 +56,19 @@ NtClassListViewBaseProc(
                              WM_SETFONT,
                              ( ULONG64 )FontHandle,
                              0 );
+
+
+        ListView = RtlAllocateHeap( NtCurrentPeb( )->ProcessHeap,
+                                    sizeof( LV_DATA ) );
+        ListView->SelectedItem = ( ULONG64 )-1;
+        ListView->FirstItem = NULL;
+        ListView->ItemCount = 0;
+
+        NtDefaultWindowProc( WindowHandle,
+                             WM_SETUPTR,
+                             ( ULONG64 )ListView,
+                             0 );
+
         break;
     case WM_PAINT:;
         NtBeginPaint( &ContextHandle,
@@ -85,10 +109,11 @@ NtClassListViewBaseProc(
             NtSetPixel( ContextHandle, Width - 2, i + 1, 0xFFC0C0C0 );
         }
 
-        CurrentItem = ( PLV_ITEM )NtDefaultWindowProc( WindowHandle,
-                                                       WM_GETUPTR,
-                                                       0,
-                                                       0 );
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+        CurrentItem = ListView->FirstItem;
 
         Scroll = ( LONG64 )NtDefaultWindowProc( WindowHandle,
                                                 WM_GETSCROLLH,
@@ -104,7 +129,7 @@ NtClassListViewBaseProc(
                             CurrentItem->Name,
                             &FontClip,
                             0,
-                            0xFF000000 );
+                            CurrentItem->Id == ListView->SelectedItem ? 0xFFFF0000 : 0xFF000000 );
                 FontClip.Top += 14;
             }
             CurrentItem = CurrentItem->Link;
@@ -113,23 +138,19 @@ NtClassListViewBaseProc(
         NtEndPaint( WindowHandle );
         break;
     case LV_INSERTITEM:;
-        CurrentItem = ( PLV_ITEM )NtDefaultWindowProc( WindowHandle,
-                                                       WM_GETUPTR,
-                                                       0,
-                                                       0 );
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+        CurrentItem = ListView->FirstItem;
 
         if ( CurrentItem == NULL ) {
 
-            CurrentItem = RtlAllocateHeap( NtCurrentPeb( )->ProcessHeap,
-                                           sizeof( LV_ITEM ) );
-            CurrentItem->Id = 0;
-            CurrentItem->Name = ( PWSTR )Param1;
-            CurrentItem->Link = NULL;
-
-            NtDefaultWindowProc( WindowHandle,
-                                 WM_SETUPTR,
-                                 ( ULONG64 )CurrentItem,
-                                 0 );
+            ListView->FirstItem = RtlAllocateHeap( NtCurrentPeb( )->ProcessHeap,
+                                                   sizeof( LV_ITEM ) );
+            ListView->FirstItem->Id = 0;
+            ListView->FirstItem->Name = ( PWSTR )Param1;
+            ListView->FirstItem->Link = NULL;
         }
         else {
 
@@ -143,6 +164,44 @@ NtClassListViewBaseProc(
             CurrentItem->Link->Id = CurrentItem->Id + 1;
             CurrentItem->Link->Name = ( PWSTR )Param1;
             CurrentItem->Link->Link = NULL;
+        }
+
+        ListView->ItemCount++;
+        break;
+    case LV_GETITEMCOUNT:;
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+        return ( NTSTATUS )ListView->ItemCount;
+    case LV_GETSELECTED:;
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+        return ( NTSTATUS )(
+            ListView->SelectedItem == 0 &&
+            ListView->ItemCount == 0 ? -1 : ListView->SelectedItem );
+    case LV_SETSELECTED:;
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+        ListView->SelectedItem = Param1;
+        break;
+    case LV_GETITEM:;
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+        CurrentItem = ListView->FirstItem;
+        while ( CurrentItem != NULL ) {
+
+            if ( CurrentItem->Id == Param1 ) {
+
+                return ( NTSTATUS )CurrentItem;
+            }
+            CurrentItem = CurrentItem->Link;
         }
         break;
     case WM_VSCROLL:;
@@ -159,18 +218,12 @@ NtClassListViewBaseProc(
             break;
         }
 
-        CurrentItem = ( PLV_ITEM )NtDefaultWindowProc( WindowHandle,
-                                                       WM_GETUPTR,
-                                                       0,
-                                                       0 );
-        ItemCount = 0;
-        while ( CurrentItem != NULL ) {
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
 
-            ItemCount++;
-            CurrentItem = CurrentItem->Link;
-        }
-
-        if ( ( ULONG64 )Scroll >= ItemCount ) {
+        if ( ( ULONG64 )Scroll >= ListView->ItemCount ) {
 
             break;
         }
@@ -183,6 +236,93 @@ NtClassListViewBaseProc(
                        WM_PAINT,
                        Param1,
                        Param2 );
+        break;
+    case WM_LMOUSEDOWN:;
+
+        if ( Param2 <= 4 ) {
+
+            break;
+        }
+
+        Param2 -= 4;
+
+        Scroll = ( LONG64 )NtDefaultWindowProc( WindowHandle,
+                                                WM_GETSCROLLH,
+                                                0,
+                                                0 );
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+
+        if ( ( Scroll + Param2 / 14 ) >= ListView->ItemCount ) {
+
+            break;
+        }
+
+        PreviousSelected = ListView->SelectedItem;
+        ListView->SelectedItem = Scroll + Param2 / 14;
+
+        if ( PreviousSelected != ListView->SelectedItem ) {
+            NtSendParentMessage( WindowHandle,
+                                 WM_COMMAND,
+                                 Info.MenuId,
+                                 LV_SELECTED );
+        }
+        else if ( ListView->LastTickCount + 1200 >= NtGetTickCount( ) ) {
+
+            NtSendParentMessage( WindowHandle,
+                                 WM_COMMAND,
+                                 Info.MenuId,
+                                 LV_PRESSED );
+        }
+
+        ListView->LastTickCount = NtGetTickCount( );
+
+        NtSendMessage( WindowHandle,
+                       WM_PAINT,
+                       Param1,
+                       Param2 );
+        break;
+    case LV_REMOVEITEM:;
+        ListView = ( PLV_DATA )NtDefaultWindowProc( WindowHandle,
+                                                    WM_GETUPTR,
+                                                    0,
+                                                    0 );
+
+        CurrentItem = ListView->FirstItem;
+        if ( CurrentItem->Id == Param1 ) {
+
+            if ( CurrentItem->Id == ListView->SelectedItem ) {
+
+                ListView->SelectedItem = ( ULONG64 )-1;
+            }
+
+            ListView->FirstItem = CurrentItem->Link;
+            RtlFreeHeap( NtCurrentPeb( )->ProcessHeap, CurrentItem );
+            ListView->ItemCount--;
+            break;
+        }
+
+        while ( CurrentItem->Link != NULL ) {
+
+            if ( CurrentItem->Link->Id == Param1 ) {
+
+                if ( CurrentItem->Link->Id == ListView->SelectedItem ) {
+
+                    ListView->SelectedItem = ( ULONG64 )-1;
+                }
+
+                CurrentItem1 = CurrentItem->Link;
+                CurrentItem->Link = CurrentItem->Link->Link;
+                RtlFreeHeap( NtCurrentPeb( )->ProcessHeap, CurrentItem1 );
+                ListView->ItemCount--;
+                return STATUS_SUCCESS;
+            }
+
+            CurrentItem = CurrentItem->Link;
+        }
+
         break;
     default:
         return NtDefaultWindowProc( WindowHandle,

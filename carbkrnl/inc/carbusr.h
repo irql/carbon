@@ -244,6 +244,7 @@ NTSYSAPI long int   strtol( const char* str, char** end, int base );
 NTSYSAPI wchar_t*   wcscat( wchar_t* destination, const wchar_t* source );
 NTSYSAPI wchar_t*   wcsdup( wchar_t* string );
 NTSYSAPI wchar_t*   wcsrev( wchar_t* String );
+NTSYSAPI wchar_t*   wcsncpy( wchar_t* destination, const wchar_t* source, size_t num );
 
 NTSYSAPI size_t     mbstowcs( wchar_t* wcstr, const char* mbstr, size_t count );
 
@@ -383,6 +384,12 @@ RtlAllocationSizeHeap(
 );
 
 NTSYSAPI
+PVOID
+RtlGetCurrentHeap(
+
+);
+
+NTSYSAPI
 VOID
 LdrInitializeProcess(
 
@@ -454,4 +461,35 @@ NtQueryDirectoryFile(
     _In_  PUNICODE_STRING        FileName,
     _In_  ULONG64                FileIndex,
     _In_  BOOLEAN                SingleMode
+);
+
+#define INVALID_HANDLE_VALUE ( ( HANDLE )( 0 ) )
+
+typedef unsigned char       BYTE;
+typedef unsigned short      WORD;
+typedef unsigned long       DWORD;
+typedef unsigned long long  DWORD64;
+typedef unsigned long       BOOL;
+
+NTSYSAPI
+HANDLE
+CreateFileW(
+    _In_ PCWSTR FileName,
+    _In_ ULONG  DesiredAccess,
+    _In_ ULONG  ShareAccess,
+    _In_ ULONG  Disposition,
+    _In_ ULONG  Flags
+);
+
+NTSYSAPI
+BOOL
+SetCurrentDirectoryW(
+    _In_ PCWSTR PathName
+);
+
+NTSYSAPI
+VOID
+GetCurrentDirectoryW(
+    _In_ PWSTR PathName,
+    _In_ ULONG Length
 );

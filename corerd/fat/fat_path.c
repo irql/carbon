@@ -256,7 +256,7 @@ FspFindDirectoryFile(
 
                 if ( Directory[ Entry ].Long.OrderOfEntry & FAT32_LAST_LFN_ENTRY ) {
                     LongNameFound = Entry;
-                    ShortNameFound = EntryShort + 1;
+                    ShortNameFound = Entry + 1;
                     break;
                 }
                 Entry--;

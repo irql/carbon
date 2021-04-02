@@ -294,6 +294,32 @@ NtSendMessage(
 }
 
 VOID
+NtSendParentMessage(
+    _In_ HANDLE  WindowHandle,
+    _In_ ULONG32 MessageId,
+    _In_ ULONG64 Param1,
+    _In_ ULONG64 Param2
+)
+{
+    NTSTATUS ntStatus;
+    PKWND WindowObject;
+
+    ntStatus = ObReferenceObjectByHandle( &WindowObject,
+                                          WindowHandle,
+                                          0,
+                                          UserMode,
+                                          NtWindowObject );
+    if ( !NT_SUCCESS( ntStatus ) ) {
+
+        // Shut the fuck up.
+        return;
+    }
+
+    NtSendDirectMessage( WindowObject->Parent, MessageId, Param1, Param2 );
+    ObDereferenceObject( WindowObject );
+}
+
+VOID
 NtBroadcastDirectMessage(
     _In_ ULONG32 MessageId,
     _In_ ULONG64 Param1,
@@ -651,7 +677,7 @@ NtUpdateDisplayThread(
             }
 
             CurrentWindow = CurrentWindow->Next;
-        }
+                }
         KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
 #if 0
         wchar_t brutal[ 128 ];
@@ -676,8 +702,8 @@ NtUpdateDisplayThread(
 
         NtGetCursorPosition( &CurrentX, &CurrentY );
         NtSetCursorPosition( CurrentX, CurrentY );
+            }
         }
-    }
 
 PKWND
 NtWindowFromPoint(

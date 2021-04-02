@@ -24,6 +24,7 @@ KSYSTEM_SERVICE NtUserServiceTable[ ] = {
     SYSTEM_SERVICE( NtWaitMessage, 0 ),
     SYSTEM_SERVICE( NtSetPixel, 0 ),
     SYSTEM_SERVICE( NtClearDC, 2 ),
+    SYSTEM_SERVICE( NtSendParentMessage, 0 ),
 };
 
 NTSTATUS

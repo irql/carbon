@@ -260,8 +260,8 @@ NtDrawText(
         }
 
         NtBltBits( Bits,
-                   0,//Rect->Left,
-                   0,//Rect->Right,
+                   0,
+                   0,
                    bm.width,
                    bm.rows,
                    ContextHandle,

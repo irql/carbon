@@ -85,7 +85,7 @@ LdrpLoadUserModuleEx(
                                             SECTION_ALL_ACCESS,
                                             OBJ_KERNEL_HANDLE,
                                             KernelMode );
-        ObDereferenceObject( SectionObject );;
+        ObDereferenceObject( SectionObject );
     }
 
 LdrpProcedureFinished:;
@@ -240,4 +240,79 @@ LdrpLoadUserModule(
     }
 
     return ntStatus;
+}
+
+VOID
+LdrpMapUserSection(
+    _In_ PKPROCESS Process,
+    _In_ PMM_VAD   Vad
+)
+{
+    PIMAGE_DOS_HEADER HeaderDos;
+    PIMAGE_NT_HEADERS HeadersNt;
+    PIMAGE_IMPORT_DESCRIPTOR Import;
+    PVOID BaseAddress;
+    HANDLE ProcessHandle;
+    HANDLE SectionHandle;
+    PMM_VAD CurrentVad;
+    UNICODE_STRING FileName;
+    ULONG64 Char;
+
+    RTL_STACK_STRING( FileName, 256 );
+
+    HeaderDos = ( PIMAGE_DOS_HEADER )( Vad->Start );
+    HeadersNt = ( PIMAGE_NT_HEADERS )( Vad->Start + HeaderDos->e_lfanew );
+
+    if ( HeadersNt->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_IMPORT ].VirtualAddress != 0 ) {
+
+        Import = ( PIMAGE_IMPORT_DESCRIPTOR )( Vad->Start +
+                                               HeadersNt->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_IMPORT ].VirtualAddress );
+
+        while ( Import->Characteristics ) {
+
+            for ( Char = 0; ( ( PCHAR )Vad->Start + Import->Name )[ Char ] != 0; Char++ ) {
+
+                FileName.Buffer[ Char ] = ( ( PCHAR )Vad->Start + Import->Name )[ Char ];
+                FileName.Buffer[ Char + 1 ] = 0;
+            }
+
+            FileName.Length = ( USHORT )RtlStringLength( FileName.Buffer ) * sizeof( WCHAR );
+
+            CurrentVad = MiFindVadByShortName( Process, &FileName );
+
+            if ( CurrentVad != NULL ) {
+
+                //
+                // Already loaded, no further processing required.
+                //
+
+                Import++;
+                continue;
+            }
+            else {
+
+                ObOpenObjectFromPointer( &ProcessHandle,
+                                         Process,
+                                         PROCESS_ALL_ACCESS,
+                                         OBJ_KERNEL_HANDLE,
+                                         KernelMode );
+
+                LdrpLoadUserModuleEx( &SectionHandle,
+                                      FileName.Buffer );
+
+                BaseAddress = NULL;
+                ZwMapViewOfSection( SectionHandle,
+                                    ProcessHandle,
+                                    &BaseAddress,
+                                    0,
+                                    0,
+                                    PAGE_READ | PAGE_WRITE | PAGE_EXECUTE );
+                ZwClose( SectionHandle );
+                ZwClose( ProcessHandle );
+
+                Import++;
+                continue;
+            }
+        }
+    }
 }

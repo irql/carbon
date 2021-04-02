@@ -142,6 +142,7 @@ FspBuildChainFromFile(
 
     Request->FileObject->FileLength = Directory[ FatFile ].Short.FileSize;
 
+    File->Flags = 0;
     if ( Directory[ FatFile ].Short.Attributes & FAT32_DIRECTORY )
         File->Flags |= FILE_FLAG_DIRECTORY;
     if ( Directory[ FatFile ].Short.Attributes & FAT32_HIDDEN )
@@ -151,10 +152,10 @@ FspBuildChainFromFile(
     if ( Directory[ FatFile ].Short.Attributes & FAT32_READ_ONLY )
         File->Flags |= FILE_FLAG_ATTRIBUTE_READONLY;
 
-    if ( File->Flags & FILE_FLAG_DIRECTORY ) {
+    //if ( File->Flags & FILE_FLAG_DIRECTORY ) {
 
         //Request->FileObject->FileLength = 512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster;
-    }
+    //}
 
     FspBuildChain( DeviceObject,
         ( ULONG32 )Directory[ FatFile ].Short.ClusterHigh << 16 | Directory[ FatFile ].Short.ClusterLow,
@@ -367,12 +368,22 @@ FsQueryIndexFile(
                             Information->FileName[ FileNameIndex ] = 0;
                             Information->FileNameLength = FileNameIndex;
                             EntryLongFound = CurrentEntry;
-                            EntryShortFound = EntryShort + 1;
+                            EntryShortFound = CurrentEntry + 1;
                             break;
                         }
                         CurrentEntry--;
 
                     } while ( CurrentEntry != ( ULONG64 )-1 );
+
+                    Information->FileAttributes = 0;
+                    if ( Directory[ EntryShortFound ].Short.Attributes & FAT32_DIRECTORY )
+                        Information->FileAttributes |= FILE_FLAG_DIRECTORY;
+                    if ( Directory[ EntryShortFound ].Short.Attributes & FAT32_HIDDEN )
+                        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_HIDDEN;
+                    if ( Directory[ EntryShortFound ].Short.Attributes & FAT32_SYSTEM )
+                        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_SYSTEM;
+                    if ( Directory[ EntryShortFound ].Short.Attributes & FAT32_READ_ONLY )
+                        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_READONLY;
 
                     //EntryLongFound
                     //EntryShortFound
@@ -422,6 +433,16 @@ FsQueryIndexFile(
                         }
                         Information->FileName[ Length ] = 0;
                     }
+
+                    Information->FileAttributes = 0;
+                    if ( Directory[ CurrentEntry ].Short.Attributes & FAT32_DIRECTORY )
+                        Information->FileAttributes |= FILE_FLAG_DIRECTORY;
+                    if ( Directory[ CurrentEntry ].Short.Attributes & FAT32_HIDDEN )
+                        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_HIDDEN;
+                    if ( Directory[ CurrentEntry ].Short.Attributes & FAT32_SYSTEM )
+                        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_SYSTEM;
+                    if ( Directory[ CurrentEntry ].Short.Attributes & FAT32_READ_ONLY )
+                        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_READONLY;
                 }
                 else {
 

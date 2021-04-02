@@ -125,3 +125,11 @@ PKD_CACHED_MODULE
 KdpGetModuleByShort(
     _In_ PWCHAR ShortName
 );
+
+extern "C"
+HRESULT
+DbgPrintFunctionFrame(
+    _In_ PKD_CACHED_MODULE Context,
+    _In_ PWCHAR            FunctionName,
+    _In_ ULONG64           FrameBase
+);

@@ -344,3 +344,71 @@ DbgGetFunctionByName(
 
     return ( HRESULT )-1;
 }
+
+EXTERN_C
+HRESULT
+DbgPrintFunctionFrame(
+    _In_ PKD_CACHED_MODULE Context,
+    _In_ PWCHAR            FunctionName,
+    _In_ ULONG64           FrameBase
+)
+{
+    FrameBase;
+    HRESULT hResult;
+    IDiaEnumSymbols* EnumSymbols;
+    IDiaSymbol* FunctionSymbol;
+    IDiaSymbol* DataSymbol;
+    ULONG Celt;
+    ULONG DataKind;
+    LONG AddressOffset;
+
+    Celt = 0;
+    hResult = Context->PdbContext->Global->findChildren( SymTagFunction,
+                                                         FunctionName,
+                                                         nsCaseInRegularExpression,
+                                                         &EnumSymbols );
+    if ( hResult != S_OK ) {
+
+        return hResult;
+    }
+
+    hResult = EnumSymbols->Next( 1, &FunctionSymbol, &Celt );
+    EnumSymbols->Release( );
+
+    if ( hResult != S_OK || Celt != 1 ) {
+
+        return hResult;
+    }
+
+    //
+    // FunctionSymbol is now the function symbol.
+    //
+
+    FunctionSymbol->findChildren( SymTagData,
+                                  NULL,
+                                  nsNone,
+                                  &EnumSymbols );
+
+    while ( EnumSymbols->Next( 1, &DataSymbol, &Celt ) == S_OK && Celt == 1 ) {
+
+        DataSymbol->get_dataKind( &DataKind );
+
+        switch ( DataKind ) {
+        case DataIsLocal:
+        case DataIsParam:
+
+            BSTR p;
+            DataSymbol->get_name( &p );
+            DataSymbol->get_offset( &AddressOffset );
+            OslWriteConsole( L"  %30s (0x%p) - 0x%p\n",
+                             p, FrameBase + AddressOffset, KdpReadULong64( FrameBase + AddressOffset ) );
+            break;
+        default:
+            break;
+        }
+
+        DataSymbol->Release( );
+    }
+
+    return S_OK;
+}

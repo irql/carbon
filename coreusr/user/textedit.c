@@ -99,9 +99,17 @@ NtClassEditBaseProc(
         break;
     case WM_KEYDOWN:;
 
+        if ( Param1 == VK_ENTER ) {
+
+            NtSendParentMessage( WindowHandle,
+                                 WM_COMMAND,
+                                 Info.MenuId,
+                                 ED_ENTER );
+            break;
+        }
+
         if ( Param1 >= ' ' &&
-             Param1 <= '~' ||
-             Param1 == VK_ENTER ) {
+             Param1 <= '~' ) {
 
             Append[ 0 ] = ( WCHAR )Param1;
             wcscat( Info.Name, Append );

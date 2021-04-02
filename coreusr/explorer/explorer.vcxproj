@@ -11,12 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="driver.c" />
+    <ClCompile Include="init.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{224995d4-b870-4cda-8bee-1eddf482ec32}</ProjectGuid>
-    <RootNamespace>vesa</RootNamespace>
+    <ProjectGuid>{68ea465e-e9d5-45dd-bbc0-8334255bc988}</ProjectGuid>
+    <RootNamespace>explorer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -27,7 +27,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>
@@ -51,7 +51,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetExt>.sys</TargetExt>
+    <TargetExt>.exe</TargetExt>
     <IncludePath>$(SolutionDir)\carbkrnl\inc\;$(VC_IncludePath);</IncludePath>
     <ReferencePath />
     <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
@@ -94,12 +94,11 @@
       <CompileAs>CompileAsC</CompileAs>
       <UseFullPaths>false</UseFullPaths>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>carbkrnl.lib;kdcom.lib;dxgi.lib</AdditionalDependencies>
+      <AdditionalDependencies>ntdll.lib;user.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ManifestFile />
       <AllowIsolation />
@@ -108,12 +107,11 @@
       <UACUIAccess />
       <ProgramDatabaseFile>$(OutDir)Symbols\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Native</SubSystem>
-      <LargeAddressAware>true</LargeAddressAware>
-      <EntryPointSymbol>DriverLoad</EntryPointSymbol>
+      <LargeAddressAware>false</LargeAddressAware>
+      <EntryPointSymbol>NtProcessStartup</EntryPointSymbol>
       <FixedBaseAddress>false</FixedBaseAddress>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <CLRImageType />
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
     <BuildLog>
       <Path />

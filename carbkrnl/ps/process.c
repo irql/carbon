@@ -60,7 +60,7 @@ PspCreateInitialUserProcess(
 {
     STATIC OBJECT_ATTRIBUTES InitialProcessFile = {
         RTL_CONSTANT_STRING( L"\\??\\BootDevice" ),
-        RTL_CONSTANT_STRING( L"\\SYSTEM\\CARBINIT.EXE" ), 0 };
+        RTL_CONSTANT_STRING( L"\\SYSTEM\\CARBINIT.EXE" ), OBJ_KERNEL_HANDLE };
 
 
     PspCreateUserProcess( &PspInitialUserProcessHandle,

@@ -106,8 +106,9 @@ NtSystemMessageThread(
             //
 
             if ( !PressSet ) {
-                PressWindow = NtWindowFromPoint( ( ULONG32 )SystemMessage.Param1, ( ULONG32 )SystemMessage.Param2 );
-
+                PressWindow = NtWindowFromPoint(
+                    ( ULONG32 )SystemMessage.Param1,
+                    ( ULONG32 )SystemMessage.Param2 );
 
                 if ( PressWindow == RootWindow &&
                      FocusWindow != PressWindow ) {
@@ -146,21 +147,28 @@ NtSystemMessageThread(
                 PressY = ( ULONG32 )SystemMessage.Param2;
                 PressSet = TRUE;
 
-                NtSendDirectMessage( PressWindow,
-                                     WM_LMOUSEDOWN,
-                                     PressX,
-                                     PressY );
+                if ( PressWindow->Parent == PressWindow ) {
+                    NtSendDirectMessage( PressWindow,
+                                         WM_LMOUSEDOWN,
+                                         PressX - PressWindow->FrontContext->ClientArea.Left,
+                                         PressY - PressWindow->FrontContext->ClientArea.Top );
+                }
+                else {
+                    NtSendDirectMessage( PressWindow,
+                                         WM_LMOUSEDOWN,
+                                         PressX -
+                                         PressWindow->FrontContext->ClientArea.Left -
+                                         PressWindow->Parent->FrontContext->ClientArea.Left,
+                                         PressY -
+                                         PressWindow->FrontContext->ClientArea.Top -
+                                         PressWindow->Parent->FrontContext->ClientArea.Top );
+                }
             }
 
             break;
         case WM_LMOUSEUP:;
 
             if ( PressSet ) {
-
-                NtSendDirectMessage( PressWindow,
-                                     WM_LMOUSEUP,
-                                     SystemMessage.Param1,
-                                     SystemMessage.Param2 );
 
                 if ( FocusWindow != RootWindow &&
                      FocusWindow == PressWindow ) {
@@ -173,6 +181,27 @@ NtSystemMessageThread(
                     FocusWindow->FrontContext->ClientArea.Bottom += PressYDist;
 
                     FocusWindow->BackContext->ClientArea = FocusWindow->FrontContext->ClientArea;
+                }
+
+                if ( PressWindow->Parent == PressWindow ) {
+                    NtSendDirectMessage( PressWindow,
+                                         WM_LMOUSEUP,
+                                         SystemMessage.Param1 - PressWindow->FrontContext->ClientArea.Left,
+                                         SystemMessage.Param2 - PressWindow->FrontContext->ClientArea.Top );
+                }
+                else {
+                    NtSendDirectMessage( PressWindow,
+                                         WM_LMOUSEUP,
+                                         SystemMessage.Param1 -
+                                         PressWindow->FrontContext->ClientArea.Left -
+                                         PressWindow->Parent->FrontContext->ClientArea.Left,
+                                         SystemMessage.Param2 -
+                                         PressWindow->FrontContext->ClientArea.Top -
+                                         PressWindow->Parent->FrontContext->ClientArea.Top );
+                }
+
+                if ( FocusWindow != RootWindow &&
+                     FocusWindow == PressWindow ) {
 
                     NtBroadcastDirectMessage( WM_PAINT,
                                               0,
@@ -183,11 +212,32 @@ NtSystemMessageThread(
             break;
         case WM_RMOUSEDOWN:;
         case WM_RMOUSEUP:;
+            if ( PressWindow != NULL ) {
+
+                if ( PressWindow->Parent == PressWindow ) {
+                    NtSendDirectMessage( PressWindow,
+                                         SystemMessage.MessageId,
+                                         SystemMessage.Param1 - PressWindow->FrontContext->ClientArea.Left,
+                                         SystemMessage.Param2 - PressWindow->FrontContext->ClientArea.Top );
+                }
+                else {
+                    NtSendDirectMessage( PressWindow,
+                                         SystemMessage.MessageId,
+                                         SystemMessage.Param1 -
+                                         PressWindow->FrontContext->ClientArea.Left -
+                                         PressWindow->Parent->FrontContext->ClientArea.Left,
+                                         SystemMessage.Param2 -
+                                         PressWindow->FrontContext->ClientArea.Top -
+                                         PressWindow->Parent->FrontContext->ClientArea.Top );
+                }
+            }
+            break;
         case WM_KEYDOWN:;
         case WM_KEYUP:;
         case WM_VSCROLL:;
         case WM_HSCROLL:;
             if ( PressWindow != NULL ) {
+
                 NtSendDirectMessage( PressWindow,
                                      SystemMessage.MessageId,
                                      SystemMessage.Param1,

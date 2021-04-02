@@ -132,26 +132,24 @@ NtClassWindowBaseProc(
     case WM_GETTEXT:
 
         wcsncpy( ( wchar_t* )Param1, Window->WindowInfo.Name, Param2 );
-        Window->WindowInfo.Name[ 511 ] = 0;
         break;
     case WM_SETTEXT:
-
         wcsncpy( Window->WindowInfo.Name, ( wchar_t* )Param1, Param2 );
         Window->WindowInfo.Name[ 511 ] = 0;
+        NtSendDirectMessage( Window,
+                             WM_PAINT,
+                             0,
+                             0 );
         break;
     case WM_SETUPTR:;
-
         Window->Uptr = ( PVOID )Param1;
         break;
     case WM_GETUPTR:;
-
         return ( NTSTATUS )Window->Uptr;
     case WM_GETSCROLLH:;
         return ( NTSTATUS )Window->ScrollH;
-        break;
     case WM_GETSCROLLW:;
         return ( NTSTATUS )Window->ScrollW;
-        break;
     case WM_SETSCROLLH:;
         Window->ScrollH = ( LONG64 )Param1;
         break;

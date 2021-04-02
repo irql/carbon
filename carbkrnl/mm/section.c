@@ -732,6 +732,7 @@ MmMapViewOfSection(
         //
 
         *BaseAddress = ( PVOID )SectionObject->LockedBase;
+
     }
 
     if ( *BaseAddress == NULL ) {
@@ -901,6 +902,25 @@ MmMapViewOfSection(
 
         MiInsertVad( Process, Vad );
 
+        //
+        // Any modules which are referenced by this must
+        // be loaded too, we are going to traverse it's 
+        // import table and load any of them.
+        //
+
+        if ( Process != PsInitialSystemProcess ) {
+
+            //
+            // We can safely assume that any
+            // SystemProcess modules will be
+            // loaded as the initial section 
+            // into the address space
+            //
+
+            LdrpMapUserSection( Process,
+                                Vad );
+
+        }
     }
 
     *BaseAddress = ( PVOID )PageAddress;

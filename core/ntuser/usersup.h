@@ -94,6 +94,8 @@ NtSendSystemMessage(
 #define WM_VSCROLL          0x15
 #define WM_HSCROLL          0x16
 
+#define WM_COMMAND          0x17
+
 
 #define VK_ENTER    '\n'
 #define VK_BACK     '\b'
@@ -127,6 +129,15 @@ NtSendSystemMessage(
 NTUSERAPI
 VOID
 NtSendMessage(
+    _In_ HANDLE  WindowHandle,
+    _In_ ULONG32 MessageId,
+    _In_ ULONG64 Param1,
+    _In_ ULONG64 Param2
+);
+
+NTUSERAPI
+VOID
+NtSendParentMessage(
     _In_ HANDLE  WindowHandle,
     _In_ ULONG32 MessageId,
     _In_ ULONG64 Param1,
@@ -348,4 +359,25 @@ typedef struct _LV_ITEM {
 
 } LV_ITEM, *PLV_ITEM;
 
-#define LV_INSERTITEM 0xF0
+#define LV_INSERTITEM   0xF0
+#define LV_GETSELECTED  0xF1
+#define LV_SETSELECTED  0xF2
+#define LV_GETITEMCOUNT 0xF3
+#define LV_GETITEM      0xF4
+#define LV_REMOVEITEM   0xF5
+
+#define LV_SELECTED     0xE0
+#define LV_PRESSED      0xE1
+
+#define ED_ENTER        0xF0
+
+FORCEINLINE
+ULONG64
+CLAMP(
+    _In_ ULONG64 Val,
+    _In_ ULONG64 Min,
+    _In_ ULONG64 Max
+)
+{
+    return Val < Min ? Min : ( Val > Max ? Max : Val );
+}

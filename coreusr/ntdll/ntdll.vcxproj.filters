@@ -12,6 +12,7 @@
     <ClCompile Include="crt\alloc.c" />
     <ClCompile Include="crt\sort.c" />
     <ClCompile Include="crt\system.c" />
+    <ClCompile Include="sys\file.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ldr\ldrp.h" />

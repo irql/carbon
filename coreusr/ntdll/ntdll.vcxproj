@@ -22,6 +22,7 @@
     <ClCompile Include="ldr\loader.c" />
     <ClCompile Include="ldr\startup.c" />
     <ClCompile Include="rtl\heap.c" />
+    <ClCompile Include="sys\file.c" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="rtl\chkstk.asm">

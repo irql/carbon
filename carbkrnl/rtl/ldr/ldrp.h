@@ -81,3 +81,9 @@ LdrpLoadUserModule(
     _In_ PVOID     FileBase,
     _In_ ULONG64   FileLength
 );
+
+VOID
+LdrpMapUserSection(
+    _In_ PKPROCESS Process,
+    _In_ PMM_VAD   Vad
+);
