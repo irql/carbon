@@ -1,0 +1,23 @@
+# Disk DescriptorFile
+version=1
+encoding="windows-1252"
+CID=fffffffe
+parentCID=ffffffff
+createType="fullDevice"
+
+# Extent description
+RW 1953525168 FLAT "\\.\PhysicalDrive2" 0 partitionUUID \\?\scsi#disk&ven_nvme&prod_sabrent_rocket_q#5&2bca5db2&0&000000#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}
+
+# The Disk Data Base 
+#DDB
+
+ddb.adapterType = "ide"
+ddb.geometry.biosCylinders = "121601"
+ddb.geometry.biosHeads = "255"
+ddb.geometry.biosSectors = "63"
+ddb.geometry.cylinders = "121601"
+ddb.geometry.heads = "255"
+ddb.geometry.sectors = "63"
+ddb.longContentID = "eec19e0a590d10aee7fbe6abfffffffe"
+ddb.uuid = "60 00 C2 97 b4 50 5c 54-be 18 72 15 2c bd 90 30"
+ddb.virtualHWVersion = "16"

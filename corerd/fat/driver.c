@@ -262,12 +262,29 @@ DriverDispatch(
                 break;
             }
 
-            Request->IoStatus.Status = FsQueryIndexFile( DeviceObject,
-                                                         Directory,
-                                                         Current->Parameters.DirectoryControl.FileIndex,
-                                                         Current->Parameters.DirectoryControl.Length,
-                                                         Request->SystemBuffer1,
-                                                         &Request->IoStatus.Information );
+            if ( Request->SystemBuffer2 == NULL &&
+                 Current->Parameters.DirectoryControl.SingleMode ) {
+
+                Request->IoStatus.Status = FsQueryIndexFile( DeviceObject,
+                                                             Directory,
+                                                             Current->Parameters.DirectoryControl.FileIndex,
+                                                             Current->Parameters.DirectoryControl.Length,
+                                                             Request->SystemBuffer1,
+                                                             &Request->IoStatus.Information );
+            }
+            else if ( Request->SystemBuffer2 != NULL ) {
+                Request->IoStatus.Status = FsQueryNameFile( DeviceObject,
+                                                            Directory,
+                                                            Request->SystemBuffer2,
+                                                            Current->Parameters.DirectoryControl.Length,
+                                                            Request->SystemBuffer1,
+                                                            &Request->IoStatus.Information );
+            }
+            else {
+
+                NT_ASSERT( FALSE );
+            }
+
             MmFreePoolWithTag( Directory, FAT_TAG );
 
             break;

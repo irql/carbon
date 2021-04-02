@@ -459,3 +459,64 @@ FsQueryIndexFile(
 
     return STATUS_NO_MORE_FILES;
 }
+
+NTSTATUS
+FsQueryNameFile(
+    _In_  PDEVICE_OBJECT              DeviceObject,
+    _In_  PFAT_DIRECTORY              Directory,
+    _In_  PUNICODE_STRING             FileName,
+    _In_  ULONG64                     Length,
+    _Out_ PFILE_DIRECTORY_INFORMATION Information,
+    _Out_ ULONG64*                    ReturnLength
+)
+{
+    FAT_PATH_TYPE Type;
+    CHAR FileName8Dot3[ 12 ];
+    PWCHAR FileNameLfn;
+    ULONG64 FatFile;
+    PFAT_DEVICE Fat;
+
+    *ReturnLength = sizeof( FILE_DIRECTORY_INFORMATION ) + FileName->Length + sizeof( WCHAR );
+
+    if ( Length < *ReturnLength ) {
+
+        return STATUS_BUFFER_TOO_SMALL;
+    }
+
+    Fat = FspFatDevice( DeviceObject );
+    Type = FspValidateFileName( FileName->Buffer );
+
+    if ( Type == Path8Dot3 ) {
+
+        FspConvertPathTo8Dot3( FileName->Buffer, FileName8Dot3 );
+
+        FatFile = FspFindDirectoryFile( Directory, Type, FileName8Dot3 );
+    }
+    else if ( Type == PathLongFileName ) {
+
+        FileNameLfn = FileName->Buffer;
+        FatFile = FspFindDirectoryFile( Directory, Type, FileNameLfn );
+    }
+    else {
+
+        return STATUS_INVALID_PATH;
+    }
+
+    if ( FatFile == ( ULONG64 )-1 ) {
+
+        return STATUS_NOT_FOUND;
+    }
+
+    Information->FileAttributes = 0;
+    if ( Directory[ FatFile ].Short.Attributes & FAT32_DIRECTORY )
+        Information->FileAttributes |= FILE_FLAG_DIRECTORY;
+    if ( Directory[ FatFile ].Short.Attributes & FAT32_HIDDEN )
+        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_HIDDEN;
+    if ( Directory[ FatFile ].Short.Attributes & FAT32_SYSTEM )
+        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_SYSTEM;
+    if ( Directory[ FatFile ].Short.Attributes & FAT32_READ_ONLY )
+        Information->FileAttributes |= FILE_FLAG_ATTRIBUTE_READONLY;
+    lstrcpyW( Information->FileName, FileName->Buffer );
+
+    return STATUS_SUCCESS;
+}

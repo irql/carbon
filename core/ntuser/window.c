@@ -588,6 +588,9 @@ NtUpdateDisplayThread(
 
 )
 {
+
+#define _NT_DEBUG_UPDATE_COUNT TRUE
+
     PKWND CurrentWindow;
     PKWND ChildWindow;
     KIRQL PreviousIrql;
@@ -596,8 +599,9 @@ NtUpdateDisplayThread(
 
     NtDdiCreateDC( &Composed,
                    &NtScreenDC->ClientArea );
-
-    //int debug = 0;
+#if _NT_DEBUG_UPDATE_COUNT
+    ULONG64 debug = 0;
+#endif
 
     while ( TRUE ) {
 
@@ -605,18 +609,13 @@ NtUpdateDisplayThread(
         ZwSignalEvent( UpdateEvent, FALSE );
         KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
         CurrentWindow = RootWindow;
-        //debug = 0;
+#if _NT_DEBUG_UPDATE_COUNT
+        debug = 0;
+#endif
 
         while ( CurrentWindow != NULL ) {
 
-            // uncomment for kernel mode windows with no message thread
-
             if ( CurrentWindow != RootWindow ) {
-                /*
-                CurrentWindow->WindowClass->DefWndProc( CurrentWindow,
-                                                        WM_PAINT,
-                                                        0,
-                                                        0 );*/
 
                 KeAcquireSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
             }
@@ -641,15 +640,24 @@ NtUpdateDisplayThread(
                           Composed,
                           CurrentWindow->FrontContext->ClientArea.Left,
                           CurrentWindow->FrontContext->ClientArea.Top );
-
-                //debug++;
+#if _NT_DEBUG_UPDATE_COUNT
+                debug++;
+#endif
             }
 
             ChildWindow = CurrentWindow->Child;
             while ( ChildWindow != NULL ) {
 
                 if ( CurrentWindow->ContextUpdate ||
-                     ChildWindow->ContextUpdate ) {
+                    ( ChildWindow->ContextUpdate  &&
+                      FocusWindow == CurrentWindow ) ) {
+
+                    //
+                    // Checking if this window is the focus; if it is the focus
+                    // it is allowed to have individual child window updates - otherwise
+                    // the window should only be updated when the parent is. 
+                    //
+
                     NtDdiBlt( ChildWindow->FrontContext,
                               0,
                               0,
@@ -663,7 +671,9 @@ NtUpdateDisplayThread(
                               CurrentWindow->FrontContext->ClientArea.Top +
                               ChildWindow->FrontContext->ClientArea.Top );
                     ChildWindow->ContextUpdate = FALSE;
-                    //debug++;
+#if _NT_DEBUG_UPDATE_COUNT
+                    debug++;
+#endif
                 }
 
                 ChildWindow = ChildWindow->Child;
@@ -677,9 +687,9 @@ NtUpdateDisplayThread(
             }
 
             CurrentWindow = CurrentWindow->Next;
-                }
+        }
         KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
-#if 0
+#if _NT_DEBUG_UPDATE_COUNT
         wchar_t brutal[ 128 ];
         RtlFormatBuffer( brutal, L"%d update: %d", NtGetTickCount( ), debug );
 
@@ -702,8 +712,8 @@ NtUpdateDisplayThread(
 
         NtGetCursorPosition( &CurrentX, &CurrentY );
         NtSetCursorPosition( CurrentX, CurrentY );
-            }
-        }
+    }
+}
 
 PKWND
 NtWindowFromPoint(

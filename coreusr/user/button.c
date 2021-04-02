@@ -29,8 +29,8 @@ NtClassButtonBaseProc(
     Height = Info.Rect.Bottom - Info.Rect.Top;
 
     FontClip.Left = 4 + 0;
-    FontClip.Right = Width;//min( ( LONG32 )Width - 8, 0 );
-    FontClip.Bottom = Height;//min( ( LONG32 )Height - 2 + 7, 0 );
+    FontClip.Right = min( ( LONG32 )Width - 8, 0 );
+    FontClip.Bottom = min( ( LONG32 )Height - 2 + 7, 0 );
     FontClip.Top = 2 + 14;
 
     switch ( MessageId ) {
@@ -108,7 +108,7 @@ NtClassButtonBaseProc(
         NtSendParentMessage( WindowHandle,
                              WM_COMMAND,
                              Info.MenuId,
-                             0 );
+                             BT_PRESS );
 
         break;
     default:

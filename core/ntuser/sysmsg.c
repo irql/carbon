@@ -127,20 +127,21 @@ NtSystemMessageThread(
                     KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
                     FocusWindow = PressWindow->Parent;
 
-                    NtRemoveWindow( PressWindow->Parent );
-                    NtInsertWindow( PressWindow->Parent );
+                    NtRemoveWindow( FocusWindow );
+                    NtInsertWindow( FocusWindow );
                     KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
 
-                    if ( LastFocus != PressWindow->Parent ) {
+                    if ( LastFocus != FocusWindow ) {
 
-                        NtSendDirectMessage( PressWindow->Parent,
+                        NtSendDirectMessage( FocusWindow,
                                              WM_FOCUS,
                                              0,
                                              0 );
-                        NtBroadcastDirectMessage( WM_PAINT,
-                                                  0,
-                                                  0 );
                     }
+
+                    NtBroadcastDirectMessage( WM_PAINT,
+                                              0,
+                                              0 );
                 }
 
                 PressX = ( ULONG32 )SystemMessage.Param1;
@@ -181,6 +182,10 @@ NtSystemMessageThread(
                     FocusWindow->FrontContext->ClientArea.Bottom += PressYDist;
 
                     FocusWindow->BackContext->ClientArea = FocusWindow->FrontContext->ClientArea;
+
+                    NtBroadcastDirectMessage( WM_PAINT,
+                                              0,
+                                              0 );
                 }
 
                 if ( PressWindow->Parent == PressWindow ) {
@@ -200,13 +205,6 @@ NtSystemMessageThread(
                                          PressWindow->Parent->FrontContext->ClientArea.Top );
                 }
 
-                if ( FocusWindow != RootWindow &&
-                     FocusWindow == PressWindow ) {
-
-                    NtBroadcastDirectMessage( WM_PAINT,
-                                              0,
-                                              0 );
-                }
                 PressSet = FALSE;
             }
             break;

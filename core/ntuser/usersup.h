@@ -366,10 +366,12 @@ typedef struct _LV_ITEM {
 #define LV_GETITEM      0xF4
 #define LV_REMOVEITEM   0xF5
 
-#define LV_SELECTED     0xE0
-#define LV_PRESSED      0xE1
+#define LV_SELECT       0xE0
+#define LV_PRESS        0xE1
 
 #define ED_ENTER        0xF0
+
+#define BT_PRESS        0xF0
 
 FORCEINLINE
 ULONG64

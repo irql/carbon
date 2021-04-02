@@ -267,14 +267,14 @@ NtClassListViewBaseProc(
             NtSendParentMessage( WindowHandle,
                                  WM_COMMAND,
                                  Info.MenuId,
-                                 LV_SELECTED );
+                                 LV_SELECT );
         }
         else if ( ListView->LastTickCount + 1200 >= NtGetTickCount( ) ) {
 
             NtSendParentMessage( WindowHandle,
                                  WM_COMMAND,
                                  Info.MenuId,
-                                 LV_PRESSED );
+                                 LV_PRESS );
         }
 
         ListView->LastTickCount = NtGetTickCount( );

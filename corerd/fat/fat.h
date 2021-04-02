@@ -220,3 +220,13 @@ FsQueryIndexFile(
     _Out_ PFILE_DIRECTORY_INFORMATION Information,
     _Out_ ULONG64*                    ReturnLength
 );
+
+NTSTATUS
+FsQueryNameFile(
+    _In_  PDEVICE_OBJECT              DeviceObject,
+    _In_  PFAT_DIRECTORY              Directory,
+    _In_  PUNICODE_STRING             FileName,
+    _In_  ULONG64                     Length,
+    _Out_ PFILE_DIRECTORY_INFORMATION Information,
+    _Out_ ULONG64*                    ReturnLength
+);

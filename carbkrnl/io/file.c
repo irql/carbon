@@ -694,7 +694,14 @@ ZwQueryDirectoryFile(
     _In_  BOOLEAN                SingleMode
 )
 {
-    FileName;
+    //
+    // If FileName != NULL - the caller only wants directory information
+    // for that single listing regardless of SingleMode.
+    //
+    // If SingleMode - the caller wants directory information for the file
+    // indentified by FileIndex.
+    //
+
     NTSTATUS ntStatus;
     PIRP Request;
     PIO_FILE_OBJECT FileObject;
@@ -720,6 +727,7 @@ ZwQueryDirectoryFile(
     ObReferenceObject( Request->Thread );
 
     Request->SystemBuffer1 = FileInformation;
+    Request->SystemBuffer2 = FileName;
 
     Request->StackLocation[ 0 ].MajorFunction = IRP_DIRECTORY_CONTROL;
     Request->StackLocation[ 0 ].MinorFunction = 0;

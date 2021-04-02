@@ -8,6 +8,7 @@
 #define ID_EDIT_ADDRESS_BAR 0x1002
 #define ID_BTN_UP           0x1003
 
+HANDLE ExpMainWindow;
 HANDLE ExpListObject;
 HANDLE ExpListDirectory;
 HANDLE ExpAddressBar;
@@ -93,8 +94,8 @@ ExpSetCurrentDirectory(
     FileIndex = 0;
 
     FileHandle = CreateFileW( Directory,
-                              GENERIC_READ,
-                              FILE_SHARE_READ,
+                              0,
+                              0,
                               FILE_OPEN_IF,
                               0 );
 
@@ -102,8 +103,6 @@ ExpSetCurrentDirectory(
 
         return STATUS_UNSUCCESSFUL;
     }
-
-    ExpClearListDirectory( );
 
     do {
 
@@ -120,20 +119,42 @@ ExpSetCurrentDirectory(
             break;
         }
 
+        if ( FileIndex == 0 ) {
+
+            //
+            // if the first call fails, we will exit the loop and not scope
+            // to the directory - so we dont want to clear the list until we
+            // know its valid.
+            //
+
+            ExpClearListDirectory( );
+        }
+
+        FileIndex++;
+
+        if ( Info->FileName[ 0 ] == '.' ) {
+
+            continue;
+        }
+
         ExpInsertList( ExpListDirectory,
                        Info->FileName );
-        FileIndex++;
 
     } while ( TRUE );
 
-    wcscpy( ExpInternalCd, Directory );
+    if ( StatusBlock.Status == STATUS_NO_MORE_FILES ) {
 
-    NtDefaultWindowProc( ExpAddressBar,
-                         WM_SETTEXT,
-                         ( ULONG64 )Directory,
-                         256 );
-    ExpUpdateList( ExpAddressBar );
-    ExpUpdateList( ExpListDirectory );
+        wcscpy( ExpInternalCd, Directory );
+        // : -
+        NtDefaultWindowProc( ExpAddressBar,
+                             WM_SETTEXT,
+                             ( ULONG64 )Directory,
+                             256 );
+        ExpUpdateList( ExpAddressBar );
+        ExpUpdateList( ExpListDirectory );
+    }
+
+    NtClose( FileHandle );
 
     return STATUS_SUCCESS;
 }
@@ -169,6 +190,30 @@ ExpGetSelectedId(
                                  0 );
 }
 
+VOID
+ExpUpDirectory(
+    _In_ PWSTR Buffer
+)
+{
+    ULONG64 Length;
+
+    Length = wcslen( Buffer );
+
+    if ( Buffer[ Length - 1 ] == '\\' ) {
+
+        Buffer[ --Length ] = 0;
+    }
+
+    while ( Length-- ) {
+
+        if ( Buffer[ Length ] == '\\' ) {
+
+            Buffer[ Length + 1 ] = 0;
+            break;
+        }
+    }
+}
+
 NTSTATUS
 ExMessageProcedure(
     _In_ HANDLE  WindowHandle,
@@ -177,8 +222,6 @@ ExMessageProcedure(
     _In_ ULONG64 Param2
 )
 {
-    //NtClassWinBaseProc
-
     ULONG64 IdSel;
     WCHAR Buffer[ 256 ];
 
@@ -188,27 +231,25 @@ ExMessageProcedure(
         switch ( Param1 ) {
         case ID_LIST_OBJECT:;
 
-            if ( Param2 == LV_SELECTED ) {
+            if ( Param2 == LV_SELECT ) {
                 IdSel = ExpGetSelectedId( ExpListObject );
 
                 if ( IdSel != -1 ) {
 
                     ExpSetCurrentDirectory( ExpGetList( ExpListObject, IdSel )->Name );
-                    //ExpUpdateList( ExpListObject );
                 }
             }
 
             break;
         case ID_LIST_DIRECTORY:;
 
-            if ( Param2 == LV_PRESSED ) {
+            if ( Param2 == LV_PRESS ) {
                 IdSel = ExpGetSelectedId( ExpListDirectory );
 
                 if ( IdSel != -1 ) {
 
                     wcscpy( Buffer, ExpInternalCd );
                     wcscat( Buffer, ExpGetList( ExpListDirectory, IdSel )->Name );
-                    // check if its a directory :^)
                     wcscat( Buffer, L"\\" );
                     ExpSetCurrentDirectory( Buffer );
                 }
@@ -227,6 +268,15 @@ ExMessageProcedure(
             }
 
             break;
+        case ID_BTN_UP:;
+
+            if ( Param2 == BT_PRESS ) {
+
+                wcscpy( Buffer, ExpInternalCd );
+                ExpUpDirectory( Buffer );
+                ExpSetCurrentDirectory( Buffer );
+            }
+
         default:
             break;
         }
@@ -245,8 +295,6 @@ NtProcessStartup(
 
 )
 {
-    HANDLE WindowHandle;
-
     WND_CLASS Class;
     WND_PROC Procedure;
     KUSER_MESSAGE Message;
@@ -258,7 +306,7 @@ NtProcessStartup(
 
     NtRegisterClass( &Class );
 
-    NtCreateWindow( &WindowHandle,
+    NtCreateWindow( &ExpMainWindow,
                     INVALID_HANDLE_VALUE,
                     L"File Explorer",
                     L"ClassExplorer",
@@ -268,7 +316,7 @@ NtProcessStartup(
                     400,
                     0 );
     NtCreateWindow( &ExpButtonUp,
-                    WindowHandle,
+                    ExpMainWindow,
                     L"",
                     L"BUTTON",
                     5,
@@ -277,7 +325,7 @@ NtProcessStartup(
                     23,
                     ID_BTN_UP );
     NtCreateWindow( &ExpAddressBar,
-                    WindowHandle,
+                    ExpMainWindow,
                     L"C:\\",
                     L"EDIT",
                     5 + 23 + 5,
@@ -286,7 +334,7 @@ NtProcessStartup(
                     23,
                     ID_EDIT_ADDRESS_BAR );
     NtCreateWindow( &ExpListObject,
-                    WindowHandle,
+                    ExpMainWindow,
                     L"ExpListObject",
                     L"LISTVIEW",
                     5,
@@ -295,7 +343,7 @@ NtProcessStartup(
                     400 - 25 - 5 - 23 - 5,
                     ID_LIST_OBJECT );
     NtCreateWindow( &ExpListDirectory,
-                    WindowHandle,
+                    ExpMainWindow,
                     L"ExpListDiectory",
                     L"LISTVIEW",
                     5 + 150 + 5,
@@ -306,16 +354,7 @@ NtProcessStartup(
 
     while ( TRUE ) {
 
-        NtWaitMessage( WindowHandle );
-
-        if ( NtReceiveMessage( WindowHandle, &Message ) ) {
-
-            NtGetWindowProc( WindowHandle, &Procedure );
-            Procedure( WindowHandle,
-                       Message.MessageId,
-                       Message.Param1,
-                       Message.Param2 );
-        }
+        NtWaitMessage( ExpMainWindow );
 
         if ( NtReceiveMessage( ExpListObject, &Message ) ) {
 
@@ -328,6 +367,7 @@ NtProcessStartup(
             if ( Message.MessageId == WM_ACTIVATE ) {
 
                 ExpInsertList( ExpListObject, L"C:\\" );
+                ExpInsertList( ExpListObject, L"D:\\" );
                 ExpInsertList( ExpListObject, L"BootDevice\\" );
                 Procedure( ExpListObject,
                            LV_SETSELECTED,
@@ -362,6 +402,16 @@ NtProcessStartup(
 
             NtGetWindowProc( ExpButtonUp, &Procedure );
             Procedure( ExpButtonUp,
+                       Message.MessageId,
+                       Message.Param1,
+                       Message.Param2 );
+        }
+
+
+        if ( NtReceiveMessage( ExpMainWindow, &Message ) ) {
+
+            NtGetWindowProc( ExpMainWindow, &Procedure );
+            Procedure( ExpMainWindow,
                        Message.MessageId,
                        Message.Param1,
                        Message.Param2 );
