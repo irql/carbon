@@ -889,6 +889,7 @@ MmMapViewOfSection(
         }
         else {
 
+            //RtlDebugPrint( L"Sect Map: %ull %ull %d\n", PageAddress, FileBuffer, SectionObject->FileObject->FileLength );
             RtlCopyMemory( ( PVOID )PageAddress, FileBuffer, SectionObject->FileObject->FileLength );
         }
     }
