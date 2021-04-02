@@ -338,7 +338,7 @@ OslProcessStartup(
 
 )
 {
-    SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x0C );
+    SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x0F );
     SetConsoleCtrlHandler( ( PHANDLER_ROUTINE )OslConsoleEvent, TRUE );
 
     CONSOLE_FONT_INFOEX Font;
@@ -348,8 +348,8 @@ OslProcessStartup(
     Font.dwFontSize.X = 0;
     Font.dwFontSize.Y = 16;
     Font.FontFamily = FF_DONTCARE;
-    Font.FontWeight = 200;//FW_NORMAL;
-    lstrcpyW( Font.FaceName, L"Cousine" );
+    Font.FontWeight = FW_NORMAL;
+    lstrcpyW( Font.FaceName, L"Envy Code R" );
     SetCurrentConsoleFontEx( GetStdHandle( STD_OUTPUT_HANDLE ), FALSE, &Font );
 
 #if 1

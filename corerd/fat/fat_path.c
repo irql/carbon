@@ -155,10 +155,10 @@ FspCompareLfnEntry(
 
     if ( Length <= 5 ) {
 
-        return RtlCompareStringLength( Directory->Long.First5Chars, Chars, FALSE, Length );
+        return RtlCompareStringLength( Directory->Long.First5Chars, Chars, TRUE, Length );
     }
 
-    Return = RtlCompareStringLength( Directory->Long.First5Chars, Chars, FALSE, 5 );
+    Return = RtlCompareStringLength( Directory->Long.First5Chars, Chars, TRUE, 5 );
     if ( Return != 0 ) {
 
         return Return;
@@ -168,10 +168,10 @@ FspCompareLfnEntry(
 
     if ( Length <= 6 ) {
 
-        return RtlCompareStringLength( Directory->Long.Next6Chars, Chars + 5, FALSE, Length );
+        return RtlCompareStringLength( Directory->Long.Next6Chars, Chars + 5, TRUE, Length );
     }
 
-    Return = RtlCompareStringLength( Directory->Long.Next6Chars, Chars + 5, FALSE, 6 );
+    Return = RtlCompareStringLength( Directory->Long.Next6Chars, Chars + 5, TRUE, 6 );
     if ( Return != 0 ) {
 
         return Return;
@@ -256,13 +256,13 @@ FspFindDirectoryFile(
 
                 if ( Directory[ Entry ].Long.OrderOfEntry & FAT32_LAST_LFN_ENTRY ) {
                     LongNameFound = Entry;
-                    ShortNameFound = Entry + 1;
+                    ShortNameFound = EntryShort + 1;
                     break;
                 }
                 Entry--;
 
                 FileNameIndex += 13;
-            } while ( TRUE );
+            } while ( Entry != ( ULONG64 )-1 );
 
             if ( LongNameFound != ( ULONG64 )-1 ) {
 

@@ -589,7 +589,7 @@ NtUpdateDisplayThread(
 )
 {
 
-#define _NT_DEBUG_UPDATE_COUNT TRUE
+#define _NT_DEBUG_UPDATE_COUNT FALSE
 
     PKWND CurrentWindow;
     PKWND ChildWindow;
@@ -628,36 +628,30 @@ NtUpdateDisplayThread(
                 ZwSignalEvent( UpdateEvent, FALSE );
             }
 
-            if ( CurrentWindow->ContextUpdate ) {
+            //if ( CurrentWindow->ContextUpdate ) {
 
-                NtDdiBlt( CurrentWindow->FrontContext,
-                          0,
-                          0,
-                          CurrentWindow->FrontContext->ClientArea.Right -
-                          CurrentWindow->FrontContext->ClientArea.Left,
-                          CurrentWindow->FrontContext->ClientArea.Bottom -
-                          CurrentWindow->FrontContext->ClientArea.Top,
-                          Composed,
-                          CurrentWindow->FrontContext->ClientArea.Left,
-                          CurrentWindow->FrontContext->ClientArea.Top );
+            NtDdiBlt( CurrentWindow->FrontContext,
+                      0,
+                      0,
+                      CurrentWindow->FrontContext->ClientArea.Right -
+                      CurrentWindow->FrontContext->ClientArea.Left,
+                      CurrentWindow->FrontContext->ClientArea.Bottom -
+                      CurrentWindow->FrontContext->ClientArea.Top,
+                      Composed,
+                      CurrentWindow->FrontContext->ClientArea.Left,
+                      CurrentWindow->FrontContext->ClientArea.Top );
 #if _NT_DEBUG_UPDATE_COUNT
-                debug++;
+            debug++;
 #endif
-            }
+            //}
 
             ChildWindow = CurrentWindow->Child;
             while ( ChildWindow != NULL ) {
 
+#if 0
                 if ( CurrentWindow->ContextUpdate ||
-                    ( ChildWindow->ContextUpdate  &&
-                      FocusWindow == CurrentWindow ) ) {
-
-                    //
-                    // Checking if this window is the focus; if it is the focus
-                    // it is allowed to have individual child window updates - otherwise
-                    // the window should only be updated when the parent is. 
-                    //
-
+                     ChildWindow->ContextUpdate ) {
+#endif
                     NtDdiBlt( ChildWindow->FrontContext,
                               0,
                               0,
@@ -674,201 +668,201 @@ NtUpdateDisplayThread(
 #if _NT_DEBUG_UPDATE_COUNT
                     debug++;
 #endif
+                    //}
+
+                    ChildWindow = ChildWindow->Child;
+            }
+
+                CurrentWindow->ContextUpdate = FALSE;
+
+                if ( CurrentWindow != RootWindow ) {
+
+                    KeReleaseSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
                 }
 
-                ChildWindow = ChildWindow->Child;
-            }
-
-            CurrentWindow->ContextUpdate = FALSE;
-
-            if ( CurrentWindow != RootWindow ) {
-
-                KeReleaseSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
-            }
-
-            CurrentWindow = CurrentWindow->Next;
+                CurrentWindow = CurrentWindow->Next;
         }
-        KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
+            KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
 #if _NT_DEBUG_UPDATE_COUNT
-        wchar_t brutal[ 128 ];
-        RtlFormatBuffer( brutal, L"%d update: %d", NtGetTickCount( ), debug );
+            wchar_t brutal[ 128 ];
+            RtlFormatBuffer( brutal, L"%d update: %d", NtGetTickCount( ), debug );
 
-        NtDdiClearDC( Composed, 0, 0, 150, 50, 0xFFFFFFFF );
+            NtDdiClearDC( Composed, 0, 0, 150, 50, 0xFFFFFFFF );
 
-        NtSystemFont->Engine->Render( NtSystemFont,
-                                      Composed,
-                                      brutal,
-                                      &NtScreenDC->ClientArea,
-                                      0xFFFF0000 );
+            NtSystemFont->Engine->Render( NtSystemFont,
+                                          Composed,
+                                          brutal,
+                                          &NtScreenDC->ClientArea,
+                                          0xFFFF0000 );
 #endif
-        NtDdiBlt( Composed,
-                  0,
-                  0,
-                  Composed->ClientArea.Right,
-                  Composed->ClientArea.Bottom,
-                  NtScreenDC,
-                  0,
-                  0 );
+            NtDdiBlt( Composed,
+                      0,
+                      0,
+                      Composed->ClientArea.Right,
+                      Composed->ClientArea.Bottom,
+                      NtScreenDC,
+                      0,
+                      0 );
 
-        NtGetCursorPosition( &CurrentX, &CurrentY );
-        NtSetCursorPosition( CurrentX, CurrentY );
+            NtGetCursorPosition( &CurrentX, &CurrentY );
+            NtSetCursorPosition( CurrentX, CurrentY );
     }
 }
 
-PKWND
-NtWindowFromPoint(
-    _In_ ULONG32 x,
-    _In_ ULONG32 y
-)
-{
-    //
-    // POGGERSSSSSSS! I ripped this all from the old carbon 
-    // because shut the fuck up
-    //
+    PKWND
+        NtWindowFromPoint(
+            _In_ ULONG32 x,
+            _In_ ULONG32 y
+        )
+    {
+        //
+        // POGGERSSSSSSS! I ripped this all from the old carbon 
+        // because shut the fuck up
+        //
 
-    PKWND CurrentWindow;
-    PKWND LastWindow;
-    PKWND PointWindow;
-    PKWND ChildWindow;
-    KIRQL PreviousIrql;
+        PKWND CurrentWindow;
+        PKWND LastWindow;
+        PKWND PointWindow;
+        PKWND ChildWindow;
+        KIRQL PreviousIrql;
 
-    CurrentWindow = RootWindow;
-    KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
+        CurrentWindow = RootWindow;
+        KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
 
-    LastWindow = CurrentWindow;
-    while ( LastWindow->Next != NULL ) {
-
-        LastWindow = LastWindow->Next;
-    }
-
-    while ( LastWindow != RootWindow ) {
-        CurrentWindow = LastWindow;
-
-        LastWindow = RootWindow;
-        while ( LastWindow->Next != CurrentWindow ) {
+        LastWindow = CurrentWindow;
+        while ( LastWindow->Next != NULL ) {
 
             LastWindow = LastWindow->Next;
         }
 
-        if ( CurrentWindow == RootWindow ) {
+        while ( LastWindow != RootWindow ) {
+            CurrentWindow = LastWindow;
 
-            continue;
-        }
+            LastWindow = RootWindow;
+            while ( LastWindow->Next != CurrentWindow ) {
 
-        if ( CurrentWindow->FrontContext->ClientArea.Top > ( LONG32 )y ||
-             CurrentWindow->FrontContext->ClientArea.Bottom < ( LONG32 )y ) {
-
-            continue;
-        }
-
-        if ( CurrentWindow->FrontContext->ClientArea.Left > ( LONG32 )x ||
-             CurrentWindow->FrontContext->ClientArea.Right < ( LONG32 )x ) {
-
-            continue;
-        }
-
-        //
-        // if code got here, your pointer landed somewhere on 
-        // a parent window, so we need to check each child windows
-        // client area now.
-        //
-
-        PointWindow = CurrentWindow;
-        if ( CurrentWindow->Child != NULL ) {
-
-            KeAcquireSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
-            LastWindow = CurrentWindow->Child;
-            while ( LastWindow->Child != NULL ) {
-
-                LastWindow = LastWindow->Child;
+                LastWindow = LastWindow->Next;
             }
 
-            ChildWindow = CurrentWindow->Child;
+            if ( CurrentWindow == RootWindow ) {
 
-            while ( LastWindow != CurrentWindow->Child ) {
-                ChildWindow = LastWindow;
+                continue;
+            }
 
+            if ( CurrentWindow->FrontContext->ClientArea.Top > ( LONG32 )y ||
+                 CurrentWindow->FrontContext->ClientArea.Bottom < ( LONG32 )y ) {
+
+                continue;
+            }
+
+            if ( CurrentWindow->FrontContext->ClientArea.Left > ( LONG32 )x ||
+                 CurrentWindow->FrontContext->ClientArea.Right < ( LONG32 )x ) {
+
+                continue;
+            }
+
+            //
+            // if code got here, your pointer landed somewhere on 
+            // a parent window, so we need to check each child windows
+            // client area now.
+            //
+
+            PointWindow = CurrentWindow;
+            if ( CurrentWindow->Child != NULL ) {
+
+                KeAcquireSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
                 LastWindow = CurrentWindow->Child;
-                while ( LastWindow->Child != ChildWindow ) {
+                while ( LastWindow->Child != NULL ) {
 
                     LastWindow = LastWindow->Child;
                 }
 
-                if ( CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Top > ( LONG32 )y ||
-                     CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Bottom < ( LONG32 )y ) {
+                ChildWindow = CurrentWindow->Child;
 
-                    continue;
+                while ( LastWindow != CurrentWindow->Child ) {
+                    ChildWindow = LastWindow;
+
+                    LastWindow = CurrentWindow->Child;
+                    while ( LastWindow->Child != ChildWindow ) {
+
+                        LastWindow = LastWindow->Child;
+                    }
+
+                    if ( CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Top > ( LONG32 )y ||
+                         CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Bottom < ( LONG32 )y ) {
+
+                        continue;
+                    }
+
+                    if ( CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Left > ( LONG32 )x ||
+                         CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Right < ( LONG32 )x ) {
+
+                        continue;
+                    }
+
+                    PointWindow = ChildWindow;
                 }
 
-                if ( CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Left > ( LONG32 )x ||
-                     CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Right < ( LONG32 )x ) {
+                ChildWindow = CurrentWindow->Child;
 
-                    continue;
-                }
+                do {
 
-                PointWindow = ChildWindow;
+                    if ( CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Top > ( LONG32 )y ||
+                         CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Bottom < ( LONG32 )y ) {
+
+                        continue;
+                    }
+
+                    if ( CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Left > ( LONG32 )x ||
+                         CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Right < ( LONG32 )x ) {
+
+                        continue;
+                    }
+
+                    PointWindow = ChildWindow;
+                } while ( FALSE );
+
+                KeReleaseSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
             }
 
-            ChildWindow = CurrentWindow->Child;
-
-            do {
-
-                if ( CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Top > ( LONG32 )y ||
-                     CurrentWindow->FrontContext->ClientArea.Top + ChildWindow->FrontContext->ClientArea.Bottom < ( LONG32 )y ) {
-
-                    continue;
-                }
-
-                if ( CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Left > ( LONG32 )x ||
-                     CurrentWindow->FrontContext->ClientArea.Left + ChildWindow->FrontContext->ClientArea.Right < ( LONG32 )x ) {
-
-                    continue;
-                }
-
-                PointWindow = ChildWindow;
-            } while ( FALSE );
-
-            KeReleaseSpinLockAtDpcLevel( &CurrentWindow->LinkLock );
+            KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
+            return PointWindow;
         }
 
         KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
-        return PointWindow;
+        return RootWindow;
     }
 
-    KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
-    return RootWindow;
-}
+    VOID
+        NtRemoveWindow(
+            _In_ PKWND Remove
+        )
+    {
+        PKWND CurrentWindow;
+        CurrentWindow = RootWindow;
 
-VOID
-NtRemoveWindow(
-    _In_ PKWND Remove
-)
-{
-    PKWND CurrentWindow;
-    CurrentWindow = RootWindow;
+        while ( CurrentWindow->Next != Remove ) {
 
-    while ( CurrentWindow->Next != Remove ) {
+            CurrentWindow = CurrentWindow->Next;
+        }
 
-        CurrentWindow = CurrentWindow->Next;
+        CurrentWindow->Next = Remove->Next;
+        Remove->Next = NULL;
     }
 
-    CurrentWindow->Next = Remove->Next;
-    Remove->Next = NULL;
-}
+    VOID
+        NtInsertWindow(
+            _In_ PKWND Insert
+        )
+    {
+        PKWND CurrentWindow;
+        CurrentWindow = RootWindow;
 
-VOID
-NtInsertWindow(
-    _In_ PKWND Insert
-)
-{
-    PKWND CurrentWindow;
-    CurrentWindow = RootWindow;
+        while ( CurrentWindow->Next != NULL ) {
 
-    while ( CurrentWindow->Next != NULL ) {
+            CurrentWindow = CurrentWindow->Next;
+        }
 
-        CurrentWindow = CurrentWindow->Next;
+        CurrentWindow->Next = Insert;
+        Insert->Next = NULL;
     }
-
-    CurrentWindow->Next = Insert;
-    Insert->Next = NULL;
-}

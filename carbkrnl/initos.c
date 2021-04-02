@@ -494,6 +494,8 @@ KiInitThread(
 
     //KiRecursiveDirectoryList( &ObRootDirectory, 1 );
 
+    //ZwWaitForSingleObject( 0, 8000 );
+    //__debugbreak( );
 }
 
 EXTERN ULONG64 KxIntHandlerTable[ ];

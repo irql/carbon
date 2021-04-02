@@ -431,14 +431,14 @@ RtlCompareStringLength(
 
             String1++, String2++;
         }
-        return *String1 - *String2;
+        return *--String1 - *--String2;
     }
     else {
         while ( Length-- && *String1 && *String2 && RtlUpperChar( *String1 ) == RtlUpperChar( *String2 ) ) {
 
             String1++, String2++;
         }
-        return RtlUpperChar( *String1 ) - RtlUpperChar( *String2 );
+        return RtlUpperChar( *--String1 ) - RtlUpperChar( *--String2 );
     }
 }
 

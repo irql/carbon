@@ -310,8 +310,8 @@ NtProcessStartup(
                     INVALID_HANDLE_VALUE,
                     L"File Explorer",
                     L"ClassExplorer",
-                    800,
-                    500,
+                    100,
+                    40,
                     650,
                     400,
                     0 );

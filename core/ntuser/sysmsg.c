@@ -83,7 +83,6 @@ NtSystemMessageThread(
     // jon is bussin
     KUSER_MESSAGE SystemMessage;
     KIRQL PreviousIrql;
-    PKWND LastFocus;
 
     STATIC ULONG32 PressX = 0;
     STATIC ULONG32 PressY = 0;
@@ -111,9 +110,9 @@ NtSystemMessageThread(
                     ( ULONG32 )SystemMessage.Param2 );
 
                 if ( PressWindow == RootWindow &&
-                     FocusWindow != PressWindow ) {
+                     FocusWindow != RootWindow ) {
 
-                    FocusWindow = PressWindow;
+                    FocusWindow = RootWindow;
 
                     NtBroadcastDirectMessage( WM_PAINT,
                                               0,
@@ -122,22 +121,16 @@ NtSystemMessageThread(
                 else if ( FocusWindow != PressWindow->Parent ) {
                     // add move flag check
 
-                    LastFocus = FocusWindow;
-
                     KeAcquireSpinLock( &RootWindow->LinkLock, &PreviousIrql );
                     FocusWindow = PressWindow->Parent;
-
                     NtRemoveWindow( FocusWindow );
                     NtInsertWindow( FocusWindow );
                     KeReleaseSpinLock( &RootWindow->LinkLock, PreviousIrql );
 
-                    if ( LastFocus != FocusWindow ) {
-
-                        NtSendDirectMessage( FocusWindow,
-                                             WM_FOCUS,
-                                             0,
-                                             0 );
-                    }
+                    NtSendDirectMessage( FocusWindow,
+                                         WM_FOCUS,
+                                         0,
+                                         0 );
 
                     NtBroadcastDirectMessage( WM_PAINT,
                                               0,

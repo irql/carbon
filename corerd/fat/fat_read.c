@@ -368,7 +368,7 @@ FsQueryIndexFile(
                             Information->FileName[ FileNameIndex ] = 0;
                             Information->FileNameLength = FileNameIndex;
                             EntryLongFound = CurrentEntry;
-                            EntryShortFound = CurrentEntry + 1;
+                            EntryShortFound = EntryShort + 1;
                             break;
                         }
                         CurrentEntry--;
