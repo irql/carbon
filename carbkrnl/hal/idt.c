@@ -91,6 +91,11 @@ KiHardwareDispatch(
 
     IoInterrupt = IopGetServiceHandler( ( ULONG )TrapFrame->Interrupt );
 
+    if ( IoInterrupt == NULL ) {
+
+        RtlDebugPrint( L"Unexpected interrupt: %d\n", TrapFrame->Interrupt );
+    }
+
     while ( IoInterrupt != NULL ) {
 
         //

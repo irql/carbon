@@ -299,7 +299,7 @@ KeInitializeKernelClock(
 #define KiCr0Write          __writecr0
 #define KiCr4Read           __readcr4
 #define KiCr4Write          __writecr4
-// MiSet/MiSet AddressSpace for cr3.
+// MiGet/MiSet AddressSpace for cr3.
 
 #define CPUID_EAX 0
 #define CPUID_EBX 1

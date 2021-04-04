@@ -6,7 +6,7 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.virtualbox.org/" version="1.17-windows">
-  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-04-02T19:54:24Z">
+  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-04-04T02:09:41Z">
     <ExtraData>
       <ExtraDataItem name="GUI/LastCloseAction" value="PowerOff"/>
       <ExtraDataItem name="GUI/LastNormalWindowPosition" value="1012,232,640,522"/>
@@ -46,9 +46,11 @@
       </GuestProperties>
       <StorageControllers>
         <StorageController name="IDE" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
-          <AttachedDevice passthrough="false" type="DVD" hotpluggable="false" port="1" device="0"/>
           <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
             <Image uuid="{26f359b3-a3d5-4d19-9b1b-4ff49beedba8}"/>
+          </AttachedDevice>
+          <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="1">
+            <Image uuid="{232dc224-63b3-45af-bdef-f122decea5cd}"/>
           </AttachedDevice>
         </StorageController>
       </StorageControllers>

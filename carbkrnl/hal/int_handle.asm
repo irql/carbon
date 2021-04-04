@@ -147,7 +147,6 @@ KxExceptionInterrupt:
     mov     rcx, rsp
     sub     rsp, 28h
     call    KiExceptionDispatch
-    call    HalEoi
     add     rsp, 28h
     KiPopTrapFrame
     add     rsp, 16

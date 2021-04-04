@@ -164,7 +164,6 @@ KiFatalFault(
 {
     KIRQL PreviousIrql;
 
-    KiInterruptDisable( );
     KeRaiseIrql( IPI_LEVEL, &PreviousIrql );
 
     KiProcessorShutdown( );
@@ -489,4 +488,4 @@ KiExceptionDispatch(
     //
 
     KiBugCheckFromRecord( Record );
-    }
+}

@@ -200,3 +200,46 @@ NtFreeVirtualMemory(
     _In_ PVOID   BaseAddress,
     _In_ ULONG64 Length
 );
+
+typedef struct _MM_DMA_ADAPTER *PMM_DMA_ADAPTER;
+
+typedef enum _MM_DMA_MODE {
+    MmDmaDefault,
+    MmDmaPrepared,
+    MmDmaMaximum
+} MM_DMA_MODE;
+
+NTSYSAPI
+NTSTATUS
+MmDmaCreateAdapter(
+    _In_     PDEVICE_OBJECT   DeviceObject,
+    _In_     ULONG64          MaximumLogical,
+    _In_     ULONG64          DmaMode,
+    _In_     ULONG64          CacheMode,
+    _In_opt_ ULONG64          Length,
+    _Out_    PMM_DMA_ADAPTER* Adapter
+);
+
+NTSYSAPI
+NTSTATUS
+MmDmaAllocateBuffer(
+    _In_  PMM_DMA_ADAPTER AdapterObject,
+    _In_  ULONG64         Length,
+    _Out_ ULONG64*        LogicalAddress,
+    _Out_ ULONG64*        VirtualAddress
+);
+
+NTSYSAPI
+VOID
+MmDmaFreeBuffer(
+    _In_ PMM_DMA_ADAPTER AdapterObject,
+    _In_ ULONG64         Length,
+    _In_ ULONG64         LogicalAddress,
+    _In_ ULONG64         VirtualAddress
+);
+
+NTSYSAPI
+ULONG64
+MmGetLogicalAddress(
+    _In_ ULONG64 VirtualAddress
+);

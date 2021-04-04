@@ -440,7 +440,7 @@ KiLeaveQuantumEarly(
         ;
 }
 
-VOID
+NTSTATUS
 KeWaitForSingleObject(
     _In_ PVOID   Object,
     _In_ ULONG64 Timeout
@@ -461,7 +461,7 @@ KeWaitForSingleObject(
              TEST_THREAD( DpcObject ) ||
              TEST_MUTEX( DpcObject ) ) {
 
-            return;
+            return STATUS_SUCCESS;
         }
 
         NT_ASSERT( DpcObject->Type == DPC_OBJECT_EVENT ||
@@ -488,6 +488,28 @@ KeWaitForSingleObject(
 
         KiLeaveQuantumEarly( );
     }
+
+    if ( Object != NULL ) {
+        if ( DpcObject->Type == DPC_OBJECT_EVENT &&
+             KeQueryEvent( Object ) ) {
+
+            return STATUS_SUCCESS;
+        }
+
+        if ( DpcObject->Type == DPC_OBJECT_MUTEX &&
+            ( ( PKMUTEX )Object )->Owner == Thread ) {
+
+            return STATUS_SUCCESS;
+        }
+
+        if ( DpcObject->Type == DPC_OBJECT_THREAD &&
+            ( ( PKTHREAD )Object )->ThreadState == THREAD_STATE_TERMINATED ) {
+
+            return STATUS_SUCCESS;
+        }
+    }
+
+    return STATUS_TIMEOUT;
 }
 
 NTSTATUS
@@ -532,14 +554,14 @@ ZwWaitForSingleObject(
         ObjectPointer = NULL;
     }
 
-    KeWaitForSingleObject( ObjectPointer, TimeOut );
+    ntStatus = KeWaitForSingleObject( ObjectPointer, TimeOut );
 
     if ( ObjectPointer != NULL ) {
 
         ObDereferenceObject( ObjectPointer );
     }
 
-    return STATUS_SUCCESS;
+    return ntStatus;
 }
 
 NTSTATUS

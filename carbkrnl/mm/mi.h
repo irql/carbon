@@ -100,6 +100,13 @@ typedef enum _VA_TYPE {
 
     MmTypeSectionObject,
 
+    //
+    // MmTypeDma is used when a buffer has been allocated for
+    // a MM_DMA_ADAPTER object by something such as MmDmaAllocateBuffer
+    //
+
+    MmTypeDma,
+
     MmTypeMaximum
 
 } VA_TYPE;
@@ -649,3 +656,23 @@ VOID
 MiFreePcid(
     _In_ ULONG64 Pcid
 );
+
+typedef struct _MM_DMA_ADAPTER {
+
+    PDEVICE_OBJECT DeviceObject;
+
+    //
+    // This field indicates what address the 
+    // device can handle. 
+    //
+
+    ULONG64        LogicalMask;
+
+
+    ULONG64        DmaMode;
+    ULONG64        CacheMode;
+
+    ULONG64        VirtualAddress;
+    ULONG64        LogicalAddress;
+
+} MM_DMA_ADAPTER, *PMM_DMA_ADAPTER;

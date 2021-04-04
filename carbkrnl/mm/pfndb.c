@@ -55,8 +55,8 @@ MmChangePfnVaType(
 
 VOID
 MmChangeDatabaseMemoryVaType(
-    _In_ ULONG64  Address,
-    _In_ ULONG64  Length,
+    _In_ ULONG64    Address,
+    _In_ ULONG64    Length,
     _In_ MM_VA_TYPE Type
 )
 {
@@ -116,6 +116,9 @@ MmReferenceDatabaseByType(
     _In_ MM_VA_TYPE Type
 )
 {
+    // unreferenced useless function - could be removed
+    // has an issue with lock bit
+
     ULONG64 CurrentPfn;
 
     CurrentPfn = 0;

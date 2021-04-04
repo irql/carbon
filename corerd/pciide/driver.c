@@ -5,6 +5,13 @@
 #include "../pci/pci.h"
 #include "ide.h"
 
+EXTERN PIO_INTERRUPT IdeIrqPrimary;
+EXTERN PIO_INTERRUPT IdeIrqSecondary;
+EXTERN KEVENT        IdeIrqEventPrimary;
+EXTERN KEVENT        IdeIrqEventSecondary;
+EXTERN KMUTEX        IdeIrqLockPrimary;
+EXTERN KMUTEX        IdeIrqLockSecondary;
+
 NTSTATUS
 DriverLoad(
     _In_ PDRIVER_OBJECT DriverObject
@@ -30,7 +37,9 @@ IdeDevice(
     ULONG32 CurrentBar;
     PCI_BASE Bar[ 5 ];
 
-    //RtlDebugPrint( L"ide: %s\n", LinkName->Buffer );
+    //10.6. Native PCI Mode Considerations 
+
+    // CHECK IF PCI NATIVE MODE USING PROGIF
 
     Control = MmAllocatePoolWithTag( NonPagedPoolZeroed, sizeof( KIDE_CONTROL ), IDE_TAG );
     PciIde = DeviceObject->DeviceExtension;
@@ -40,34 +49,42 @@ IdeDevice(
         PciReadBase( PciIde, &Bar[ CurrentBar ], CurrentBar );
     }
 
-    Control->Primary.Base = ( USHORT )Bar[ 0 ].Base + 0x1f0 * ( !Bar[ 0 ].Base );
-    Control->Primary.Control = ( USHORT )Bar[ 1 ].Base + 0x3f6 * ( !Bar[ 1 ].Base );
-    Control->Primary.BusMaster = ( USHORT )Bar[ 3 ].Base;
-    Control->Primary.NoInterrupt = ( UCHAR )Bar[ 4 ].Base;
+    Control->Primary.Base = Bar[ 0 ].Base == 0 ? 0x1F0 : ( USHORT )Bar[ 0 ].Base;
+    Control->Primary.Control = Bar[ 1 ].Base == 0 ? 0x3F6 : ( USHORT )Bar[ 1 ].Base;
+    Control->Primary.BusMaster = ( USHORT )Bar[ 4 ].Base;
 
-    Control->Secondary.Base = ( USHORT )Bar[ 2 ].Base + 0x170 * ( !Bar[ 2 ].Base );
-    Control->Secondary.Control = ( USHORT )Bar[ 3 ].Base + 0x376 * ( !Bar[ 3 ].Base );
-    Control->Secondary.BusMaster = ( USHORT )Bar[ 3 ].Base + 8;
-    Control->Secondary.NoInterrupt = ( UCHAR )Bar[ 4 ].Base + 8;
-    /*
-    RtlDebugPrint( L"primary: %ul, %ul %ul %ul\n",
-                   Control->Primary.Base,
-                   Control->Primary.Control,
-                   Control->Primary.BusMaster,
-                   Control->Primary.NoInterrupt );
-    RtlDebugPrint( L"secondary: %ul, %ul %ul %ul\n",
-                   Control->Secondary.Base,
-                   Control->Secondary.Control,
-                   Control->Secondary.BusMaster,
-                   Control->Secondary.NoInterrupt );*/
+    Control->Secondary.Base = Bar[ 2 ].Base == 0 ? 0x170 : ( USHORT )Bar[ 2 ].Base;
+    Control->Secondary.Control = Bar[ 3 ].Base == 0 ? 0x376 : ( USHORT )Bar[ 3 ].Base;
+    Control->Secondary.BusMaster = ( USHORT )Bar[ 4 ].Base + 8;
 
-    IdeWrite( &Control->Primary, ATA_REG_CONTROL, 1 << 1 );
-    IdeWrite( &Control->Secondary, ATA_REG_CONTROL, 1 << 1 );
-
-    IdeInitializeDevice( DriverObject, DeviceObject, Control, &Control->Primary, 0 );
-    IdeInitializeDevice( DriverObject, DeviceObject, Control, &Control->Primary, 1 );
-    IdeInitializeDevice( DriverObject, DeviceObject, Control, &Control->Secondary, 0 );
-    IdeInitializeDevice( DriverObject, DeviceObject, Control, &Control->Secondary, 1 );
+    IdeInitializeDevice( DriverObject,
+                         DeviceObject,
+                         Control,
+                         &Control->Primary,
+                         0,
+                         &IdeIrqEventPrimary,
+                         &IdeIrqLockPrimary );
+    IdeInitializeDevice( DriverObject,
+                         DeviceObject,
+                         Control,
+                         &Control->Primary,
+                         1,
+                         &IdeIrqEventPrimary,
+                         &IdeIrqLockPrimary );
+    IdeInitializeDevice( DriverObject,
+                         DeviceObject,
+                         Control,
+                         &Control->Secondary,
+                         0,
+                         &IdeIrqEventSecondary,
+                         &IdeIrqLockSecondary );
+    IdeInitializeDevice( DriverObject,
+                         DeviceObject,
+                         Control,
+                         &Control->Secondary,
+                         1,
+                         &IdeIrqEventSecondary,
+                         &IdeIrqLockSecondary );
 
     return TRUE;
 }
@@ -77,6 +94,54 @@ DriverLoad(
     _In_ PDRIVER_OBJECT DriverObject
 )
 {
+
+    //http://www.bswd.com/pciide.pdf
+    //http://bswd.com/idems100.pdf
+
+    //http://bos.asmhackers.net/docs/ata/docs/29860001.pdf
+
+    //https://web.archive.org/web/20150810230806/http://www.t13.org/Documents/UploadedDocuments/project/d1510r1-Host-Adapter.pdf
+
+    KAPIC_REDIRECT Redirect;
+    OBJECT_ATTRIBUTES Irq = { 0 };
+
+    // compat mode irq's 
+    // native mode should be detected and handled.
+
+    KeInitializeEvent( &IdeIrqEventPrimary, FALSE );
+    KeInitializeEvent( &IdeIrqEventSecondary, FALSE );
+
+    KeInitializeMutex( &IdeIrqLockPrimary );
+    KeInitializeMutex( &IdeIrqLockSecondary );
+
+    IoConnectInterrupt( &IdeIrqPrimary,
+        ( KSERVICE_ROUTINE )IdeIrqService,
+                        &IdeIrqEventPrimary,
+                        0x50,
+                        5,
+                        &Irq );
+    Redirect.Lower = 0;
+    Redirect.Upper = 0;
+    Redirect.InterruptVector = 0x50;
+    Redirect.DeliveryMode = DeliveryModeEdge;
+    Redirect.DestinationMode = DestinationModePhysical;
+    Redirect.Destination = 0;
+    HalApicRedirectIrq( 14, &Redirect );
+
+    IoConnectInterrupt( &IdeIrqSecondary,
+        ( KSERVICE_ROUTINE )IdeIrqService,
+                        &IdeIrqEventSecondary,
+                        0x51,
+                        5,
+                        &Irq );
+    Redirect.Lower = 0;
+    Redirect.Upper = 0;
+    Redirect.InterruptVector = 0x51;
+    Redirect.DeliveryMode = DeliveryModeEdge;
+    Redirect.DestinationMode = DestinationModePhysical;
+    Redirect.Destination = 0;
+    HalApicRedirectIrq( 15, &Redirect );
+
     PciQueryDevices(
         L"\\??\\PCI#VEN_????&DEV_????&{01,01,??}&{??,??,??}",
         ( PKPCI_QUERY_DEVICE )IdeDevice, DriverObject );

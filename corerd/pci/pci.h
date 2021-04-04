@@ -52,7 +52,8 @@ typedef struct _PCI_DEVICE {
     ULONG32 Device;
     ULONG32 Function;
 
-    PCI_DEVICE_HEADER PciHeader;
+    //PCI_DEVICE_HEADER PciHeader;
+    PCI_STANDARD_DEVICE PciDevice;
 } PCI_DEVICE, *PPCI_DEVICE;
 
 typedef struct _PCI_BASE {

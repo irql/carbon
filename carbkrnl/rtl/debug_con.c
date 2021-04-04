@@ -339,14 +339,14 @@ RtlDebugConsoleInit(
 #if 0
     KIRQL PreviousIrql;
     PIO_INTERRUPT InterruptObject;
-    OBJECT_ATTRIBUTES Interrupt = { 0 };
+    OBJECT_ATTRIBUTES IrqInterruptEvent = { 0 };
     KeRaiseIrql( DISPATCH_LEVEL, &PreviousIrql );
     IoConnectInterrupt( &InterruptObject,
         ( KSERVICE_ROUTINE )RtlDebugConsoleKeyboardIrq,
                         NULL,
                         0x40,
                         DISPATCH_LEVEL,
-                        &Interrupt );
+                        &IrqInterruptEvent );
 
     KAPIC_REDIRECT Redirect;
     Redirect.Lower = 0;
@@ -487,9 +487,14 @@ RtlDebugPrint(
 
     RtlDebugConsoleUpdate( );
 
-#if 0
-    if ( KeQueryCurrentProcessor( ) != NULL &&
-         !KeQueryCurrentProcessor( )->InService ) {
+#if 1
+    //if ( KeQueryCurrentProcessor( ) != NULL &&
+    //     !KeQueryCurrentProcessor( )->InService ) {
+    if ( KeQueryCurrentProcessor( ) != NULL ) {
+
+        BOOLEAN s = KeQueryCurrentProcessor( )->InService;
+        KeQueryCurrentProcessor( )->InService = FALSE;
+
         VOID( *_KdPrint )(
             _In_ PWSTR Format,
             _In_ ...
@@ -504,6 +509,8 @@ RtlDebugPrint(
 
             _KdPrint( Buffer );
         }
+
+        KeQueryCurrentProcessor( )->InService = s;
     }
 #endif
     //KeReleaseSpinLock( &SpinLock, PreviousIrql );

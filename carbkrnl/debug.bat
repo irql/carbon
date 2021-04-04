@@ -24,7 +24,7 @@ copy explorer.exe T:\SYSTEM\EXPLORER.EXE
 copy vesa.sys T:\SYSTEM\VESA.SYS
 copy ..\..\hi.txt T:\SYSTEM\HI.TXT
 copy ..\..\ports\freetype\freetype.dll T:\SYSTEM\FREETYPE.DLL
-copy ..\..\fonts\COUSINE.TTF T:\SYSTEM\FONTS\COUSINE.TTF
+copy "..\..\fonts\VICTOR MONO.TTF" "T:\SYSTEM\FONTS\VICTOR MONO.TTF"
 copy ..\..\fonts\ARIAL.TTF T:\SYSTEM\FONTS\ARIAL.TTF
 copy ..\..\fonts\MICROSS.TTF T:\SYSTEM\FONTS\MICROSS.TTF
 copy ..\..\fonts\IBMVGA.BIN T:\SYSTEM\FONTS\IBMVGA.BIN
@@ -45,4 +45,3 @@ rem vmrun -T ws reset "%cd%\vm\vmware\carbon_v2.vmx"
 
 qemu-system-x86_64 -s -m 1024 -smp 1 -no-reboot -no-shutdown -monitor stdio -drive format=raw,media=disk,file=%cd%\carbon_v2.vhd
 rem qemu-system-x86_64 -s -m 1024 -smp 4 -no-reboot -no-shutdown -monitor stdio -vga vmware -drive format=raw,media=disk,file=%p%\carbon_v2.vhd -chardev pipe,id=pog,path=KdPipe -serial chardev:pog
-pause

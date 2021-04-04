@@ -65,14 +65,14 @@ PciSetIoEnable(
 
     if ( Enable ) {
 
-        Device->PciHeader.Command |= 0x7;
+        Device->PciDevice.Header.Command |= 0x7;
     }
     else {
 
-        Device->PciHeader.Command &= ~0x7;
+        Device->PciDevice.Header.Command &= ~0x7;
     }
 
-    PciWrite16( Device, FIELD_OFFSET( PCI_DEVICE_HEADER, Command ), Device->PciHeader.Command );
+    PciWrite16( Device, FIELD_OFFSET( PCI_DEVICE_HEADER, Command ), Device->PciDevice.Header.Command );
 }
 
 
@@ -194,9 +194,9 @@ DriverLoad(
                 Extension->Bus = Bus;
                 Extension->Device = Device;
                 Extension->Function = Function;
-                for ( HeaderByte = 0; HeaderByte < sizeof( PCI_DEVICE_HEADER ); HeaderByte++ ) {
+                for ( HeaderByte = 0; HeaderByte < sizeof( PCI_STANDARD_DEVICE ); HeaderByte++ ) {
 
-                    ( ( PUCHAR )&Extension->PciHeader )[ HeaderByte ] = PciRead8( Extension, HeaderByte );
+                    ( ( PUCHAR )&Extension->PciDevice )[ HeaderByte ] = PciRead8( Extension, HeaderByte );
                 }
 
                 SymbolicLink.Buffer = MmAllocatePoolWithTag( NonPagedPool, 256, PCI_TAG );
@@ -206,11 +206,11 @@ DriverLoad(
                 RtlFormatBuffer(
                     SymbolicLink.Buffer,
                     DEFAULT_LINK_STRING,
-                    Extension->PciHeader.VendorId,
-                    Extension->PciHeader.DeviceId,
-                    Extension->PciHeader.ClassCode,
-                    Extension->PciHeader.SubClass,
-                    Extension->PciHeader.Prog_IF,
+                    Extension->PciDevice.Header.VendorId,
+                    Extension->PciDevice.Header.DeviceId,
+                    Extension->PciDevice.Header.ClassCode,
+                    Extension->PciDevice.Header.SubClass,
+                    Extension->PciDevice.Header.Prog_IF,
                     Bus, Device, Function );
 
                 SymbolicLink.Length = ( USHORT )( lstrlenW( SymbolicLink.Buffer ) * sizeof( WCHAR ) );

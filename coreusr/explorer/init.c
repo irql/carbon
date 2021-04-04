@@ -317,7 +317,7 @@ NtProcessStartup(
                     0 );
     NtCreateWindow( &ExpButtonUp,
                     ExpMainWindow,
-                    L"",
+                    L"^",
                     L"BUTTON",
                     5,
                     25,

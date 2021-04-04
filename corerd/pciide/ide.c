@@ -2,7 +2,28 @@
 
 
 #include <carbsup.h>
+#include "../pci/pci.h"
 #include "ide.h"
+
+PIO_INTERRUPT IdeIrqPrimary;
+PIO_INTERRUPT IdeIrqSecondary;
+KEVENT        IdeIrqEventPrimary = { 0 };
+KEVENT        IdeIrqEventSecondary = { 0 };
+KMUTEX        IdeIrqLockPrimary = { 0 };
+KMUTEX        IdeIrqLockSecondary = { 0 };
+
+BOOLEAN
+IdeIrqService(
+    _In_ PKINTERRUPT Interrupt,
+    _In_ PKEVENT     IrqEvent
+)
+{
+    Interrupt;
+
+    //RtlDebugPrint( L"IrqEvent\n" );
+    KeSignalEvent( IrqEvent, TRUE );
+    return TRUE;
+}
 
 BOOLEAN
 IdeInitializeDevice(
@@ -10,7 +31,9 @@ IdeInitializeDevice(
     _In_ PDEVICE_OBJECT PciDevice,
     _In_ PKIDE_CONTROL  Control,
     _In_ PKIDE_CHANNEL  Channel,
-    _In_ UCHAR          Drive
+    _In_ UCHAR          Drive,
+    _In_ PKEVENT        IrqEvent,
+    _In_ PKMUTEX        IrqLock
 )
 {
     STATIC ULONG64 Harddisk = 0;
@@ -24,10 +47,13 @@ IdeInitializeDevice(
 
     Packet = FALSE;
 
+    IdeWrite( Channel, ATA_REG_CONTROL, 2 );
+
     IdeWrite( Channel, ATA_REG_HDDEVSEL, 0x80 | 0x20 | ( Drive << 4 ) );
     IdeWrite( Channel, ATA_REG_COMMAND, ATA_CMD_IDENTIFY );
 
     if ( IdeRead( Channel, ATA_REG_STATUS ) == 0 ) {
+
         return FALSE;
     }
 
@@ -44,7 +70,7 @@ IdeInitializeDevice(
             ( Status & ATA_SR_DRQ ) == ATA_SR_DRQ ) {
             break;
         }
-    } while ( 1 );
+    } while ( TRUE );
 
     if ( Packet ) {
         IdeWrite( Channel, ATA_REG_COMMAND, ATA_CMD_IDENTIFY_PACKET );
@@ -70,6 +96,7 @@ IdeInitializeDevice(
     Ide->Drive = Drive;
     Ide->Control = Control;
     Ide->Channel = Channel;
+    KeInitializeMutex( &Ide->Lock );
 
     for ( CurrentWord = 0; CurrentWord < 256; CurrentWord++ ) {
         Ide->Identity.Buffer[ CurrentWord ] = __inword( Channel->Base + ATA_REG_DATA );
@@ -90,6 +117,24 @@ IdeInitializeDevice(
         Ide->Flags |= IDE_CHS;
     }
 
+    if ( ( ( PPCI_DEVICE )PciDevice->DeviceExtension )->PciDevice.Header.Prog_IF & PIR_BM_SUPPORT &&
+         FALSE ) {
+        // BM DMA is disabled because
+        // it is significantly slower as well
+        // as not being worth even writing.
+
+        Ide->Flags |= IDE_DMA;
+        PciSetIoEnable( ( PPCI_DEVICE )PciDevice->DeviceExtension, TRUE );
+        MmDmaCreateAdapter( DriveDevice,
+                            0xFFFF0000,
+                            MmDmaPrepared,
+                            MmCacheWriteBack,
+                            0x10000,
+                            &Ide->DmaAdapter );
+        Ide->IrqEvent = IrqEvent;
+        Ide->IrqLock = IrqLock;
+    }
+
     if ( Ide->Identity.CommandSets1 & ( 1 << 26 ) ) {
         Ide->SectorCount = Ide->Identity.MaxLogicalBlockAddressExt & 0xFFFFFFFFFFFF;
     }
@@ -97,13 +142,17 @@ IdeInitializeDevice(
         Ide->SectorCount = Ide->Identity.MaxLogicalBlockAddress & 0xFFFFFFF;
     }
 
+    Ide->Geometry.SectorSize = 512;
+    Ide->Geometry.SectorsPerTrack = Ide->Identity.SectorsPerTrack;
+    Ide->Geometry.Heads = Ide->Identity.Heads;
+    Ide->Geometry.Cylinders = Ide->Identity.Cylinders;
+
     Ide->BootSector = MmAllocatePoolWithTag( NonPagedPool, 512, IDE_TAG );
-    Ide->BootStatus = IdeAccess(
-        DriveDevice,
-        FALSE,
-        0,
-        512,
-        Ide->BootSector );
+    Ide->BootStatus = IdeAccess( DriveDevice,
+                                 FALSE,
+                                 0,
+                                 512,
+                                 Ide->BootSector );
     /*
     RtlDebugPrint( L"drive:\n\t%s\n\t%as\n\t%ull\n\t%ul\n",
                    DriveName.Buffer,
@@ -127,6 +176,9 @@ IdeAccess(
 )
 {
     NTSTATUS ntStatus;
+    PKIDE_DEVICE Ide;
+
+    Ide = DeviceObject->DeviceExtension;
 
     if ( Length % 0x200 != 0 ) {
 
@@ -135,23 +187,47 @@ IdeAccess(
 
     Length /= 0x200;
 
-    while ( Length >= 0xFFFF ) {
-        ntStatus = IdeAccessInternal(
-            DeviceObject,
-            Write,
-            BlockAddress,
-            0xFFFF,
-            Buffer );
+    if ( Ide->Flags & IDE_DMA ) {
 
-        if ( !NT_SUCCESS( ntStatus ) ) {
+        while ( Length >= 0x80 ) {
+            ntStatus = IdeAccessInternal(
+                DeviceObject,
+                Write,
+                BlockAddress,
+                0x80,
+                Buffer );
 
-            return ntStatus;
+            if ( !NT_SUCCESS( ntStatus ) ) {
+
+                return ntStatus;
+            }
+
+            Length -= 0x80;
+            BlockAddress += 0x80;
+
+            Buffer = ( PUCHAR )Buffer + 0x80 * 512;
         }
+    }
+    else {
 
-        Length -= 0xFFFF;
-        BlockAddress += 0xFFFF;
+        while ( Length >= 0xFFFF ) {
+            ntStatus = IdeAccessInternal(
+                DeviceObject,
+                Write,
+                BlockAddress,
+                0xFFFF,
+                Buffer );
 
-        Buffer = ( PUCHAR )Buffer + 0xFFFF * 512;
+            if ( !NT_SUCCESS( ntStatus ) ) {
+
+                return ntStatus;
+            }
+
+            Length -= 0xFFFF;
+            BlockAddress += 0xFFFF;
+
+            Buffer = ( PUCHAR )Buffer + 0xFFFF * 512;
+        }
     }
 
     if ( Length > 0 ) {
@@ -186,12 +262,9 @@ IdeAccessInternal(
     Length;
     Buffer;
 
-    KIRQL PreviousIrql;
     PKIDE_DEVICE Ide;
 
     Ide = DeviceObject->DeviceExtension;
-
-    //Ide->Packet
 
     UCHAR Command;
     UCHAR BlockAddressIo[ 6 ];
@@ -200,14 +273,19 @@ IdeAccessInternal(
     UCHAR Sector;
     USHORT Cylinder;
 
-    if ( BlockAddress > Ide->SectorCount ) {
+    BM_PRDT_ENTRY Prdt;
+    ULONG64 PrdtVirtual;
+    ULONG64 PrdtLogical;
+    UCHAR Status;
+
+    if ( BlockAddress >= Ide->SectorCount ) {
 
         return STATUS_INVALID_ADDRESS;
     }
 
-    Ide->Channel->NoInterrupt = 1 << 1;//?????
+    NT_ASSERT( ( __readeflags( ) & 0x200 ) == 0x200 );
 
-    IdeWrite( Ide->Channel, ATA_REG_CONTROL, 1 << 1 );
+    //RtlDebugPrint( L"Read_%d_%d\n", BlockAddress, Length );
 
     if ( Ide->Flags & IDE_LBA48 ) {
 
@@ -220,10 +298,10 @@ IdeAccessInternal(
         Head = 0;
 
         if ( Ide->Flags & IDE_DMA ) {
-            Command = ATA_CMD_READ_DMA_EXT + Write * 0x10;
+            Command = Write ? ATA_CMD_WRITE_DMA_EXT : ATA_CMD_READ_DMA_EXT;
         }
         else {
-            Command = ATA_CMD_READ_PIO_EXT + Write * 0x10;
+            Command = Write ? ATA_CMD_WRITE_PIO_EXT : ATA_CMD_READ_PIO_EXT;
         }
     }
     else if ( Ide->Flags & IDE_LBA28 ) {
@@ -234,10 +312,10 @@ IdeAccessInternal(
         Head = ( BlockAddress >> 24 ) & 0xf;
 
         if ( Ide->Flags & IDE_DMA ) {
-            Command = ATA_CMD_READ_DMA + Write * 2;
+            Command = Write ? ATA_CMD_WRITE_DMA : ATA_CMD_READ_DMA;
         }
         else {
-            Command = ATA_CMD_READ_PIO + Write * 0x10;
+            Command = Write ? ATA_CMD_WRITE_PIO : ATA_CMD_READ_PIO;
         }
     }
     else {
@@ -251,20 +329,44 @@ IdeAccessInternal(
         Head = ( UCHAR )( ( BlockAddress - Sector ) % ( Ide->Geometry.Heads * Ide->Geometry.SectorsPerTrack ) / Ide->Geometry.SectorsPerTrack );
 
         if ( Ide->Flags & IDE_DMA ) {
-            Command = ATA_CMD_READ_DMA + Write * 2;
+            Command = Write ? ATA_CMD_WRITE_DMA : ATA_CMD_READ_DMA;
         }
         else {
-            Command = ATA_CMD_READ_PIO + Write * 0x10;
+            Command = Write ? ATA_CMD_WRITE_PIO : ATA_CMD_READ_PIO;
         }
     }
 
-    KeAcquireSpinLock( &Ide->IdeLock, &PreviousIrql );
+    KeAcquireMutex( &Ide->Lock );
 
-    while ( IdeRead( Ide->Channel, ATA_REG_STATUS ) & ATA_SR_BSY )
-        ;
+    //while ( IdeRead( Ide->Channel, ATA_REG_STATUS ) & ATA_SR_BSY )
+    //    ;
 
+    if ( Ide->Flags & IDE_DMA ) {
 
-    IdeWrite( Ide->Channel, ATA_REG_HDDEVSEL, 0x80 | 0x20 | ( Ide->Drive << 4 ) | Head | ( 0x40 * ( ( Ide->Flags & IDE_CHS ) == 0 ) ) );
+        MmDmaAllocateBuffer( Ide->DmaAdapter,
+                             Length << 9,
+                             &PrdtLogical,
+                             &PrdtVirtual );
+        Prdt.BaseAddress = ( ULONG32 )PrdtLogical;
+        Prdt.ByteCount = ( ULONG32 )Length << 9;
+        Prdt.EndOfTable = 1;
+
+        KeAcquireMutex( Ide->IrqLock );
+        KeSignalEvent( Ide->IrqEvent, FALSE );
+
+        BmWrite( Ide->Channel, BM_REG_COMMAND, 0 );
+        BmWrite( Ide->Channel,
+                 BM_REG_PRDT_ADDRESS,
+                 ( ULONG32 )MmGetLogicalAddress( ( ULONG64 )&Prdt ) );
+
+        IdeWrite( Ide->Channel, ATA_REG_CONTROL, 0 );
+    }
+    else {
+
+        IdeWrite( Ide->Channel, ATA_REG_CONTROL, 2 );
+    }
+
+    IdeWrite( Ide->Channel, ATA_REG_HDDEVSEL, 0x80 | 0x20 | ( Ide->Drive << 4 ) | Head | ( Ide->Flags & IDE_CHS ? 0 : 0x40 ) );//( 0x40 * ( ( Ide->Flags & IDE_CHS ) == 0 ) ) );
 
     if ( Ide->Flags & IDE_LBA48 ) {
 
@@ -283,11 +385,58 @@ IdeAccessInternal(
 
     if ( Ide->Flags & IDE_DMA ) {
 
+        BmWrite( Ide->Channel, BM_REG_COMMAND, BM_CMD_START | ( Write ? 0 : BM_CMD_WRITE ) );
+
+        do {
+
+            Status = ( UCHAR )BmRead( Ide->Channel, BM_REG_STATUS );
+
+            if ( Status & BM_SR_TRC ||
+                 Status & BM_SR_TRC_E ) {
+
+                break;
+            }
+
+            if ( Status & BM_SR_ERR ) {
+
+                break;
+            }
+
+            KeWaitForSingleObject( Ide->IrqEvent, 10 );
+
+        } while ( TRUE );
+
+        //if ( !KeQueryEvent( Ide->IrqEvent ) )
+            //RtlDebugPrint( L"Signal %d\n", KeQueryEvent( Ide->IrqEvent ) );
+
+        KeSignalEvent( Ide->IrqEvent, FALSE );
+
+        BmWrite( Ide->Channel, BM_REG_COMMAND, 0 );
+
+        KeReleaseMutex( Ide->IrqLock );
+
+        if ( Status & BM_SR_ERR ) {
+
+            RtlDebugPrint( L"BmStatus: %ul\n", Status );
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        Status = IdeRead( Ide->Channel, ATA_REG_STATUS );
+
+        if ( Status & ATA_SR_ERR ||
+             Status & ATA_SR_DF ) {
+
+            RtlDebugPrint( L"Not this disk..\n" );
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        RtlCopyMemory( Buffer, ( PVOID )PrdtVirtual, Length << 9 );
 
     }
     else {
         if ( Write ) {
 
+            NT_ASSERT( FALSE );
         }
         else {
             while ( Length-- ) {
@@ -295,23 +444,23 @@ IdeAccessInternal(
                 while ( IdeRead( Ide->Channel, ATA_REG_STATUS ) & ATA_SR_BSY )
                     ;
 
-                UCHAR Status = IdeRead( Ide->Channel, ATA_REG_STATUS );
+                Status = IdeRead( Ide->Channel, ATA_REG_STATUS );
 
                 if ( Status & ATA_SR_ERR ) {
 
-                    KeReleaseSpinLock( &Ide->IdeLock, PreviousIrql );
+                    KeReleaseMutex( &Ide->Lock );
                     return STATUS_UNSUCCESSFUL;
                 }
 
                 if ( Status & ATA_SR_DF ) {
 
-                    KeReleaseSpinLock( &Ide->IdeLock, PreviousIrql );
+                    KeReleaseMutex( &Ide->Lock );
                     return STATUS_UNSUCCESSFUL;
                 }
 
                 if ( ( Status & ATA_SR_DRQ ) == 0 ) {
 
-                    KeReleaseSpinLock( &Ide->IdeLock, PreviousIrql );
+                    KeReleaseMutex( &Ide->Lock );
                     return STATUS_UNSUCCESSFUL;
                 }
 
@@ -322,6 +471,6 @@ IdeAccessInternal(
         }
     }
 
-    KeReleaseSpinLock( &Ide->IdeLock, PreviousIrql );
+    KeReleaseMutex( &Ide->Lock );
     return STATUS_SUCCESS;
 }

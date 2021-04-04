@@ -22,6 +22,7 @@ POBJECT_TYPE PsThreadObject;
 POBJECT_TYPE PsProcessObject;
 POBJECT_TYPE MmSectionObject;
 POBJECT_TYPE KeEventObject;
+POBJECT_TYPE MmDmaAdapterObject;
 
 NTSTATUS
 ObCreateObjectType(
@@ -129,6 +130,7 @@ ObInitializeObjectManager(
     UNICODE_STRING ObjectSectionName = RTL_CONSTANT_STRING( L"Section" );
     UNICODE_STRING ObjectMutexName = RTL_CONSTANT_STRING( L"Mutex" );
     UNICODE_STRING ObjectInterruptName = RTL_CONSTANT_STRING( L"Interrupt" );
+    UNICODE_STRING ObjectDmaAdapterName = RTL_CONSTANT_STRING( L"DmaAdapter" );
 
     UNICODE_STRING DeviceDirectory = RTL_CONSTANT_STRING( L"Device" );
     UNICODE_STRING GlobalDirectory = RTL_CONSTANT_STRING( L"??" );
@@ -151,6 +153,7 @@ ObInitializeObjectManager(
     ObCreateObjectType( &MmSectionObject, &ObjectSectionName, 'tceS', ( OBJECT_CLEANUP )MiCleanupSection );
     ObCreateObjectType( &KeMutexObject, &ObjectMutexName, 'etuM', NULL );
     ObCreateObjectType( &IoInterruptObject, &ObjectInterruptName, ' tnI', NULL );
+    ObCreateObjectType( &MmDmaAdapterObject, &ObjectDmaAdapterName, ' AMD', NULL );
 
     ObInsertDirectoryEntry( &ObRootDirectory, &DeviceDirectory, ObCreateDirectoryHead( ) );
     ObInsertDirectoryEntry( &ObRootDirectory, &GlobalDirectory, ObCreateDirectoryHead( ) );

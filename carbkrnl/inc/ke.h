@@ -188,7 +188,7 @@ KeQueryEvent(
 );
 
 NTSYSAPI
-VOID
+NTSTATUS
 KeWaitForSingleObject(
     _In_ PVOID   Object,
     _In_ ULONG64 Timeout

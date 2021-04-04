@@ -62,13 +62,26 @@ typedef union _KIDE_IDENTITY {
         ULONG64 MaxLogicalBlockAddressExt; //&0x0000FFFFFFFFFFFF 
     };
 } KIDE_IDENTITY, *PKIDE_IDENTITY;
+
+//http://bswd.com/idems100.pdf
+typedef struct _BM_PRDT_ENTRY {
+
+    ULONG64 BaseAddress : 32;
+    ULONG64 ByteCount : 16; // 0 - 0x10000
+    ULONG64 Reserved : 15;
+    ULONG64 EndOfTable : 1;
+
+} BM_PRDT_ENTRY, *PBM_PRDT_ENTRY;
+
+C_ASSERT( sizeof( BM_PRDT_ENTRY ) == 8 );
+
+
 #pragma pack(pop)
 
 typedef struct _KIDE_CHANNEL {
     USHORT Base;
     USHORT Control;
     USHORT BusMaster;
-    UCHAR  NoInterrupt;
 } KIDE_CHANNEL, *PKIDE_CHANNEL;
 
 typedef struct _KIDE_CONTROL {
@@ -90,25 +103,36 @@ typedef struct _KIDE_CONTROL {
 typedef struct _KIDE_DEVICE {
     DISK_OBJECT_HEADER Header;
 
-    UCHAR          Partition : 1;
-    UCHAR          Packet : 1;
-    UCHAR          Drive : 1;
-    UCHAR          Flags : 5;
+    UCHAR              Zero : 1;
+    UCHAR              Packet : 1;
+    UCHAR              Drive : 1;
+    UCHAR              Flags : 5;
 
-    ULONG64        SectorCount;
-    PDEVICE_OBJECT DriveDevice;
+    ULONG64            SectorCount;
 
-    NTSTATUS       BootStatus;
-    PVOID          BootSector;
+    NTSTATUS           BootStatus;
+    PVOID              BootSector;
 
-    DISK_GEOMETRY  Geometry;
+    DISK_GEOMETRY      Geometry;
 
-    KIDE_IDENTITY  Identity;
-    PKIDE_CHANNEL  Channel;
-    PKIDE_CONTROL  Control;
-    KSPIN_LOCK     IdeLock;
+    KIDE_IDENTITY      Identity;
+    PKIDE_CHANNEL      Channel;
+    PKIDE_CONTROL      Control;
+    KMUTEX             Lock;
+
+    PMM_DMA_ADAPTER    DmaAdapter;
+    PKEVENT            IrqEvent;
+    PKMUTEX            IrqLock;
 
 } KIDE_DEVICE, *PKIDE_DEVICE;
+
+//4.2.1.
+#define PIR_BM_SUPPORT              0x80
+#define PIR_NATIVE_ENABLED          0x10
+#define PIR_SECONDRAY_NATIVE_CAP    0x08
+#define PIR_SECONDARY_MODE_NATIVE   0x04
+#define PIR_PRIMARY_NATIVE_CAP      0x02
+#define PIR_PRIMARY_MODE_NATIVE     0x01
 
 #define ATA_REG_DATA            0x00
 #define ATA_REG_ERROR           0x01
@@ -122,9 +146,18 @@ typedef struct _KIDE_DEVICE {
 #define ATA_REG_STATUS          0x07
 #define ATA_REG_CONTROL         0x08 // not a reg
 
-#define BM_REG_CONTROL          0x00
+#define BM_REG_COMMAND          0x00
 #define BM_REG_STATUS           0x02
 #define BM_REG_PRDT_ADDRESS     0x04
+
+#define BM_CMD_START            0x01
+#define BM_CMD_WRITE            0x08
+
+#define BM_SR_SIMPLEX           0x80
+#define BM_SR_ERR               0x08
+#define BM_SR_TRC               0x04 // transfer complete
+#define BM_SR_TRC_E             0x02 // transfer complete - exhaused
+#define BM_SR_BSY               0x01
 
 #define ATA_CMD_READ_PIO        0x20
 #define ATA_CMD_READ_PIO_EXT    0x24
@@ -241,10 +274,12 @@ IdeAccessInternal(
 BOOLEAN
 IdeInitializeDevice(
     _In_ PDRIVER_OBJECT DriverObject,
-    _In_ PDEVICE_OBJECT DeviceObject,
+    _In_ PDEVICE_OBJECT PciDevice,
     _In_ PKIDE_CONTROL  Control,
     _In_ PKIDE_CHANNEL  Channel,
-    _In_ UCHAR          Drive
+    _In_ UCHAR          Drive,
+    _In_ PKEVENT        IrqEvent,
+    _In_ PKMUTEX        IrqLock
 );
 
 BOOLEAN
@@ -252,4 +287,10 @@ IdeDevice(
     _In_ PUNICODE_STRING LinkName,
     _In_ PDEVICE_OBJECT  DeviceObject,
     _In_ PDRIVER_OBJECT  DriverObject
+);
+
+BOOLEAN
+IdeIrqService(
+    _In_ PKINTERRUPT Interrupt,
+    _In_ PKEVENT     IrqEvent
 );

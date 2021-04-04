@@ -41,6 +41,7 @@
     <ClCompile Include="ke\processor.c" />
     <ClCompile Include="ke\syscall.c" />
     <ClCompile Include="mm\cache.c" />
+    <ClCompile Include="mm\dma.c" />
     <ClCompile Include="mm\mminit.c" />
     <ClCompile Include="mm\pfndb.c" />
     <ClCompile Include="mm\physical.c" />
