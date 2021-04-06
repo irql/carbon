@@ -75,6 +75,53 @@ PciSetIoEnable(
     PciWrite16( Device, FIELD_OFFSET( PCI_DEVICE_HEADER, Command ), Device->PciDevice.Header.Command );
 }
 
+VOID
+PciReadConfig(
+    _In_  PPCI_DEVICE Device,
+    _In_  ULONG32     Offset,
+    _Out_ PVOID       Buffer,
+    _In_  ULONG32     Length
+)
+{
+    while ( Length-- ) {
+
+        ( ( PUCHAR )Buffer )[ Length ] = PciRead8( Device, Offset + Length );
+    }
+}
+
+NTSTATUS
+PciReadCap(
+    _In_  PPCI_DEVICE Device,
+    _In_  UCHAR       CapId,
+    _Out_ PULONG32    Offset
+)
+{
+
+    ULONG32 CapOffset;
+
+    if ( ( Device->PciDevice.Header.Status & ( 1 << 4 ) ) == 0 ) {
+
+        return STATUS_DEVICE_FAILED;
+    }
+
+    CapOffset = Device->PciDevice.CapabilititesPointer;
+
+    do {
+
+        if ( PciRead8( Device, CapOffset ) == CapId ) {
+
+            *Offset = CapOffset;
+            return STATUS_SUCCESS;
+        }
+        else {
+
+            CapOffset = PciRead8( Device, CapOffset + 1 );
+        }
+
+    } while ( CapOffset != 0 );
+
+    return STATUS_NOT_FOUND;
+}
 
 VOID
 PciQueryDevices(
@@ -178,12 +225,11 @@ DriverLoad(
                 RtlFormatBuffer( DeviceName.Buffer, DEFAULT_DEVICE_STRING, DeviceCount );
                 DeviceName.Length = ( USHORT )( lstrlenW( DeviceName.Buffer ) * sizeof( WCHAR ) );
 
-                ntStatus = IoCreateDevice(
-                    DriverObject,
-                    sizeof( PCI_DEVICE ),
-                    &DeviceName,
-                    0,
-                    &PciDeviceObject );
+                ntStatus = IoCreateDevice( DriverObject,
+                                           sizeof( PCI_DEVICE ),
+                                           &DeviceName,
+                                           0,
+                                           &PciDeviceObject );
 
                 if ( !NT_SUCCESS( ntStatus ) ) {
                     // bug check.

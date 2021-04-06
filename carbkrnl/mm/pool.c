@@ -476,12 +476,6 @@ MmMapIoSpaceSpecifyCache(
         }
 
         switch ( Cache ) {
-        default:
-        case MmCacheUncacheable:
-            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Pat = 0;
-            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].CacheDisable = 1;
-            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].WriteThrough = 0; // Pa2
-            break;
         case MmCacheWriteBack:
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Pat = 0;
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].CacheDisable = 0;
@@ -491,6 +485,12 @@ MmMapIoSpaceSpecifyCache(
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Pat = 0;
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].CacheDisable = 0;
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].WriteThrough = 1; // Pa1
+            break;
+        case MmCacheUncacheable:
+        default:
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Pat = 0;
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].CacheDisable = 1;
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].WriteThrough = 0; // Pa2
             break;
         }
     }

@@ -7,6 +7,9 @@
 #define NULL 0
 #endif
 
+// prevents bad code from being written
+#define auto __fastfail( ); unsigned long
+
 #define _CRT_FUNCTIONS_REQUIRED 0
 
 //#include <vadefs.h>
@@ -63,6 +66,11 @@ void __lidt( void * Source );
 void _lgdt( void* );
 __int64 _InterlockedCompareExchange64( __int64 volatile * _Destination, __int64 _Exchange, __int64 _Comparand );
 __int64 _InterlockedIncrement64( __int64 volatile * );
+
+__int64 _InterlockedExchangeAdd64(
+    __int64 volatile * Addend,
+    __int64 Value
+);
 
 void __cpuid(
     int cpuInfo[ 4 ],
@@ -293,9 +301,10 @@ KeEmptyList(
 
 #define WAIT_TIMEOUT_INFINITE ( ( ULONG64 )-1 )
 
-#define DPC_OBJECT_EVENT    0x00000001
-#define DPC_OBJECT_THREAD   0x00000002
-#define DPC_OBJECT_MUTEX    0x00000003
+#define DPC_OBJECT_EVENT     0x00000001
+#define DPC_OBJECT_THREAD    0x00000002
+#define DPC_OBJECT_MUTEX     0x00000003
+#define DPC_OBJECT_SEMAPHORE 0x00000004
 
 typedef struct _KDPC_HEADER {
     ULONG64 Type;
@@ -371,6 +380,12 @@ typedef struct _KMUTEX {
     PKTHREAD    Owner;
 
 } KMUTEX, *PKMUTEX;
+
+typedef struct _KSEMAPHORE {
+    KDPC_HEADER     Header;
+    VOLATILE LONG64 Limit;
+    VOLATILE LONG64 Count;
+} KSEMAPHORE, *PKSEMAPHORE;
 
 typedef struct _KTRAP_FRAME *PKTRAP_FRAME;
 
@@ -520,7 +535,8 @@ typedef struct _OBJECT_DIRECTORY_INFORMATION {
     UNICODE_STRING TypeName;
 } OBJECT_DIRECTORY_INFORMATION, *POBJECT_DIRECTORY_INFORMATION;
 
-typedef struct _DISK_OBJECT_HEADER {
+typedef struct _KDISK_HEADER {
+
     //
     // Any disks should have this as a header
     // for their device object->device extension
@@ -528,7 +544,7 @@ typedef struct _DISK_OBJECT_HEADER {
 
     ULONG64 PartCount;
 
-} DISK_OBJECT_HEADER, *PDISK_OBJECT_HEADER;
+} KDISK_HEADER, *PKDISK_HEADER;
 
 #define ZwCurrentProcess( )     ( ( HANDLE )( -1 ) )
 #define ZwCurrentThread( )      ( ( HANDLE )( -2 ) )

@@ -11,19 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ddi\adapter.c" />
-    <ClCompile Include="ddi\id.c" />
+    <ClCompile Include="ahci.c" />
     <ClCompile Include="driver.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ddi\ddi.h" />
-    <ClInclude Include="dxgi.h" />
-    <ClInclude Include="dxstatus.h" />
+    <ClInclude Include="ahci.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{1d21a208-7654-4d60-981a-c9ab87c0ff44}</ProjectGuid>
-    <RootNamespace>dxgi</RootNamespace>
+    <ProjectGuid>{eb01555d-4be1-4622-9a7d-0c39420ec6f1}</ProjectGuid>
+    <RootNamespace>ahci</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -34,7 +31,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>
@@ -77,7 +74,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>
@@ -101,21 +98,20 @@
       <CompileAs>CompileAsC</CompileAs>
       <UseFullPaths>false</UseFullPaths>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;DXINTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>carbkrnl.lib</AdditionalDependencies>
+      <AdditionalDependencies>carbkrnl.lib;kdcom.lib;pci.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ManifestFile />
       <AllowIsolation />
       <EnableUAC />
       <UACExecutionLevel />
       <UACUIAccess />
-      <ProgramDatabaseFile>$(OutDir)symbols\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)Symbols\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Native</SubSystem>
-      <LargeAddressAware>true</LargeAddressAware>
+      <LargeAddressAware>false</LargeAddressAware>
       <EntryPointSymbol>DriverLoad</EntryPointSymbol>
       <FixedBaseAddress>false</FixedBaseAddress>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>

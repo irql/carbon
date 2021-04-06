@@ -204,8 +204,28 @@ NtFreeVirtualMemory(
 typedef struct _MM_DMA_ADAPTER *PMM_DMA_ADAPTER;
 
 typedef enum _MM_DMA_MODE {
+
+    //
+    // Dma buffers are always allocated
+    // and there are no prepared buffers
+    //
+
     MmDmaDefault,
+
+    //
+    // Single prepared buffer, all MmDmaAllocateBuffer calls
+    // return this buffer
+    //
+
     MmDmaPrepared,
+
+    //
+    // Allocate many dma buffers but have one prepared
+    // buffer, which is returned when MmDmaAllocateBuffer's
+    // Length parameter is 0.
+    //
+
+    MmDmaSemiPrepared,
     MmDmaMaximum
 } MM_DMA_MODE;
 

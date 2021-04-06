@@ -109,8 +109,6 @@ KiInitThread(
     }
     __writecr8( 0 );
 
-    RtlDebugPrint( L"Bru'al\n" );
-
     KeInitializeKernelClock( );
     IoInitializeIoManager( );
     MmPhase1InitializeMemoryManager( );
@@ -170,6 +168,7 @@ KiInitThread(
         "KDCOM   SYS",
         "PCI     SYS",
         "PCIIDE  SYS",
+        "AHCI    SYS",
         "PARTMGR SYS",
         "FAT     SYS",
     };
@@ -284,7 +283,7 @@ KiInitThread(
                 Import++;
             }
 
-            RtlDebugPrint( L"file=%s addr=%ull\n",
+            RtlDebugPrint( L"load=%s addr=%ull\n",
                            Vad->FileObject->FileName.Buffer,
                            Vad->Start );
             /*

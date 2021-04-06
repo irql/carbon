@@ -98,7 +98,7 @@ FsCreateMbrPartTable(
         return ntStatus;
     }
 
-    ( ( PDISK_OBJECT_HEADER )FileObject->DeviceObject->DeviceExtension )->PartCount = 0;
+    ( ( PKDISK_HEADER )FileObject->DeviceObject->DeviceExtension )->PartCount = 0;
 
     for ( Entry = 0; Entry < 4; Entry++ ) {
 
@@ -139,7 +139,7 @@ FsCreateMbrPartTable(
         PartNumber++;
     }
 
-    ( ( PDISK_OBJECT_HEADER )FileObject->DeviceObject->DeviceExtension )->PartCount = PartNumber;
+    ( ( PKDISK_HEADER )FileObject->DeviceObject->DeviceExtension )->PartCount = PartNumber;
     ObDereferenceObject( FileObject );
     ZwClose( FileHandle );
 

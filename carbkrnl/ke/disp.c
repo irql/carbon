@@ -16,6 +16,7 @@ KSPIN_LOCK    KiIpiLock = { 0 };
 #define TEST_EVENT( dpc_object )        ( ( dpc_object )->Type == DPC_OBJECT_EVENT && ( ( PKEVENT )( dpc_object ) )->Signaled )
 #define TEST_THREAD( dpc_object )       ( ( dpc_object )->Type == DPC_OBJECT_MUTEX && _InterlockedCompareExchange64( ( volatile long long* )&( ( PKMUTEX )( dpc_object ) )->Owner, ( long long )Thread, 0 ) == 0 )
 #define TEST_MUTEX( dpc_object )        ( ( dpc_object )->Type == DPC_OBJECT_THREAD && ( ( PKTHREAD )( dpc_object ) )->ThreadState == THREAD_STATE_TERMINATED )
+#define TEST_SEMAPHORE( dpc_object )    ( ( dpc_object )->Type == DPC_OBJECT_SEMAPHORE && ( ( PKSEMAPHORE )( dpc_object ) )->Count < ( ( PKSEMAPHORE )( dpc_object ) )->Limit )
 #define RESET_THREAD_STATE( thread )                    \
 Thread->WaitTimeout = 0;                                \
 if ( ( thread )->SuspendCount != 0 ) {                  \
@@ -141,6 +142,14 @@ KiSwapContext(
                             ( volatile long long* )&( ( PKMUTEX )Header )->Owner,
                             ( long long )Thread, 0 ) == 0 ) {
 
+                            RESET_THREAD_STATE( Thread );
+                        }
+                        break;
+                    case DPC_OBJECT_SEMAPHORE:;
+                        if ( ( ( PKSEMAPHORE )Header )->Count < ( ( PKSEMAPHORE )Header )->Limit ) {
+
+                            // maybe spin lock these lol
+                            _InterlockedIncrement64( &( ( PKSEMAPHORE )Header )->Count );
                             RESET_THREAD_STATE( Thread );
                         }
                         break;
@@ -459,14 +468,16 @@ KeWaitForSingleObject(
     if ( Object != NULL ) {
         if ( TEST_EVENT( DpcObject ) ||
              TEST_THREAD( DpcObject ) ||
-             TEST_MUTEX( DpcObject ) ) {
+             TEST_MUTEX( DpcObject ) ||
+             TEST_SEMAPHORE( DpcObject ) ) {
 
             return STATUS_SUCCESS;
         }
 
         NT_ASSERT( DpcObject->Type == DPC_OBJECT_EVENT ||
                    DpcObject->Type == DPC_OBJECT_MUTEX ||
-                   DpcObject->Type == DPC_OBJECT_THREAD );
+                   DpcObject->Type == DPC_OBJECT_THREAD ||
+                   DpcObject->Type == DPC_OBJECT_SEMAPHORE );
     }
 
     KeAcquireSpinLock( &Thread->ThreadLock, &PreviousIrql );
@@ -504,6 +515,12 @@ KeWaitForSingleObject(
 
         if ( DpcObject->Type == DPC_OBJECT_THREAD &&
             ( ( PKTHREAD )Object )->ThreadState == THREAD_STATE_TERMINATED ) {
+
+            return STATUS_SUCCESS;
+        }
+
+        if ( DpcObject->Type == DPC_OBJECT_SEMAPHORE &&
+            ( ( PKSEMAPHORE )Object )->Count == ( ( PKSEMAPHORE )Object )->Limit ) {
 
             return STATUS_SUCCESS;
         }
@@ -819,4 +836,39 @@ NtGetTickCount(
 )
 {
     return KeQueryCurrentProcessor( )->TickCount;
+}
+
+VOID
+KeInitializeSemaphore(
+    _In_ PKSEMAPHORE Semaphore,
+    _In_ LONG64      Limit,
+    _In_ LONG64      Count
+)
+{
+    Semaphore->Header.Type = DPC_OBJECT_SEMAPHORE;
+    Semaphore->Limit = Limit;
+    Semaphore->Count = Count;
+}
+
+VOID
+KeAcquireSemaphore(
+    _In_ PKSEMAPHORE Semaphore
+)
+{
+
+    if ( Semaphore->Count < Semaphore->Limit ) {
+
+        _InterlockedIncrement64( &Semaphore->Count );
+        return;
+    }
+
+    KeWaitForSingleObject( Semaphore, WAIT_TIMEOUT_INFINITE );
+}
+
+VOID
+KeReleaseSemaphore(
+    _In_ PKSEMAPHORE Semaphore
+)
+{
+    _InterlockedExchangeAdd64( &Semaphore->Count, -1 );
 }

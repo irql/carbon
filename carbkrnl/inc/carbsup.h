@@ -13,10 +13,6 @@
 #pragma warning(disable:4053)
 #pragma warning(disable:4152)
 
-#pragma comment(lib, "I:\\repos\\osdev\\carbon_v2\\x64\\Release\\carbkrnl.lib") // these dont work?
-#pragma comment(lib, "I:\\repos\\osdev\\carbon_v2\\x64\\Release\\kdcom.lib")
-#pragma comment(lib, "I:\\repos\\osdev\\carbon_v2\\x64\\Release\\pci.lib")
-
 #include <ntbase.h>
 #include <ntstatus.h>
 #include <bootldr.h>

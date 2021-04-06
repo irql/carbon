@@ -12,6 +12,7 @@ copy pciide.sys T:\SYSTEM\BOOT\PCIIDE.SYS
 copy partmgr.sys T:\SYSTEM\BOOT\PARTMGR.SYS
 copy fat.sys T:\SYSTEM\BOOT\FAT.SYS
 copy kdcom.sys T:\SYSTEM\BOOT\KDCOM.SYS
+copy ahci.sys T:\SYSTEM\BOOT\AHCI.SYS
 copy ntuser.sys T:\SYSTEM\NTUSER.SYS
 copy dxgi.sys T:\SYSTEM\DXGI.SYS
 copy vmsvga.sys T:\SYSTEM\VMSVGA.SYS

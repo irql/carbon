@@ -35,7 +35,8 @@ MmDmaCreateAdapter(
     AdapterObject->LogicalMask = LogicalMask >> 12;
     *Adapter = AdapterObject;
 
-    if ( DmaMode == MmDmaPrepared ) {
+    if ( DmaMode == MmDmaPrepared ||
+         DmaMode == MmDmaSemiPrepared ) {
 
         //
         // This mode has a buffer pre-allocated for it
@@ -55,15 +56,16 @@ MmDmaCreateAdapter(
 
         if ( !NT_SUCCESS( ntStatus ) ) {
 
+            //RtlDebugPrint( L"Failed to allocate dma buffer: %ul\n", ntStatus );
             ObDereferenceObject( AdapterObject );
             return ntStatus;
         }
 
-        AdapterObject->DmaMode = MmDmaPrepared;
-
+        AdapterObject->DmaMode = DmaMode;
+        /*
         RtlDebugPrint( L"MmDmaPrepared buffer: %ull %ull\n",
                        AdapterObject->LogicalAddress,
-                       AdapterObject->VirtualAddress );
+                       AdapterObject->VirtualAddress );*/
     }
 
     return STATUS_SUCCESS;
@@ -82,7 +84,9 @@ MmDmaAllocateBuffer(
     ULONG64 PfnFoundStart;
     ULONG64 PfnFoundTotal;
 
-    if ( AdapterObject->DmaMode == MmDmaPrepared ) {
+    if ( AdapterObject->DmaMode == MmDmaPrepared ||
+        ( AdapterObject->DmaMode == MmDmaSemiPrepared &&
+          Length == 0 ) ) {
 
         *LogicalAddress = AdapterObject->LogicalAddress;
         *VirtualAddress = AdapterObject->VirtualAddress;
@@ -115,13 +119,6 @@ MmDmaAllocateBuffer(
             ( MmPfnDatabase[ PfnCurrent ].PageFrameNumber & AdapterObject->LogicalMask ) !=
              MmPfnDatabase[ PfnCurrent ].PageFrameNumber ) {
 
-            while ( PfnFoundTotal-- ) {
-
-                MmPfnDatabase[ PfnFoundStart + PfnFoundTotal ].LockBit = FALSE;
-            }
-
-            PfnFoundStart = 0;
-            PfnFoundTotal = 0;
             continue;
         }
 
@@ -150,12 +147,9 @@ MmDmaAllocateBuffer(
 
         if ( PfnFoundTotal >= PfnRequested ) {
 
-            *LogicalAddress = MmPfnDatabase[ PfnFoundStart ].PageFrameNumber << 12;
-            *VirtualAddress = ( ULONG64 )MmMapIoSpaceSpecifyCache(
-                MmPfnDatabase[ PfnFoundStart ].PageFrameNumber << 12,
-                Length,
-                AdapterObject->CacheMode );
-
+            // should never be allocated or touched anyways 
+            // especially not by MmMapIoSpaceSpecifyCache
+            // but i think it is being ? TODO: fix
             while ( PfnFoundTotal-- ) {
 
                 MmChangePfnVaType( MmPfnDatabase + PfnFoundStart + PfnFoundTotal,
@@ -164,10 +158,14 @@ MmDmaAllocateBuffer(
                 MmPfnDatabase[ PfnFoundStart + PfnFoundTotal ].ReferenceCount++;
             }
 
+            *LogicalAddress = MmPfnDatabase[ PfnFoundStart ].PageFrameNumber << 12;
+            *VirtualAddress = ( ULONG64 )MmMapIoSpaceSpecifyCache(
+                MmPfnDatabase[ PfnFoundStart ].PageFrameNumber << 12,
+                Length,
+                AdapterObject->CacheMode );
+
             return STATUS_SUCCESS;
         }
-
-
     }
 
     while ( PfnFoundTotal-- ) {

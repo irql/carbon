@@ -17,7 +17,7 @@ MM_PFN_LIST MmModifiedPageListHead = { 0 };
 
 VOID
 MmChangePfnVaType(
-    _In_ PMM_PFN   Pfn,
+    _In_ PMM_PFN    Pfn,
     _In_ MM_VA_TYPE Type
 )
 {

@@ -25,7 +25,7 @@ DriverLoad(
     IO_STATUS_BLOCK Iosb;
     OBJECT_ATTRIBUTES ObjectAttributes = { 0 };
     BIOS_PARAMETER_BLOCK Bpb;
-    PDISK_OBJECT_HEADER Header;
+    PKDISK_HEADER Header;
     ULONG64 DiskCount;
     ULONG64 CurrentPart;
     UNICODE_STRING DriveLetterName;

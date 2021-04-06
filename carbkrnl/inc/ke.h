@@ -343,3 +343,23 @@ NTSTATUS
 NtReleaseMutex(
     _In_ HANDLE MutexHandle
 );
+
+NTSYSAPI
+VOID
+KeInitializeSemaphore(
+    _In_ PKSEMAPHORE Semaphore,
+    _In_ LONG64      Limit,
+    _In_ LONG64      Count
+);
+
+NTSYSAPI
+VOID
+KeAcquireSemaphore(
+    _In_ PKSEMAPHORE Semaphore
+);
+
+NTSYSAPI
+VOID
+KeReleaseSemaphore(
+    _In_ PKSEMAPHORE Semaphore
+);

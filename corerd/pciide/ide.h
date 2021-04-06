@@ -7,61 +7,9 @@
 
 typedef struct _KIDE_CHANNEL *PKIDE_CHANNEL;
 typedef struct _KIDE_CONTROL *PKIDE_CONTROL;
-typedef union _KIDE_IDENTITY *PKIDE_IDENTITY;
 typedef struct _KIDE_DEVICE *PKIDE_DEVICE;
 
 #pragma pack(push, 1)
-
-//move.
-typedef struct _DISK_GEOMETRY {
-    ULONG64 SectorSize;
-    ULONG64 Cylinders;
-    ULONG64 Heads;
-    ULONG64 SectorsPerTrack;
-} DISK_GEOMETRY, *PDISK_GEOMETRY;
-
-typedef union _KIDE_IDENTITY {
-    struct {
-        USHORT Buffer[ 256 ];
-    };
-
-    struct {
-
-        USHORT DeviceType;
-        USHORT Cylinders;
-        USHORT SpecificConfirguration;
-        USHORT Heads;
-        UCHAR Reserved[ 4 ];
-        USHORT SectorsPerTrack;
-        UCHAR Reserved1[ 6 ];
-        UCHAR SerialNumber[ 20 ];
-        UCHAR Reserved2[ 6 ];
-        UCHAR FirmwareRevision[ 8 ];
-        //UCHAR ModelNumber[ 40 ];
-        USHORT ModelNumber[ 20 ];
-        UCHAR Reserved3[ 4 ];
-
-        ULONG Capabilities;
-        UCHAR Reserved4[ 6 ];
-        USHORT CurrentLogicalCylinders;
-        USHORT CurrentLogicalHeads;
-        USHORT CurrentLogicalSectorsPerTrack;
-        ULONG CurrentCapacityInSectors;
-        UCHAR Reserved5[ 2 ];
-        ULONG MaxLogicalBlockAddress;//0x0FFFFFFF
-        UCHAR Reserved6[ 36 ];
-        USHORT MajorVersionNumber;
-        USHORT MinorVersionNumber;
-
-        ULONG CommandSets1;
-        ULONG CommandSets2;
-        ULONG CommandSets3;
-
-        UCHAR Reserved7[ 24 ];
-
-        ULONG64 MaxLogicalBlockAddressExt; //&0x0000FFFFFFFFFFFF 
-    };
-} KIDE_IDENTITY, *PKIDE_IDENTITY;
 
 //http://bswd.com/idems100.pdf
 typedef struct _BM_PRDT_ENTRY {
@@ -100,14 +48,16 @@ typedef struct _KIDE_CONTROL {
 #define IDE_LBA48   0x04
 #define IDE_DMA     0x08
 
+#define IDE_DEV_ATA     0x00
+#define IDE_DEV_ATAPI   0x01
+
 typedef struct _KIDE_DEVICE {
-    DISK_OBJECT_HEADER Header;
+    KDISK_HEADER Header;
 
-    UCHAR              Zero : 1;
-    UCHAR              Packet : 1;
-    UCHAR              Drive : 1;
-    UCHAR              Flags : 5;
 
+    BOOLEAN            Master;
+    ULONG64            Type;
+    ULONG64            Flags;
     ULONG64            SectorCount;
 
     NTSTATUS           BootStatus;
@@ -115,7 +65,7 @@ typedef struct _KIDE_DEVICE {
 
     DISK_GEOMETRY      Geometry;
 
-    KIDE_IDENTITY      Identity;
+    KATA_IDENTITY      Identity;
     PKIDE_CHANNEL      Channel;
     PKIDE_CONTROL      Control;
     KMUTEX             Lock;
@@ -172,24 +122,6 @@ typedef struct _KIDE_DEVICE {
 #define ATA_CMD_PACKET          0xA0
 #define ATA_CMD_IDENTIFY_PACKET 0xA1
 #define ATA_CMD_IDENTIFY        0xEC
-
-#define ATA_SR_BSY              0x80// Busy
-#define ATA_SR_DRDY             0x40// Drive ready
-#define ATA_SR_DF               0x20// Drive write fault
-#define ATA_SR_DSC              0x10// Drive seek complete
-#define ATA_SR_DRQ              0x08// Data request ready
-#define ATA_SR_CORR             0x04// Corrected Value
-#define ATA_SR_IDX              0x02// Index
-#define ATA_SR_ERR              0x01// Status
-
-#define ATA_ER_BBK              0x80// Bad block
-#define ATA_ER_UNC              0x40// Uncorrectable Value
-#define ATA_ER_MC               0x20// Media changed
-#define ATA_ER_IDNF             0x10// ID mark not found
-#define ATA_ER_MCR              0x08// Media change request
-#define ATA_ER_ABRT             0x04// Command aborted
-#define ATA_ER_TK0NF            0x02// Track 0 not found
-#define ATA_ER_AMNF             0x01// No address mark
 
 FORCEINLINE
 VOID
@@ -277,7 +209,7 @@ IdeInitializeDevice(
     _In_ PDEVICE_OBJECT PciDevice,
     _In_ PKIDE_CONTROL  Control,
     _In_ PKIDE_CHANNEL  Channel,
-    _In_ UCHAR          Drive,
+    _In_ BOOLEAN        Master,
     _In_ PKEVENT        IrqEvent,
     _In_ PKMUTEX        IrqLock
 );

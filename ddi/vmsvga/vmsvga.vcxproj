@@ -111,7 +111,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>carbkrnl.lib;kdcom.lib;pci.lib;dxgi.lib</AdditionalDependencies>
+      <AdditionalDependencies>carbkrnl.lib;pci.lib;dxgi.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ManifestFile />
       <AllowIsolation />

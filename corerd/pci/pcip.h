@@ -1,10 +1,7 @@
-
+﻿
 
 
 #pragma once
-
-#define PCI_CONFIG_ADDRESS          0xCF8
-#define PCI_CONFIG_DATA             0xCFC
 
 #define PCI_MAX_BUSES               0x100
 #define PCI_MAX_DEVICES             0x20
@@ -37,13 +34,6 @@
 #define PCI_CLASS_CODE_NON_ESSENTIAL_INSTRUMENTATION            0x13
 #define PCI_CLASS_CODE_CO_PROCESSOR                             0x40
 #define PCI_CLASS_CODE_UNASSIGNED_CLASS                         0xff
-
-#define PCI_GET_ADDRESS( device, offset ) \
-( ( ULONG32 )( device )->Bus << 16 ) | \
-( ( ULONG32 )( device )->Device << 11 ) | \
-( ( ULONG32 )( device )->Function << 8 ) | \
-( ( ULONG32 )( offset ) & ~3 ) | ( 1 << 31 )
-
 
 typedef union _PCI_BAR {
     struct {
@@ -140,73 +130,3 @@ typedef struct _PCI_CARDBUS_BRIDGE_DEVICE {
 } PCI_CARDBUS_BRIDGE_DEVICE, *PPCI_CARDBUS_BRIDGE_DEVICE;
 
 #pragma pack(pop)
-
-FORCEINLINE
-UCHAR
-PciRead8(
-    _In_ PPCI_DEVICE Device,
-    _In_ ULONG32     Offset
-)
-{
-    __outdword( PCI_CONFIG_ADDRESS, PCI_GET_ADDRESS( Device, Offset ) );
-    return __inbyte( PCI_CONFIG_DATA + ( Offset & 3 ) );
-}
-
-FORCEINLINE
-USHORT
-PciRead16(
-    _In_ PPCI_DEVICE Device,
-    _In_ ULONG32     Offset
-)
-{
-    __outdword( PCI_CONFIG_ADDRESS, PCI_GET_ADDRESS( Device, Offset ) );
-    return __inword( PCI_CONFIG_DATA + ( Offset & 2 ) );
-}
-
-FORCEINLINE
-ULONG32
-PciRead32(
-    _In_ PPCI_DEVICE Device,
-    _In_ ULONG32     Offset
-)
-{
-    __outdword( PCI_CONFIG_ADDRESS, PCI_GET_ADDRESS( Device, Offset ) );
-    return __indword( PCI_CONFIG_DATA );
-}
-
-FORCEINLINE
-VOID
-PciWrite8(
-    _In_ PPCI_DEVICE Device,
-    _In_ ULONG32     Offset,
-    _In_ UCHAR       Value
-)
-{
-    __outdword( PCI_CONFIG_ADDRESS, PCI_GET_ADDRESS( Device, Offset ) );
-    __outbyte( PCI_CONFIG_DATA + ( Offset & 3 ), Value );
-}
-
-FORCEINLINE
-VOID
-PciWrite16(
-    _In_ PPCI_DEVICE Device,
-    _In_ ULONG32     Offset,
-    _In_ USHORT      Value
-)
-{
-    __outdword( PCI_CONFIG_ADDRESS, PCI_GET_ADDRESS( Device, Offset ) );
-    __outword( PCI_CONFIG_DATA + ( Offset & 2 ), Value );
-}
-
-FORCEINLINE
-VOID
-PciWrite32(
-    _In_ PPCI_DEVICE Device,
-    _In_ ULONG32     Offset,
-    _In_ ULONG32     Value
-)
-{
-    __outdword( PCI_CONFIG_ADDRESS, PCI_GET_ADDRESS( Device, Offset ) );
-    __outdword( PCI_CONFIG_DATA, Value );
-}
-

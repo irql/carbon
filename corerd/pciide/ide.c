@@ -22,7 +22,7 @@ IdeIrqService(
 
     //RtlDebugPrint( L"IrqEvent\n" );
     KeSignalEvent( IrqEvent, TRUE );
-    return TRUE;
+    return FALSE;
 }
 
 BOOLEAN
@@ -31,13 +31,11 @@ IdeInitializeDevice(
     _In_ PDEVICE_OBJECT PciDevice,
     _In_ PKIDE_CONTROL  Control,
     _In_ PKIDE_CHANNEL  Channel,
-    _In_ UCHAR          Drive,
+    _In_ BOOLEAN        Master,
     _In_ PKEVENT        IrqEvent,
     _In_ PKMUTEX        IrqLock
 )
 {
-    STATIC ULONG64 Harddisk = 0;
-
     UCHAR Status;
     ULONG32 CurrentWord;
     BOOLEAN Packet;
@@ -45,11 +43,11 @@ IdeInitializeDevice(
     PDEVICE_OBJECT DriveDevice;
     UNICODE_STRING DriveName;
 
-    Packet = FALSE;
+    Packet = IDE_DEV_ATA;
 
     IdeWrite( Channel, ATA_REG_CONTROL, 2 );
 
-    IdeWrite( Channel, ATA_REG_HDDEVSEL, 0x80 | 0x20 | ( Drive << 4 ) );
+    IdeWrite( Channel, ATA_REG_HDDEVSEL, 0x80 | 0x20 | ( Master << 4 ) );
     IdeWrite( Channel, ATA_REG_COMMAND, ATA_CMD_IDENTIFY );
 
     if ( IdeRead( Channel, ATA_REG_STATUS ) == 0 ) {
@@ -86,14 +84,14 @@ IdeInitializeDevice(
     IoCreateDevice( DriverObject,
                     sizeof( KIDE_DEVICE ),
                     &DriveName,
-                    DEV_BUFFERED_IO,
+                    0,
                     &DriveDevice );
 
-    IoAttachDevice( PciDevice, DriveDevice );
+    //IoAttachDevice( PciDevice, DriveDevice );
 
     Ide = DriveDevice->DeviceExtension;
-    Ide->Packet = Packet;
-    Ide->Drive = Drive;
+    Ide->Type = IDE_DEV_ATAPI;
+    Ide->Master = Master;
     Ide->Control = Control;
     Ide->Channel = Channel;
     KeInitializeMutex( &Ide->Lock );
@@ -105,7 +103,7 @@ IdeInitializeDevice(
     for ( CurrentWord = 0; CurrentWord < 20; CurrentWord++ ) {
         Ide->Identity.ModelNumber[ CurrentWord ] = _byteswap_ushort( Ide->Identity.ModelNumber[ CurrentWord ] );
     }
-    Ide->Identity.ModelNumber[ 19 ] &= 0xFF;
+    Ide->Identity.ModelNumber[ 19 ] = 0;
 
     if ( ( Ide->Identity.CommandSets1 & ( 1 << 26 ) ) == ( 1 << 26 ) ) {
         Ide->Flags |= IDE_LBA48;
@@ -161,8 +159,6 @@ IdeInitializeDevice(
 
     DriveDevice->DeviceCharacteristics &= ~DEV_INITIALIZING;
 
-    Harddisk++;
-
     return TRUE;
 }
 
@@ -182,7 +178,7 @@ IdeAccess(
 
     if ( Length % 0x200 != 0 ) {
 
-        return STATUS_INVALID_ADDRESS;
+        return STATUS_INVALID_BUFFER;
     }
 
     Length /= 0x200;
@@ -338,8 +334,8 @@ IdeAccessInternal(
 
     KeAcquireMutex( &Ide->Lock );
 
-    //while ( IdeRead( Ide->Channel, ATA_REG_STATUS ) & ATA_SR_BSY )
-    //    ;
+    while ( IdeRead( Ide->Channel, ATA_REG_STATUS ) & ATA_SR_BSY )
+        ;
 
     if ( Ide->Flags & IDE_DMA ) {
 
@@ -366,7 +362,7 @@ IdeAccessInternal(
         IdeWrite( Ide->Channel, ATA_REG_CONTROL, 2 );
     }
 
-    IdeWrite( Ide->Channel, ATA_REG_HDDEVSEL, 0x80 | 0x20 | ( Ide->Drive << 4 ) | Head | ( Ide->Flags & IDE_CHS ? 0 : 0x40 ) );//( 0x40 * ( ( Ide->Flags & IDE_CHS ) == 0 ) ) );
+    IdeWrite( Ide->Channel, ATA_REG_HDDEVSEL, 0x80 | 0x20 | ( Ide->Master << 4 ) | Head | ( Ide->Flags & IDE_CHS ? 0 : 0x40 ) );//( 0x40 * ( ( Ide->Flags & IDE_CHS ) == 0 ) ) );
 
     if ( Ide->Flags & IDE_LBA48 ) {
 

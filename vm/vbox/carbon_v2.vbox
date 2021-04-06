@@ -6,10 +6,10 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.virtualbox.org/" version="1.17-windows">
-  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-04-04T02:09:41Z">
+  <Machine uuid="{c0599978-5e04-42e5-a97a-31f252b93690}" name="carbon_v2" OSType="Other_64" snapshotFolder="Snapshots" lastStateChange="2021-04-06T21:39:39Z">
     <ExtraData>
       <ExtraDataItem name="GUI/LastCloseAction" value="PowerOff"/>
-      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="1012,232,640,522"/>
+      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="1456,273,640,525"/>
       <ExtraDataItem name="GUI/LastScaleWindowPosition" value="640,280,640,480"/>
     </ExtraData>
     <Hardware>
@@ -20,7 +20,7 @@
         <HardwareVirtExLargePages enabled="true"/>
       </CPU>
       <Memory RAMSize="1024"/>
-      <Display controller="VMSVGA" VRAMSize="128"/>
+      <Display VRAMSize="128"/>
       <VideoCapture screens="1" file="." fps="25"/>
       <BIOS>
         <IOAPIC enabled="true"/>
@@ -42,14 +42,16 @@
       <AudioAdapter driver="DirectSound" enabled="true" enabledOut="true"/>
       <Clipboard/>
       <GuestProperties>
-        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="en_US" timestamp="1617391267205408200" flags=""/>
+        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="en_US" timestamp="1617745179526666800" flags=""/>
       </GuestProperties>
       <StorageControllers>
         <StorageController name="IDE" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
           <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
             <Image uuid="{26f359b3-a3d5-4d19-9b1b-4ff49beedba8}"/>
           </AttachedDevice>
-          <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="1">
+        </StorageController>
+        <StorageController name="AHCI" type="AHCI" PortCount="1" useHostIOCache="false" Bootable="true" IDE0MasterEmulationPort="0" IDE0SlaveEmulationPort="1" IDE1MasterEmulationPort="2" IDE1SlaveEmulationPort="3">
+          <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
             <Image uuid="{232dc224-63b3-45af-bdef-f122decea5cd}"/>
           </AttachedDevice>
         </StorageController>

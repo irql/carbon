@@ -61,28 +61,28 @@ IdeDevice(
                          DeviceObject,
                          Control,
                          &Control->Primary,
-                         0,
+                         FALSE,
                          &IdeIrqEventPrimary,
                          &IdeIrqLockPrimary );
     IdeInitializeDevice( DriverObject,
                          DeviceObject,
                          Control,
                          &Control->Primary,
-                         1,
+                         TRUE,
                          &IdeIrqEventPrimary,
                          &IdeIrqLockPrimary );
     IdeInitializeDevice( DriverObject,
                          DeviceObject,
                          Control,
                          &Control->Secondary,
-                         0,
+                         FALSE,
                          &IdeIrqEventSecondary,
                          &IdeIrqLockSecondary );
     IdeInitializeDevice( DriverObject,
                          DeviceObject,
                          Control,
                          &Control->Secondary,
-                         1,
+                         TRUE,
                          &IdeIrqEventSecondary,
                          &IdeIrqLockSecondary );
 
@@ -157,9 +157,6 @@ DriverDispatch(
     _In_ PIRP           Request
 )
 {
-    DeviceObject;
-    //RtlDebugPrint( L"[pciide] dispatch.\n" );
-
     PIO_STACK_LOCATION Current;
     PKIDE_DEVICE Ide;
 
@@ -197,12 +194,11 @@ DriverDispatch(
         }
         else {
             //RtlDebugPrint( L"[pciide] offset: %d\n", Current->Parameters.Read.Offset / 512 );
-            Request->IoStatus.Status = IdeAccess(
-                DeviceObject,
-                Current->MajorFunction == IRP_MJ_WRITE,
-                Current->Parameters.Read.Offset / 512,
-                Current->Parameters.Read.Length,
-                Request->SystemBuffer1 );
+            Request->IoStatus.Status = IdeAccess( DeviceObject,
+                                                  Current->MajorFunction == IRP_MJ_WRITE,
+                                                  Current->Parameters.Read.Offset / 512,
+                                                  Current->Parameters.Read.Length,
+                                                  Request->SystemBuffer1 );
             Request->IoStatus.Information = NT_SUCCESS( Request->IoStatus.Status ) ? Current->Parameters.Read.Length : 0;
         }
 
