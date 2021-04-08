@@ -577,7 +577,7 @@ typedef struct _IO_STATUS_BLOCK {
     ULONG64  Information;
 } IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
 
-#define FILE_SUPERSED                   1
+#define FILE_SUPERSEDE                  1
 #define FILE_CREATE                     2
 #define FILE_OPEN                       3
 #define FILE_OPEN_IF                    4

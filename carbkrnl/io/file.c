@@ -50,7 +50,7 @@ IopRemoveFileObject(
 }
 
 NTSTATUS
-IopSearchFileObject(
+IopFindCachedFileObject(
     _Out_ PIO_FILE_OBJECT* FileObject,
     _In_  PDEVICE_OBJECT   DeviceObject,
     _In_  PUNICODE_STRING  FileName,
@@ -106,6 +106,56 @@ IopSearchFileObject(
                 KeReleaseSpinLock( &IopFileListLock, PreviousIrql );
                 return STATUS_ACCESS_DENIED;
             }
+        }
+
+    } while ( Flink != IopFileList );
+
+    KeReleaseSpinLock( &IopFileListLock, PreviousIrql );
+    return STATUS_NOT_FOUND;
+}
+
+NTSTATUS
+IoFindCachedFileObject(
+    _Out_ PIO_FILE_OBJECT* FileObject,
+    _In_  PDEVICE_OBJECT   DeviceObject,
+    _In_  PWSTR            FileName
+)
+{
+    KIRQL PreviousIrql;
+    PLIST_ENTRY Flink;
+    PIO_FILE_OBJECT CurrentFileObject;
+
+    //
+    // File system drivers might want to call this to update
+    // FsContext1 structures or other information when a 
+    // file is changed. 
+    //
+
+    KeAcquireSpinLock( &IopFileListLock, &PreviousIrql );
+
+    Flink = IopFileList;
+    do {
+        CurrentFileObject = CONTAINING_RECORD( Flink, IO_FILE_OBJECT, FileList );
+        Flink = Flink->Flink;
+
+        if ( DeviceObject != CurrentFileObject->DeviceObject ) {
+
+            continue;
+        }
+
+        if ( ( FileName == NULL && CurrentFileObject->FileName.Buffer != NULL ) ||
+            ( FileName != NULL && CurrentFileObject->FileName.Buffer == NULL ) ) {
+
+            continue;
+        }
+
+        if ( ( CurrentFileObject->FileName.Buffer == NULL && FileName == NULL ) ||
+             RtlCompareString( CurrentFileObject->FileName.Buffer, FileName, TRUE ) ) {
+
+            ObReferenceObject( CurrentFileObject );
+            *FileObject = CurrentFileObject;
+            KeReleaseSpinLock( &IopFileListLock, PreviousIrql );
+            return STATUS_SUCCESS;
         }
 
     } while ( Flink != IopFileList );
@@ -290,11 +340,11 @@ ZwCreateFile(
         return ntStatus;
     }
 
-    ntStatus = IopSearchFileObject( &FileObject,
-                                    DeviceObject,
-                                    &ObjectAttributes->RootDirectory,
-                                    DesiredAccess,
-                                    ShareAccess );
+    ntStatus = IopFindCachedFileObject( &FileObject,
+                                        DeviceObject,
+                                        &ObjectAttributes->RootDirectory,
+                                        DesiredAccess,
+                                        ShareAccess );
     if ( ntStatus != STATUS_NOT_FOUND &&
          !NT_SUCCESS( ntStatus ) ) {
 
@@ -368,6 +418,15 @@ ZwCreateFile(
 
     ObDereferenceObject( Request->Process );
     ObDereferenceObject( Request->Thread );
+#if 0
+    if ( !NT_SUCCESS( Request->IoStatus.Status ) ) {
+
+        IoFreeIrp( Request );
+        ObDereferenceObject( FileObject );
+        ZwClose( *FileHandle );
+        return STATUS_UNSUCCESSFUL;
+    }
+#endif
 
     IoFreeIrp( Request );
     ObDereferenceObject( FileObject );
@@ -398,6 +457,7 @@ NtCreateFile(
                              Disposition,
                              ShareAccess,
                              CreateOptions );
+
     }
     __except ( EXCEPTION_EXECUTE_HANDLER ) {
 

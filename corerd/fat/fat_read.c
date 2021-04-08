@@ -140,7 +140,6 @@ FspBuildChainFromFile(
     if ( Type == Path8Dot3 ) {
 
         FspConvertPathTo8Dot3( FileName, FileName8Dot3 );
-
         FatFile = FspFindDirectoryFile( Directory, Type, FileName8Dot3 );
     }
     else if ( Type == PathLongFileName ) {
@@ -348,7 +347,7 @@ FsQueryIndexFile(
         }
 
         if ( Directory[ CurrentEntry ].Short.Attributes == FAT32_LFN &&
-             Directory[ CurrentEntry ].Long.OrderOfEntry != 1 ) {
+            ( Directory[ CurrentEntry ].Long.OrderOfEntry & ~( UCHAR )FAT32_LAST_LFN_ENTRY ) != 1 ) {
 
             continue;
         }

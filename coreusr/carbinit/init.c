@@ -15,19 +15,11 @@ NtProcessStartup(
 
     IO_STATUS_BLOCK StatusBlock;
     CHAR Buffer[ 256 ] = { 0 };
-    HANDLE FileHandle = CreateFileW( L"C:\\SYSTEM\\HI.TXT",
+    HANDLE FileHandle = CreateFileW( L"C:\\SYSTEM\\POGGER.PHP",
                                      GENERIC_ALL,
                                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                                     FILE_OPEN_IF,
+                                     FILE_CREATE,
                                      FILE_NON_DIRECTORY_FILE );
-
-    NtReadFile( FileHandle,
-                INVALID_HANDLE_VALUE,
-                NULL,
-                Buffer,
-                256,
-                0 );
-    RtlDebugPrint( L"hi.txt reads: %as\n", Buffer );
 
     NtWriteFile( FileHandle,
                  INVALID_HANDLE_VALUE,
@@ -42,7 +34,7 @@ NtProcessStartup(
                 Buffer,
                 256,
                 0 );
-    RtlDebugPrint( L"hi.txt reads: %as\n", Buffer );
+    RtlDebugPrint( L"POGGER.PHP reads: %as\n", Buffer );
 
     while ( TRUE ) {
 
@@ -274,7 +266,7 @@ NtProcessStartup(
 
             NtGetWindowProc( ListViewHandle, &WndProc );
             WndProc( ListViewHandle, Message.MessageId, Message.Param1, Message.Param2 );
-}
+        }
     }
 #endif
 }

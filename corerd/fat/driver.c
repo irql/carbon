@@ -192,6 +192,43 @@ DriverDispatch(
         Request->FileObject->FsContext1 = MmAllocatePoolWithTag( NonPagedPool,
                                                                  sizeof( FAT_FILE_CONTEXT ),
                                                                  FAT_TAG );
+#if 1
+        switch ( Current->Parameters.Create.Disposition ) {
+        case FILE_OPEN_IF:
+            Request->IoStatus.Status = FsOpenFat32File( DeviceObject, Request );
+            break;
+        case FILE_OPEN:
+            Request->IoStatus.Status = FsOpenFat32File( DeviceObject, Request );
+
+            if ( !NT_SUCCESS( Request->IoStatus.Status ) ) {
+
+                RtlDebugPrint( L"Success: %ul %s\n",
+                               Request->IoStatus.Status,
+                               Request->FileObject->FileName.Buffer );
+                Request->IoStatus.Status = FsCreateFat32File( DeviceObject, Request );
+            }
+            break;
+        case FILE_CREATE:
+            Request->IoStatus.Status = FsCreateFat32File( DeviceObject, Request );
+            RtlDebugPrint( L"Success: %ul %s\n",
+                           Request->IoStatus.Status,
+                           Request->FileObject->FileName.Buffer );
+            break;
+        case FILE_SUPERSEDE:
+        case FILE_OVERWRITE:
+        case FILE_OVERWRITE_IF:
+        default:
+            Request->IoStatus.Status = FsOpenFat32File( DeviceObject, Request );;
+            break;
+        }
+
+        if ( !NT_SUCCESS( Request->IoStatus.Status ) ) {
+
+            //MmFreePoolWithTag( Request->FileObject->FsContext1, FAT_TAG );
+            //Request->FileObject->FsContext1 = NULL;
+        }
+#endif
+
         Request->IoStatus.Status = FsOpenFat32File( DeviceObject, Request );
         break;
     case IRP_MJ_READ:
@@ -320,7 +357,11 @@ DriverDispatch(
         break;
     case IRP_MJ_CLEANUP:
 
-        MmFreePoolWithTag( Request->FileObject->FsContext1, FAT_TAG );
+        if ( Request->FileObject->FsContext1 != NULL ) {
+
+            MmFreePoolWithTag( Request->FileObject->FsContext1, FAT_TAG );
+        }
+
         Request->IoStatus.Status = STATUS_SUCCESS;
         Request->IoStatus.Information = 0;
 

@@ -127,17 +127,21 @@ FspAllocateCluster(
 
     FatSector = Fat->FatHint / 128;
     FatSectorIndex = Fat->FatHint % 128;
-    FatSectorParent = Parent / 128;
-    FatSectorIndexParent = Parent % 128;
 
-    ntStatus = FspReadSectors( DeviceObject->DeviceLink,
-                               &FatTableParent,
-                               1,
-                               Fat->Bpb.Dos2_00Bpb.ReservedSectors + FatSectorParent );
+    if ( Parent != 0 ) {
 
-    if ( !NT_SUCCESS( ntStatus ) ) {
+        FatSectorParent = Parent / 128;
+        FatSectorIndexParent = Parent % 128;
 
-        return ntStatus;
+        ntStatus = FspReadSectors( DeviceObject->DeviceLink,
+                                   &FatTableParent,
+                                   1,
+                                   Fat->Bpb.Dos2_00Bpb.ReservedSectors + FatSectorParent );
+
+        if ( !NT_SUCCESS( ntStatus ) ) {
+
+            return ntStatus;
+        }
     }
 
     while ( FatSector < Fat->Bpb.Dos7_01Bpb.SectorsPerFat ) {
@@ -156,10 +160,43 @@ FspAllocateCluster(
 
             if ( ( FatTable[ FatSectorIndex ] & 0x0FFFFFFF ) == 0 ) {
 
-                FatTableParent[ FatSectorIndexParent ] &= 0x0FFFFFFF;
-                FatTableParent[ FatSectorIndexParent ] |= FatSector * 128 + FatSectorIndex;
+                if ( Parent != 0 ) {
 
-                FatTable[ FatSectorIndex ] = FAT32_END_OF_CHAIN;
+                    FatTableParent[ FatSectorIndexParent ] &= 0x0FFFFFFF;
+                    FatTableParent[ FatSectorIndexParent ] |= FatSector * 128 + FatSectorIndex;
+
+                    if ( FatSectorParent == FatSector ) {
+
+                        FatTableParent[ FatSectorIndex ] |= FAT32_END_OF_CHAIN;
+
+                        FspWriteSectors( DeviceObject->DeviceLink,
+                                         &FatTableParent,
+                                         1,
+                                         Fat->Bpb.Dos2_00Bpb.ReservedSectors + FatSectorParent );
+                    }
+                    else {
+                        FspWriteSectors( DeviceObject->DeviceLink,
+                                         &FatTableParent,
+                                         1,
+                                         Fat->Bpb.Dos2_00Bpb.ReservedSectors + FatSectorParent );
+
+                        FatTable[ FatSectorIndex ] |= FAT32_END_OF_CHAIN;
+
+                        FspWriteSectors( DeviceObject->DeviceLink,
+                                         &FatTable,
+                                         1,
+                                         Fat->Bpb.Dos2_00Bpb.ReservedSectors + FatSector );
+                    }
+                }
+                else {
+
+                    FatTable[ FatSectorIndex ] |= FAT32_END_OF_CHAIN;
+
+                    FspWriteSectors( DeviceObject->DeviceLink,
+                                     &FatTable,
+                                     1,
+                                     Fat->Bpb.Dos2_00Bpb.ReservedSectors + FatSector );
+                }
 
                 *Next = FatSector * 128 + FatSectorIndex;
 
@@ -220,7 +257,7 @@ FspResizeChain(
         for ( CurrentEntry = 0; CurrentEntry < ChainLength; CurrentEntry++ ) {
 
             ntStatus = FspAllocateCluster( DeviceObject,
-                                           NewChain[ Chain->ChainLength + CurrentEntry - 1 ],
+                                           Chain->ChainLength + CurrentEntry > 0 ? NewChain[ Chain->ChainLength + CurrentEntry - 1 ] : 0,
                                            &NewChain[ Chain->ChainLength + CurrentEntry ] );
             if ( !NT_SUCCESS( ntStatus ) ) {
 

@@ -586,3 +586,11 @@ NtWriteFile(
     _In_    ULONG64          Length,
     _In_    ULONG64          Offset
 );
+
+NTSYSAPI
+NTSTATUS
+IoFindCachedFileObject(
+    _Out_ PIO_FILE_OBJECT* FileObject,
+    _In_  PDEVICE_OBJECT   DeviceObject,
+    _In_  PWSTR            FileName
+);

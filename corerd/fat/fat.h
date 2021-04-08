@@ -112,6 +112,8 @@ typedef union _FAT_DIRECTORY {
     } Long;
 } FAT_DIRECTORY, *PFAT_DIRECTORY;
 
+C_ASSERT( sizeof( FAT_DIRECTORY ) == 0x20 );
+
 typedef struct _FAT32_FILE_SYSTEM_INFO {
     ULONG       Signature;
     UCHAR       Reserved[ 480 ];
@@ -273,4 +275,17 @@ FspResizeChain(
     _In_ PDEVICE_OBJECT  DeviceObject,
     _In_ PFAT_FILE_CHAIN Chain,
     _In_ ULONG32         ChainLength
+);
+
+NTSTATUS
+FspAllocateCluster(
+    _In_  PDEVICE_OBJECT DeviceObject,
+    _In_  ULONG32        Parent,
+    _Out_ ULONG32*       Next
+);
+
+NTSTATUS
+FsCreateFat32File(
+    _In_ PDEVICE_OBJECT DeviceObject,
+    _In_ PIRP           Request
 );

@@ -37,7 +37,7 @@ FsFindLastDirectoryFile(
 }
 
 NTSTATUS
-FsCreateFat32DirectoryFile(
+FsCreateFat32File(
     _In_ PDEVICE_OBJECT DeviceObject,
     _In_ PIRP           Request
 )
@@ -54,8 +54,13 @@ FsCreateFat32DirectoryFile(
     FAT_FILE_CHAIN DirectoryChain;
     ULONG64 FreeEntry;
     FAT_PATH_TYPE Type;
-    ULONG64 Length;
-    ULONG64 Short;
+    //ULONG64 Length;
+    //ULONG64 Short;
+    ULONG32 InitialCluster;
+    CHAR FileName8Dot3[ 12 ];
+    //PIO_FILE_OBJECT CacheFileObject;
+    //PFAT_FILE_CONTEXT CacheFile;
+    WCHAR DirectoryFileBuffer[ 256 ] = { 0 };
 
     PFAT_FILE_CONTEXT File;
     PFAT_DEVICE Fat;
@@ -102,26 +107,66 @@ FsCreateFat32DirectoryFile(
             // This is the last file in the path parsing
             //
 
+            //
+            // IMPORTANT TODO: Need to find any file objects to the updated
+            // file/directory because they will have chains already built,
+            // these must be rebuilt to even see changes.
+            //
+            // Probably need to restructure the chain system because 
+            // directory file size must be updated.
+            //
+
             Type = FspValidateFileName( Decomposed[ Part ] );
 
             if ( Type == Path8Dot3 ) {
 
+                FspConvertPathTo8Dot3( Decomposed[ Part ], FileName8Dot3 );
+                FreeEntry = FspFindDirectoryFile( Directory, Type, FileName8Dot3 );
+
+                if ( FreeEntry != ~0ull ) {
+
+                    // 
+                    // File already exists, we shouldn't create it.
+                    //
+
+                    MmFreePoolWithTag( DirectoryChain.Chain, FAT_TAG );
+                    MmFreePoolWithTag( Directory, FAT_TAG );
+                    return STATUS_ALREADY_EXISTS;
+                }
+
                 FreeEntry = FsFindFreeDirectoryFile( Directory );
+                RtlZeroMemory( Directory + FreeEntry, sizeof( FAT_DIRECTORY ) );
 
-                FspConvertPathTo8Dot3( Decomposed[ Part ],
-                                       Directory[ FreeEntry ].Short.Name );
-                Directory[ FreeEntry ].Short.FileSize = 0;
-                // warning: cast truncates constant value - shut the fuck up.
-                Directory[ FreeEntry ].Short.ClusterLow = FAT32_END_OF_CHAIN & 0xFFFF;
-                Directory[ FreeEntry ].Short.ClusterHigh = ( FAT32_END_OF_CHAIN >> 16 ) & 0xFFFF;
+                RtlCopyMemory( Directory[ FreeEntry ].Short.Name,
+                               FileName8Dot3,
+                               11 );
+                Directory[ FreeEntry ].Short.FileSize = 4096;
 
-                Directory[ FreeEntry ].Short.Attributes = 0;
-                if ( File->Flags & FILE_FLAG_DIRECTORY )
-                    Directory[ FreeEntry ].Short.Attributes |= FAT32_DIRECTORY;
+                Directory[ FreeEntry ].Short.Attributes = FAT32_ARCHIVE;
+                // care about the CreateInfo
+                //if ( File->Flags & FILE_FLAG_DIRECTORY )
+                //    Directory[ FreeEntry ].Short.Attributes |= FAT32_DIRECTORY;
+
+                //
+                // Because i'm kinda lazy, i just initialize files to at least 
+                // have one cluster so my cluster chain system can work without having
+                // to worry about the directory cluster index.
+                //
+
+                FspAllocateCluster( DeviceObject,
+                                    0,
+                                    &InitialCluster );
+
+                Directory[ FreeEntry ].Short.ClusterLow = ( USHORT )( InitialCluster );
+                Directory[ FreeEntry ].Short.ClusterHigh = ( USHORT )( InitialCluster >> 16 );
 
             }
             else {
 
+                MmFreePoolWithTag( DirectoryChain.Chain, FAT_TAG );
+                MmFreePoolWithTag( Directory, FAT_TAG );
+                return STATUS_ACCESS_DENIED;
+#if 0
                 // not in the mood
                 NT_ASSERT( FALSE );
 
@@ -136,7 +181,44 @@ FsCreateFat32DirectoryFile(
                 Directory[ FreeEntry + Short ].Short.Attributes = 0;
                 if ( File->Flags & FILE_FLAG_DIRECTORY )
                     Directory[ FreeEntry + Short ].Short.Attributes |= FAT32_DIRECTORY;
+#endif
             }
+
+            //
+            // TODO: this driver doesn't handle directories which are larger 
+            // than a single cluster it would be trivial to implement.
+            //
+
+            FspWriteChain( DeviceObject,
+                           &DirectoryChain,
+                           Directory,
+                           512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,
+                           0 );
+
+#if 0
+            //
+            // We must make sure this directory isn't cached as a file object anywhere
+            // and if it, we must update its chain.
+            //
+            // if DirectoryFileBuffer is zero then its the root directory.
+            //
+
+            RtlDebugPrint( L"checking the fo cache: %s\n", DirectoryFileBuffer );
+
+            ntStatus = IoFindCachedFileObject( &CacheFileObject,
+                                               DeviceObject,
+                                               DirectoryFileBuffer );
+
+            if ( NT_SUCCESS( ntStatus ) ) {
+
+                CacheFile = FspFatFileContext( CacheFileObject );
+                CacheFile->FileChain
+            }
+            else {
+
+                MmFreePoolWithTag( DirectoryChain.Chain, FAT_TAG );
+            }
+#endif
         }
         else {
 
@@ -172,13 +254,18 @@ FsCreateFat32DirectoryFile(
                                      Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512,
                                      0u );
 
-            MmFreePoolWithTag( DirectoryChain.Chain, FAT_TAG );
+            if ( Decomposed[ Part + 2 ] != NULL ) {
+
+                MmFreePoolWithTag( DirectoryChain.Chain, FAT_TAG );
+            }
 
             if ( !NT_SUCCESS( ntStatus ) ) {
 
                 MmFreePoolWithTag( Directory, FAT_TAG );
                 return ntStatus;
             }
+
+            lstrcpyW( DirectoryFileBuffer, Decomposed[ Part ] );
         }
     }
 
@@ -215,11 +302,6 @@ FspWriteChain(
 
     if ( ChainLength > Chain->ChainLength ) {
 
-        //
-        // BUG: if the directory file points to no cluster, then this function will not
-        // set the parent cluster properly (well it cant, because it doesnt exist)
-        //
-
         FspResizeChain( DeviceObject,
                         Chain,
                         ChainLength );
@@ -246,6 +328,7 @@ FspWriteChain(
         }
         else {
 
+            RtlDebugPrint( L"Written %d (%d)\n", Chain->Chain[ ChainIndex ], ChainIndex );
             FspWriteSectors( DeviceObject->DeviceLink,
                              Buffer,
                              Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,
