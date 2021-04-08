@@ -117,10 +117,6 @@ typedef struct _IO_FILE_OBJECT {
 #define FILE_FLAG_ATTRIBUTE_SYSTEM      (0x00000002L)
 #define FILE_FLAG_ATTRIBUTE_READONLY    (0x00000004L)
 
-#define FILE_NON_DIRECTORY_FILE         (0x00000000L)
-#define FILE_DIRECTORY_FILE             (0x00000001L)
-#define FILE_DELETE_ON_CLOSE            (0x00000002L)
-
 typedef struct _IO_STACK_LOCATION {
     UCHAR MajorFunction;
     UCHAR MinorFunction;
@@ -568,4 +564,25 @@ NtQueryDirectoryFile(
     _In_  PUNICODE_STRING        FileName,
     _In_  ULONG64                FileIndex,
     _In_  BOOLEAN                SingleMode
+);
+
+NTSYSAPI
+NTSTATUS
+ZwWriteFile(
+    _In_    HANDLE           FileHandle,
+    _In_    HANDLE           EventHandle,
+    _Inout_ PIO_STATUS_BLOCK StatusBlock,
+    _Out_   PVOID            Buffer,
+    _In_    ULONG64          Length,
+    _In_    ULONG64          Offset
+);
+
+NTSTATUS
+NtWriteFile(
+    _In_    HANDLE           FileHandle,
+    _In_    HANDLE           EventHandle,
+    _Inout_ PIO_STATUS_BLOCK StatusBlock,
+    _Out_   PVOID            Buffer,
+    _In_    ULONG64          Length,
+    _In_    ULONG64          Offset
 );

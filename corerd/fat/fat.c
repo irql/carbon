@@ -210,7 +210,10 @@ FspResizeChain(
                                           FAT_TAG );
         OldChain = Chain->Chain;
 
-        RtlCopyMemory( NewChain, OldChain, Chain->ChainLength );
+        if ( Chain->ChainLength > 0 ) {
+
+            RtlCopyMemory( NewChain, OldChain, Chain->ChainLength );
+        }
 
         ChainLength -= Chain->ChainLength;
 
@@ -230,7 +233,11 @@ FspResizeChain(
             }
         }
 
-        MmFreePoolWithTag( OldChain, FAT_TAG );
+        if ( Chain->ChainLength > 0 ) {
+
+            MmFreePoolWithTag( OldChain, FAT_TAG );
+        }
+
         Chain->Chain = NewChain;
         Chain->ChainLength += ChainLength;
     }

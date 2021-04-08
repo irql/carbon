@@ -504,6 +504,103 @@ NtReadFile(
 }
 
 NTSTATUS
+ZwWriteFile(
+    _In_    HANDLE           FileHandle,
+    _In_    HANDLE           EventHandle,
+    _Inout_ PIO_STATUS_BLOCK StatusBlock,
+    _Out_   PVOID            Buffer,
+    _In_    ULONG64          Length,
+    _In_    ULONG64          Offset
+)
+{
+    //
+    // lol looks awfully similar to the function above
+    //
+
+    NTSTATUS ntStatus;
+    PIRP Request;
+    PIO_FILE_OBJECT FileObject;
+    PKEVENT Event;
+
+    ntStatus = ObReferenceObjectByHandle( &FileObject,
+                                          FileHandle,
+                                          GENERIC_WRITE,
+                                          KernelMode,
+                                          IoFileObject );
+    if ( !NT_SUCCESS( ntStatus ) ) {
+
+        return ntStatus;
+    }
+
+    Event = NULL;
+
+    if ( EventHandle != 0 ) {
+        ntStatus = ObReferenceObjectByHandle( &Event,
+                                              EventHandle,
+                                              0,
+                                              KernelMode,
+                                              KeEventObject );
+        if ( !NT_SUCCESS( ntStatus ) ) {
+
+            ObDereferenceObject( FileObject );
+            return ntStatus;
+        }
+
+        KeSignalEvent( Event, FALSE );
+    }
+
+    Request = IoBuildSynchronousFsdRequest( FileObject->DeviceObject,
+                                            IRP_MJ_WRITE,
+                                            Buffer,
+                                            Length,
+                                            Offset,
+                                            Event,
+                                            StatusBlock );
+    Request->FileObject = FileObject;
+
+    if ( FileObject->Access & SYNCHRONIZE ) {
+
+        ntStatus = IoCallDriver( Request->DeviceObject, Request );
+
+        ObDereferenceObject( Request->Process );
+        ObDereferenceObject( Request->Thread );
+
+        IoFreeIrp( Request );
+        ObDereferenceObject( FileObject );
+    }
+    else {
+        RtlDebugPrint( L"ASYNC WRITE REQUEST.\n" );
+        IopEnqueueRequest( Request );
+    }
+
+    return ntStatus;
+}
+
+NTSTATUS
+NtWriteFile(
+    _In_    HANDLE           FileHandle,
+    _In_    HANDLE           EventHandle,
+    _Inout_ PIO_STATUS_BLOCK StatusBlock,
+    _Out_   PVOID            Buffer,
+    _In_    ULONG64          Length,
+    _In_    ULONG64          Offset
+)
+{
+    __try {
+        return ZwWriteFile( FileHandle,
+                            EventHandle,
+                            StatusBlock,
+                            Buffer,
+                            Length,
+                            Offset );
+    }
+    __except ( EXCEPTION_EXECUTE_HANDLER ) {
+
+        return STATUS_UNSUCCESSFUL;
+    }
+}
+
+NTSTATUS
 ZwDeviceIoControlFile(
     _In_    HANDLE           FileHandle,
     _In_    HANDLE           EventHandle,

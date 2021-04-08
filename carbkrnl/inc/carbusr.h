@@ -493,3 +493,14 @@ GetCurrentDirectoryW(
     _In_ PWSTR PathName,
     _In_ ULONG Length
 );
+
+NTSYSAPI
+NTSTATUS
+NtWriteFile(
+    _In_    HANDLE           FileHandle,
+    _In_    HANDLE           EventHandle,
+    _Inout_ PIO_STATUS_BLOCK StatusBlock,
+    _Out_   PVOID            Buffer,
+    _In_    ULONG64          Length,
+    _In_    ULONG64          Offset
+);

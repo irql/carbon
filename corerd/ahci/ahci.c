@@ -13,8 +13,6 @@ AhciInitializeDevice(
     _In_ PKAHCI_HBA_PORT Port
 )
 {
-    PciDevice;
-
     PKAHCI_DEVICE Ahci;
     PDEVICE_OBJECT DriveDevice;
     UNICODE_STRING DriveName;
@@ -34,11 +32,7 @@ AhciInitializeDevice(
                     0,
                     &DriveDevice );
 
-    //RtlDebugPrint( L"ahci dev create: %s\n", DriveName.Buffer );
-
-    // multiple things attached to one destroys the pci device
-    // low field - maybe just remove this field?
-    //IoAttachDevice( PciDevice, DriveDevice );
+    IoAttachDevice( PciDevice, DriveDevice );
 
     Ahci = DriveDevice->DeviceExtension;
     Ahci->Control = Control;
@@ -294,8 +288,6 @@ AhciAccessInternal(
 
     */
 
-    //RtlDebugPrint( L"ahci access: %d %d\n", BlockAddress, Length );
-
     Ahci = DeviceObject->DeviceExtension;
 
     MmDmaAllocateBuffer( Ahci->DmaAdapter,
@@ -303,17 +295,22 @@ AhciAccessInternal(
                          &PrdLogical,
                          &PrdVirtual );
 
+    if ( Write ) {
+
+        RtlCopyMemory( ( PVOID )PrdVirtual, Buffer, Length << 9 );
+    }
+
     KeAcquireSemaphore( &Ahci->Semaphore );
 
     Ahci->Port->InterruptStatus = ~0ul;
     Slot = AhciFreeSlot( Ahci );
 
     NT_ASSERT( Slot != ~0ull );
-    NT_ASSERT( Write == FALSE );
 
     //
     // This driver allows the HBA to perform it's own power management
-    // but still sets the state to an idle/active state.
+    // but still sets the state to an idle/active state as required, before
+    // issuing any commands
     //
 
     Ahci->Port->CommandStatus = ( Ahci->Port->CommandStatus & ~HBA_CMD_ICC ) | HBA_CMD_ICC_IDLE;
@@ -355,7 +352,10 @@ AhciAccessInternal(
 
     KeReleaseSemaphore( &Ahci->Semaphore );
 
-    RtlCopyMemory( Buffer, ( PVOID )PrdVirtual, Length << 9 );
+    if ( !Write ) {
+
+        RtlCopyMemory( Buffer, ( PVOID )PrdVirtual, Length << 9 );
+    }
 
     return STATUS_SUCCESS;
 }

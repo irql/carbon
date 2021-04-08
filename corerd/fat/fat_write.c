@@ -215,6 +215,11 @@ FspWriteChain(
 
     if ( ChainLength > Chain->ChainLength ) {
 
+        //
+        // BUG: if the directory file points to no cluster, then this function will not
+        // set the parent cluster properly (well it cant, because it doesnt exist)
+        //
+
         FspResizeChain( DeviceObject,
                         Chain,
                         ChainLength );
@@ -230,8 +235,8 @@ FspWriteChain(
                             Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,
                             FIRST_SECTOR_OF_CLUSTER( &Fat->Bpb, Chain->Chain[ ChainIndex ] ) );
 
-            RtlCopyMemory( SystemBuffer,
-                ( PUCHAR )Buffer + Offset,
+            RtlCopyMemory( ( PUCHAR )SystemBuffer + Offset,
+                           Buffer,
                            min( Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512 - Offset, Length ) );
 
             FspWriteSectors( DeviceObject->DeviceLink,

@@ -4,18 +4,52 @@
 #include <carbusr.h>
 #include "../../ddi/d3d/d3d.h"
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-int _fltused = 0;
-
-FT_Library FreeTypeLibrary;
-
 VOID
 NtProcessStartup(
 
 )
 {
+    LdrInitializeProcess( );
+
+    NtInitializeUser( );
+
+    IO_STATUS_BLOCK StatusBlock;
+    CHAR Buffer[ 256 ] = { 0 };
+    HANDLE FileHandle = CreateFileW( L"C:\\SYSTEM\\HI.TXT",
+                                     GENERIC_ALL,
+                                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                     FILE_OPEN_IF,
+                                     FILE_NON_DIRECTORY_FILE );
+
+    NtReadFile( FileHandle,
+                INVALID_HANDLE_VALUE,
+                NULL,
+                Buffer,
+                256,
+                0 );
+    RtlDebugPrint( L"hi.txt reads: %as\n", Buffer );
+
+    NtWriteFile( FileHandle,
+                 INVALID_HANDLE_VALUE,
+                 &StatusBlock,
+                 ( PVOID )"Brutalised file...",
+                 sizeof( "Brutalised file..." ) - 1,
+                 1 );
+
+    NtReadFile( FileHandle,
+                INVALID_HANDLE_VALUE,
+                NULL,
+                Buffer,
+                256,
+                0 );
+    RtlDebugPrint( L"hi.txt reads: %as\n", Buffer );
+
+    while ( TRUE ) {
+
+        NtWaitForSingleObject( INVALID_HANDLE_VALUE, 100000 );
+    }
+
+#if 0
     HANDLE WindowHandle;
     HANDLE EditHandle;
     HANDLE StaticHandle;
@@ -240,6 +274,7 @@ NtProcessStartup(
 
             NtGetWindowProc( ListViewHandle, &WndProc );
             WndProc( ListViewHandle, Message.MessageId, Message.Param1, Message.Param2 );
-        }
+}
     }
+#endif
 }

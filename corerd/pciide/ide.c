@@ -87,7 +87,7 @@ IdeInitializeDevice(
                     0,
                     &DriveDevice );
 
-    //IoAttachDevice( PciDevice, DriveDevice );
+    IoAttachDevice( PciDevice, DriveDevice );
 
     Ide = DriveDevice->DeviceExtension;
     Ide->Type = IDE_DEV_ATAPI;

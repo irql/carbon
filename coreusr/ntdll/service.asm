@@ -33,4 +33,5 @@ SYSTEM_SERVICE NtReleaseMutex, 15
 SYSTEM_SERVICE NtGetTickCount, 16
 SYSTEM_SERVICE NtQueryInformationFile, 17
 SYSTEM_SERVICE NtQueryDirectoryFile, 18
+SYSTEM_SERVICE NtWriteFile, 19
 

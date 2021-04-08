@@ -470,7 +470,8 @@ typedef ULONG ACCESS_MASK, *PACCESS_MASK;
 #define DIRECTORY_CREATE_OBJECT     (0x0004)
 #define DIRECTORY_ALL_ACCESS        (0xFFFF)
 
-#define GENERIC_ALL                 (0xE0000000)
+//#define GENERIC_ALL                 (0xE0000000) generic_all is now synchronize
+#define GENERIC_ALL                 (0xF0000000)
 #define SYNCHRONIZE                 (0x10000000)
 #define GENERIC_READ                (0x20000000)
 #define GENERIC_WRITE               (0x40000000)
@@ -596,6 +597,10 @@ typedef struct _IO_STATUS_BLOCK {
 #define FILE_SHARE_READ                 (GENERIC_READ)//0x00000001
 #define FILE_SHARE_WRITE                (GENERIC_WRITE)//0x00000002
 #define FILE_SHARE_DELETE               (0x00000004)
+
+#define FILE_NON_DIRECTORY_FILE         (0x00000000L)
+#define FILE_DIRECTORY_FILE             (0x00000001L)
+#define FILE_DELETE_ON_CLOSE            (0x00000002L)
 
 typedef struct _KSYSTEM_TIME {
     UCHAR Second;
