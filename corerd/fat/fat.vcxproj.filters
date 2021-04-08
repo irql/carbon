@@ -5,6 +5,7 @@
     <ClCompile Include="fat.c" />
     <ClCompile Include="fat_read.c" />
     <ClCompile Include="fat_path.c" />
+    <ClCompile Include="fat_write.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fat.h" />

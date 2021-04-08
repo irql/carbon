@@ -204,13 +204,27 @@ DriverDispatch(
         }
 
         Request->IoStatus.Status = FspReadChain( DeviceObject,
-                                                 File->Chain,
+                                                 &File->FileChain,
                                                  Request->SystemBuffer1,
                                                  Current->Parameters.Read.Length,
                                                  Current->Parameters.Read.Offset );
         Request->IoStatus.Information = Current->Parameters.Read.Length;
         break;
     case IRP_MJ_WRITE:
+
+        if ( ( File->Flags & FILE_FLAG_DIRECTORY ) != 0 ) {
+
+            Request->IoStatus.Status = STATUS_INVALID_PATH;
+            Request->IoStatus.Information = 0;
+            break;
+        }
+
+        Request->IoStatus.Status = FspWriteChain( DeviceObject,
+                                                  &File->FileChain,
+                                                  Request->SystemBuffer1,
+                                                  Current->Parameters.Write.Length,
+                                                  Current->Parameters.Write.Offset );
+        Request->IoStatus.Information = Current->Parameters.Write.Length;
 
         break;
     case IRP_MJ_QUERY_INFORMATION_FILE:
@@ -250,13 +264,14 @@ DriverDispatch(
                                                FAT_TAG );
 
             ntStatus = FspReadChain( DeviceObject,
-                                     File->Chain,
+                                     &File->FileChain,
                                      Directory,
                                      512 * Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,
                                      0 );
 
             if ( !NT_SUCCESS( ntStatus ) ) {
 
+                MmFreePoolWithTag( Directory, FAT_TAG );
                 Request->IoStatus.Status = ntStatus;
                 Request->IoStatus.Information = 0;
                 break;

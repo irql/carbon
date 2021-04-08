@@ -531,6 +531,7 @@ MmMapViewOfSection(
 
     LockHeld = FALSE;
     FileBuffer = NULL;
+    PreviousAddressSpace = 0;
 
     //
     // We should force the caller to map a PE image,
@@ -647,8 +648,11 @@ MmMapViewOfSection(
         goto MiProcedureFinished;
     }
 
-    PreviousAddressSpace = MiGetAddressSpace( );
-    MiSetAddressSpace( Process->DirectoryTableBase );
+    if ( ( PreviousAddressSpace & ~0xFFF ) != ( Process->DirectoryTableBase & ~0xFFF ) ) {
+
+        PreviousAddressSpace = MiGetAddressSpace( );
+        MiSetAddressSpace( Process->DirectoryTableBase );
+    }
 
     LockHeld = TRUE;
     if ( Process == PsInitialSystemProcess ) {
@@ -946,7 +950,10 @@ MiProcedureFinished:;
         MmFreePoolWithTag( FileBuffer, MM_TAG );
     }
 
-    MiSetAddressSpace( PreviousAddressSpace );
+    if ( PreviousAddressSpace != 0 ) {
+
+        MiSetAddressSpace( PreviousAddressSpace );
+    }
 
     return ntStatus;
 }

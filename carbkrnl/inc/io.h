@@ -117,6 +117,10 @@ typedef struct _IO_FILE_OBJECT {
 #define FILE_FLAG_ATTRIBUTE_SYSTEM      (0x00000002L)
 #define FILE_FLAG_ATTRIBUTE_READONLY    (0x00000004L)
 
+#define FILE_NON_DIRECTORY_FILE         (0x00000000L)
+#define FILE_DIRECTORY_FILE             (0x00000001L)
+#define FILE_DELETE_ON_CLOSE            (0x00000002L)
+
 typedef struct _IO_STACK_LOCATION {
     UCHAR MajorFunction;
     UCHAR MinorFunction;

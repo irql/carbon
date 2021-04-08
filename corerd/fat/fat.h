@@ -138,15 +138,21 @@ typedef struct _FAT_DEVICE {
     BIOS_PARAMETER_BLOCK Bpb;
     PFAT_DIRECTORY       Root;
     NTSTATUS             RootStatus;
+    ULONG32              FatHint;
 } FAT_DEVICE, *PFAT_DEVICE;
 
 #define FspFatDevice( device ) ( ( PFAT_DEVICE )( device )->DeviceExtension )
 
-typedef struct _FAT_FILE_CONTEXT {
-    ULONG32  Flags;
+
+typedef struct _FAT_FILE_CHAIN {
     ULONG32* Chain;
-    ULONG64  ChainLength;
-    ULONG64  Length;
+    ULONG32  ChainLength;
+} FAT_FILE_CHAIN, *PFAT_FILE_CHAIN;
+
+typedef struct _FAT_FILE_CONTEXT {
+    ULONG32        Flags;
+    ULONG64        Length;
+    FAT_FILE_CHAIN FileChain;
 
 } FAT_FILE_CONTEXT, *PFAT_FILE_CONTEXT;
 
@@ -154,6 +160,14 @@ typedef struct _FAT_FILE_CONTEXT {
 
 NTSTATUS
 FspReadSectors(
+    _In_ PDEVICE_OBJECT PartDevice,
+    _In_ PVOID          Buffer,
+    _In_ ULONG64        Length,
+    _In_ ULONG64        Offset
+);
+
+NTSTATUS
+FspWriteSectors(
     _In_ PDEVICE_OBJECT PartDevice,
     _In_ PVOID          Buffer,
     _In_ ULONG64        Length,
@@ -204,11 +218,11 @@ FsOpenFat32File(
 
 NTSTATUS
 FspReadChain(
-    _In_ PDEVICE_OBJECT DeviceObject,
-    _In_ ULONG32*       Chain,
-    _In_ PVOID          Buffer,
-    _In_ ULONG64        Length,
-    _In_ ULONG64        Offset
+    _In_ PDEVICE_OBJECT  DeviceObject,
+    _In_ PFAT_FILE_CHAIN Chain,
+    _In_ PVOID           Buffer,
+    _In_ ULONG64         Length,
+    _In_ ULONG64         Offset
 );
 
 NTSTATUS
@@ -229,4 +243,34 @@ FsQueryNameFile(
     _In_  ULONG64                     Length,
     _Out_ PFILE_DIRECTORY_INFORMATION Information,
     _Out_ ULONG64*                    ReturnLength
+);
+
+ULONG64
+FsFindFreeDirectoryFile(
+    _In_ PFAT_DIRECTORY Directory
+);
+
+NTSTATUS
+FspBuildChainFromFile(
+    _In_  PDEVICE_OBJECT  DeviceObject,
+    _In_  PIRP            Request,
+    _In_  PFAT_DIRECTORY  Directory,
+    _In_  PVOID           FileName,
+    _Out_ PFAT_FILE_CHAIN Chain
+);
+
+NTSTATUS
+FspWriteChain(
+    _In_ PDEVICE_OBJECT  DeviceObject,
+    _In_ PFAT_FILE_CHAIN Chain,
+    _In_ PVOID           Buffer,
+    _In_ ULONG64         Length,
+    _In_ ULONG64         Offset
+);
+
+NTSTATUS
+FspResizeChain(
+    _In_ PDEVICE_OBJECT  DeviceObject,
+    _In_ PFAT_FILE_CHAIN Chain,
+    _In_ ULONG32         ChainLength
 );

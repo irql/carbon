@@ -103,7 +103,7 @@ DdSvgaDevice(
     // This is where we should call into dxgi and setup our ddi
     //
 
-    KdPrint( L"svga device found and initialized %ull %ull\n", Extension->FramebufferLength, Extension->FifoLength );
+    //KdPrint( L"svga device found and initialized %ull %ull\n", Extension->FramebufferLength, Extension->FifoLength );
 
     DdSetMode( Extension, 1280, 720, 32 );
     Dd3dInitialize( Extension );

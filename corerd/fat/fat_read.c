@@ -9,13 +9,14 @@
 
 NTSTATUS
 FspReadChain(
-    _In_ PDEVICE_OBJECT DeviceObject,
-    _In_ ULONG32*       Chain,
-    _In_ PVOID          Buffer,
-    _In_ ULONG64        Length,
-    _In_ ULONG64        Offset
+    _In_ PDEVICE_OBJECT  DeviceObject,
+    _In_ PFAT_FILE_CHAIN Chain,
+    _In_ PVOID           Buffer,
+    _In_ ULONG64         Length,
+    _In_ ULONG64         Offset
 )
 {
+
     //
     // reads the cluster chain in the file object
     //
@@ -31,14 +32,21 @@ FspReadChain(
 
     while ( Length > 0 ) {
 
+        if ( ChainIndex > Chain->ChainLength ) {
+
+            break;
+        }
+
         FspReadSectors( DeviceObject->DeviceLink,
                         SystemBuffer,
                         Fat->Bpb.Dos2_00Bpb.SectorsPerCluster,
-                        FIRST_SECTOR_OF_CLUSTER( &Fat->Bpb, Chain[ ChainIndex ] ) );
+                        FIRST_SECTOR_OF_CLUSTER( &Fat->Bpb, Chain->Chain[ ChainIndex ] ) );
 
         if ( Length > ( ULONG64 )Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512 - Offset ) {
 
-            RtlCopyMemory( Buffer, ( PUCHAR )SystemBuffer + Offset, Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512 - Offset );
+            RtlCopyMemory( Buffer,
+                ( PUCHAR )SystemBuffer + Offset,
+                           min( Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512 - Offset, Length ) );//Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512 - Offset );
             Length -= ( ULONG64 )Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512 - Offset;
             Buffer = ( PUCHAR )Buffer + ( ULONG64 )Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512 - Offset;
             Offset = 0;
@@ -59,15 +67,26 @@ FspReadChain(
 
 NTSTATUS
 FspBuildChain(
-    _In_    PDEVICE_OBJECT DeviceObject,
-    _In_    ULONG32        Start,
-    _Inout_ ULONG32**      Chain,
-    _Inout_ ULONG64*       ChainLength
+    _In_    PDEVICE_OBJECT  DeviceObject,
+    _In_    ULONG32         Start,
+    _Inout_ PFAT_FILE_CHAIN Chain
 )
 {
+    //
+    // Added zero chainlength FAT_FILE_CHAINs, other functions should
+    // watch out for this.
+    //
+
     NTSTATUS ntStatus;
     ULONG32 CurrentCluster;
-    ULONG64 ClusterCount;
+    ULONG32 ClusterCount;
+
+    if ( Start == FAT32_END_OF_CHAIN ) {
+
+        Chain->Chain = NULL;
+        Chain->ChainLength = 0;
+        return STATUS_SUCCESS;
+    }
 
     ClusterCount = 0;
     CurrentCluster = Start;
@@ -80,17 +99,17 @@ FspBuildChain(
         }
     } while ( CurrentCluster != FAT32_END_OF_CHAIN );
 
-    *Chain = MmAllocatePoolWithTag( NonPagedPoolZeroed, ClusterCount * sizeof( ULONG32 ), FAT_TAG );
-    *ChainLength = ClusterCount;
+    Chain->Chain = MmAllocatePoolWithTag( NonPagedPoolZeroed, ClusterCount * sizeof( ULONG32 ), FAT_TAG );
+    Chain->ChainLength = ClusterCount;
 
     CurrentCluster = Start;
     ClusterCount = 0;
     do {
-        ( *Chain )[ ClusterCount++ ] = CurrentCluster;
+        Chain->Chain[ ClusterCount++ ] = CurrentCluster;
         ntStatus = FspQueryFatTable( DeviceObject, CurrentCluster, &CurrentCluster );
         if ( !NT_SUCCESS( ntStatus ) ) {
 
-            MmFreePoolWithTag( *Chain, FAT_TAG );
+            MmFreePoolWithTag( Chain->Chain, FAT_TAG );
             return ntStatus;
         }
     } while ( CurrentCluster != FAT32_END_OF_CHAIN );
@@ -100,12 +119,11 @@ FspBuildChain(
 
 NTSTATUS
 FspBuildChainFromFile(
-    _In_    PDEVICE_OBJECT DeviceObject,
-    _In_    PIRP           Request,
-    _In_    PFAT_DIRECTORY Directory,
-    _In_    PVOID          FileName,
-    _Inout_ ULONG32**      Chain,
-    _Inout_ ULONG64*       ChainLength
+    _In_  PDEVICE_OBJECT  DeviceObject,
+    _In_  PIRP            Request,
+    _In_  PFAT_DIRECTORY  Directory,
+    _In_  PVOID           FileName,
+    _Out_ PFAT_FILE_CHAIN Chain
 )
 {
     FAT_PATH_TYPE Type;
@@ -115,7 +133,7 @@ FspBuildChainFromFile(
     PFAT_FILE_CONTEXT File;
     PFAT_DEVICE Fat;
 
-    Fat = FspFatDevice( Request->DeviceObject );
+    Fat = FspFatDevice( DeviceObject );
     File = FspFatFileContext( Request->FileObject );
     Type = FspValidateFileName( FileName );
 
@@ -158,9 +176,9 @@ FspBuildChainFromFile(
     //}
 
     FspBuildChain( DeviceObject,
-        ( ULONG32 )Directory[ FatFile ].Short.ClusterHigh << 16 | Directory[ FatFile ].Short.ClusterLow,
-                   Chain,
-                   ChainLength );
+        ( ULONG32 )Directory[ FatFile ].Short.ClusterHigh << 16 |
+                   Directory[ FatFile ].Short.ClusterLow,
+                   Chain );
 
     return STATUS_SUCCESS;
 }
@@ -171,7 +189,6 @@ FsOpenFat32File(
     _In_ PIRP           Request
 )
 {
-    DeviceObject;
     //
     // This should create a file object for the
     // directory and fill in this one for the
@@ -182,11 +199,12 @@ FsOpenFat32File(
     PWSTR* Decomposed;
     ULONG64 Part;
     PFAT_DIRECTORY Directory;
+    UNICODE_STRING FileName;
+    FAT_FILE_CHAIN DirectoryChain;
+
     PFAT_FILE_CONTEXT File;
     PFAT_DEVICE Fat;
-    ULONG32* Chain;
-    ULONG64 ChainLength;
-    UNICODE_STRING FileName;
+
     RTL_STACK_STRING( FileName, 256 );
 
     Fat = FspFatDevice( DeviceObject );
@@ -220,9 +238,9 @@ FsOpenFat32File(
 
         File->Flags |= FILE_FLAG_DIRECTORY;
         File->Length = 0; // hm
-        File->Chain = MmAllocatePoolWithTag( NonPagedPool, sizeof( ULONG32 ), FAT_TAG );
-        File->Chain[ 0 ] = Fat->Bpb.Dos7_01Bpb.RootDirectoryCluster;
-        File->ChainLength = 1;
+        File->FileChain.Chain = MmAllocatePoolWithTag( NonPagedPool, sizeof( ULONG32 ), FAT_TAG );
+        File->FileChain.Chain[ 0 ] = Fat->Bpb.Dos7_01Bpb.RootDirectoryCluster;
+        File->FileChain.ChainLength = 1;
     }
 
     for ( Part = 0; Decomposed[ Part ] != NULL; Part++ ) {
@@ -237,8 +255,7 @@ FsOpenFat32File(
                                               Request,
                                               Directory,
                                               Decomposed[ Part ],
-                                              &File->Chain,
-                                              &File->ChainLength );
+                                              &File->FileChain );
 
             if ( !NT_SUCCESS( ntStatus ) ) {
 
@@ -260,8 +277,7 @@ FsOpenFat32File(
                                               Request,
                                               Directory,
                                               Decomposed[ Part ],
-                                              &Chain,
-                                              &ChainLength );
+                                              &DirectoryChain );
 
             if ( !NT_SUCCESS( ntStatus ) ) {
 
@@ -269,13 +285,19 @@ FsOpenFat32File(
                 return ntStatus;
             }
 
+            if ( ( File->Flags & FILE_FLAG_DIRECTORY ) == 0 ) {
+
+                MmFreePoolWithTag( Directory, FAT_TAG );
+                return STATUS_INVALID_PATH;
+            }
+
             ntStatus = FspReadChain( DeviceObject,
-                                     Chain,
+                                     &DirectoryChain,
                                      Directory,
                                      Fat->Bpb.Dos2_00Bpb.SectorsPerCluster * 512,
                                      0u );
 
-            MmFreePoolWithTag( Chain, FAT_TAG );
+            MmFreePoolWithTag( DirectoryChain.Chain, FAT_TAG );
 
             if ( !NT_SUCCESS( ntStatus ) ) {
 

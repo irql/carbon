@@ -12,8 +12,6 @@ DriverLoad(
 {
     DriverObject;
 
-
-    KdPrint( L"** vmsvga **\n" );
     DdDriverInitialize( DriverObject );
 
     return STATUS_SUCCESS;
