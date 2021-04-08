@@ -58,7 +58,7 @@ NtDdiVesaInitializeDC(
 
     // WC.
     DeviceContext->DeviceSpecific = MmAllocatePoolWithTag(
-        NonPagedPoolZeroed,
+        NonPagedPoolWriteCombining,
         ( DeviceContext->ClientArea.Bottom - DeviceContext->ClientArea.Top ) *
         ( DeviceContext->ClientArea.Right - DeviceContext->ClientArea.Left ) *
         4,
@@ -131,7 +131,7 @@ NtDdiVesaBlt(
                                                  dstx + pointx,
                                                  dsty + pointy,
                                                  DestinationContext->ClientArea.Right - DestinationContext->ClientArea.Left ) );
-    }
+        }
 
         pointx++;
 
@@ -140,7 +140,7 @@ NtDdiVesaBlt(
             pointx = 0;
             pointy++;
         }
-}
+    }
 }
 
 VOID
@@ -195,7 +195,7 @@ NtDdiVesaBltBits(
                                                  dsty + pointy,
                                                  context->ClientArea.Right - context->ClientArea.Left ) );
 
-    }
+        }
 
         pointx++;
 
@@ -204,7 +204,7 @@ NtDdiVesaBltBits(
             pointx = 0;
             pointy++;
         }
-}
+    }
 }
 
 VOID

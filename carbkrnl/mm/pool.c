@@ -523,8 +523,12 @@ MmAllocatePoolWithTag(
 
     KeAcquireSpinLock( &MmNonPagedPoolLock, &PreviousIrql );
 
+    //
+    // Write combining granular buffers are non-existant.
+    //
+
     Length = ROUND( Length, 0x40 );
-    if ( Length < 0x1000 ) {
+    if ( Length < 0x1000 && Type != NonPagedPoolWriteCombining ) {
 
         if ( Type == NonPagedPool ) {
 
@@ -549,6 +553,10 @@ MmAllocatePoolWithTag(
         while ( PageLength-- ) {
 
             PageTable = MmAddressPageTable( PageAddress + ( PageLength << 12 ) );
+
+            PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Pat = 0;
+            PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].CacheDisable = 0;
+            PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].WriteThrough = 0;
 
             switch ( Type ) {
             case NonPagedPoolZeroedExecute:
@@ -585,6 +593,17 @@ MmAllocatePoolWithTag(
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].PageFrameNumber = ( Physical >> 12 );
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Present = 1;
                 PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Write = 1;
+                break;
+            case NonPagedPoolWriteCombining:
+                Physical = MmAllocatePhysical( MmTypeNonPagedPool );
+
+                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].PageFrameNumber = ( Physical >> 12 );
+                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Present = 1;
+                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Write = 1;
+
+                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].Pat = 0;
+                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].CacheDisable = 0;
+                PageTable[ MiIndexLevel1( PageAddress + ( PageLength << 12 ) ) ].WriteThrough = 1;
                 break;
             case NonPagedPool:
             default:

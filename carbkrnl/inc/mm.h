@@ -10,6 +10,7 @@ typedef enum _POOL_TYPE {
     NonPagedPoolExecute,
     NonPagedPoolZeroed,
     NonPagedPoolZeroedExecute,
+    NonPagedPoolWriteCombining,
     MaximumPool
 
 } POOL_TYPE;

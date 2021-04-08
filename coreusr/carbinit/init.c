@@ -18,15 +18,15 @@ NtProcessStartup(
     HANDLE FileHandle = CreateFileW( L"C:\\SYSTEM\\POGGER.PHP",
                                      GENERIC_ALL,
                                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                                     FILE_CREATE,
+                                     FILE_OPEN_IF,
                                      FILE_NON_DIRECTORY_FILE );
 
     NtWriteFile( FileHandle,
                  INVALID_HANDLE_VALUE,
                  &StatusBlock,
                  ( PVOID )"Brutalised file...",
-                 sizeof( "Brutalised file..." ) - 1,
-                 1 );
+                 sizeof( "Brutalised file..." ),
+                 0 );
 
     NtReadFile( FileHandle,
                 INVALID_HANDLE_VALUE,

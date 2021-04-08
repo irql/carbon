@@ -418,15 +418,15 @@ ZwCreateFile(
 
     ObDereferenceObject( Request->Process );
     ObDereferenceObject( Request->Thread );
-#if 0
+
     if ( !NT_SUCCESS( Request->IoStatus.Status ) ) {
 
         IoFreeIrp( Request );
         ObDereferenceObject( FileObject );
         ZwClose( *FileHandle );
+        *FileHandle = 0;
         return STATUS_UNSUCCESSFUL;
     }
-#endif
 
     IoFreeIrp( Request );
     ObDereferenceObject( FileObject );
