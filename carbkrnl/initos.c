@@ -374,10 +374,9 @@ KiInitThread(
     Entry.Upper = 0;
     Entry.Lower = 0;
     Entry.Usage = MmMappedViewOfSection;
-    Entry.TypeMappedViewOfSection.SectionObject = ( ULONG64 )SectionObject;
-    Entry.TypeMappedViewOfSection.LengthLower = CurrentVad->Charge >> 12;
-    Entry.TypeMappedViewOfSection.LengthUpper = CurrentVad->Charge >> 20;
-    Entry.TypeMappedViewOfSection.Address = 0xFFFFFFFFFFE00000 >> 12;
+    Entry.ViewOfSection.SectionObject = ( ULONG64 )SectionObject;
+    Entry.ViewOfSection.Length = CurrentVad->Charge >> 12;
+    Entry.ViewOfSection.Address = 0xFFFFFFFFFFE00000 >> 12;
 
     KIRQL PreviousIrql;
 

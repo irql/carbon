@@ -495,6 +495,7 @@ typedef ULONG ACCESS_MASK, *PACCESS_MASK;
 #define SEC_IMAGE_NO_EXECUTE        (0x0020)
 #define SEC_SPECIFY_ADDRESS         (0x0040)
 #define SEC_NO_EXTEND               (0x0080)
+#define SEC_NO_SHARE                (0x0100)
 
 typedef struct _MM_SECTION_OBJECT *PMM_SECTION_OBJECT;
 typedef struct _IO_FILE_OBJECT *PIO_FILE_OBJECT;

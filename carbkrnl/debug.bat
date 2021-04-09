@@ -37,12 +37,13 @@ diskpart /s %cd%\dprt
 del dprt
 taskkill /f /im kdwin32.exe
 
-vmrun -T ws start "%cd%\vm\vmware\carbon_v2.vmx"
-.\x64\Release\kdwin32.exe
+!vmrun -T ws start "%cd%\vm\vmware\carbon_v2.vmx"
+!.\x64\Release\kdwin32.exe
 !pause
 !vmrun -T ws stop "%cd%\vm\vmware\carbon_v2.vmx"
 
 rem vmrun -T ws reset "%cd%\vm\vmware\carbon_v2.vmx"
 
-qemu-system-x86_64 -s -m 1024 -smp 1 -no-reboot -no-shutdown -monitor stdio -drive format=raw,media=disk,file=%cd%\carbon_v2.vhd
+qemu-system-x86_64 -s -d int -D Pog.TXT -m 1024 -smp 1 -no-reboot -no-shutdown -monitor stdio -drive id=pog,format=raw,media=disk,file=%cd%\carbon_v2.vhd,if=none -device ahci,id=ahci -device ide-drive,drive=pog,bus=ahci.0
 rem qemu-system-x86_64 -s -m 1024 -smp 4 -no-reboot -no-shutdown -monitor stdio -vga vmware -drive format=raw,media=disk,file=%p%\carbon_v2.vhd -chardev pipe,id=pog,path=KdPipe -serial chardev:pog
+pause

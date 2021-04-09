@@ -158,11 +158,10 @@ MmCreateSection(
     NTSTATUS ntStatus;
     PMM_SECTION_OBJECT Section;
 
-    ntStatus = ObCreateObject(
-        &Section,
-        MmSectionObject,
-        ObjectAttributes == NULL ? &SectionAttributes : ObjectAttributes,
-        sizeof( MM_SECTION_OBJECT ) );
+    ntStatus = ObCreateObject( &Section,
+                               MmSectionObject,
+                               ObjectAttributes == NULL ? &SectionAttributes : ObjectAttributes,
+                               sizeof( MM_SECTION_OBJECT ) );
     if ( !NT_SUCCESS( ntStatus ) ) {
 
         return ntStatus;
@@ -170,7 +169,8 @@ MmCreateSection(
 
     Section->FileObject = FileObject;
 
-    if ( FileObject != NULL ) {
+    if ( FileObject != NULL &&
+        ( AllocationAttributes & SEC_NO_SHARE ) == 0 ) {
 
         FileObject->SectionObject = Section;
     }
@@ -182,7 +182,8 @@ MmCreateSection(
                                                              SEC_WRITECOMBINE |
                                                              SEC_IMAGE |
                                                              SEC_IMAGE_NO_EXECUTE |
-                                                             SEC_UNINITIALIZED_FO );
+                                                             SEC_UNINITIALIZED_FO |
+                                                             SEC_NO_SHARE );
 
     *SectionObject = Section;
     return STATUS_SUCCESS;
@@ -786,7 +787,20 @@ MmMapViewOfSection(
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].ExecuteDisable = ( Protection & PAGE_EXECUTE ) != PAGE_EXECUTE;
         }
 
-        PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Write = ( Protection & PAGE_WRITE ) == PAGE_WRITE;
+        if ( Process == PsInitialSystemProcess ||
+            ( SectionObject->AllocationAttributes & SEC_NO_SHARE ) == SEC_NO_SHARE ) {
+
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Write = ( Protection & PAGE_WRITE ) == PAGE_WRITE;
+        }
+        else {
+
+            //
+            // Because section objects are shared resources, it will be copied 
+            // by the page fault handler when a process writes to it.
+            //
+
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Write = FALSE;
+        }
 
         if ( ( SectionObject->AllocationAttributes & SEC_NOCACHE ) == SEC_NOCACHE ) {
             PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Pat = 0;
@@ -826,10 +840,10 @@ MmMapViewOfSection(
     Entry.Upper = 0;
     Entry.Lower = 0;
     Entry.Usage = MmMappedViewOfSection;
-    Entry.TypeMappedViewOfSection.SectionObject = ( ULONG64 )SectionObject;
-    Entry.TypeMappedViewOfSection.LengthLower = PageLength;
-    Entry.TypeMappedViewOfSection.LengthUpper = PageLength >> 8;
-    Entry.TypeMappedViewOfSection.Address = PageAddress >> 12;
+    Entry.ViewOfSection.SectionObject = ( ULONG64 )SectionObject;
+    Entry.ViewOfSection.Length = PageLength;
+    Entry.ViewOfSection.Address = PageAddress >> 12;
+    Entry.ViewOfSection.NoCopy = ( Protection & PAGE_WRITE ) != PAGE_WRITE;
 
     KeAcquireSpinLock( &Process->WorkingSetLock, &PreviousIrql );
     MmInsertWorkingSet( &Entry );
@@ -988,10 +1002,8 @@ MmUnmapViewOfSection(
     }
 
     PageAddress = ( ULONG64 )BaseAddress;
-    PageLength =
-        ( View->TypeMappedViewOfSection.LengthLower |
-        ( View->TypeMappedViewOfSection.LengthUpper << 8 ) );
-    Section = ( PMM_SECTION_OBJECT )( View->TypeMappedViewOfSection.SectionObject | 0xFFFF000000000000 );
+    PageLength = View->ViewOfSection.Length;
+    Section = ( PMM_SECTION_OBJECT )( View->ViewOfSection.SectionObject | 0xFFFF000000000000 );
 
     if ( PageAddress > 0x800000000000 ) {
         KeAcquireSpinLock( &MmNonPagedPoolLock, &PreviousIrql );
@@ -1000,7 +1012,16 @@ MmUnmapViewOfSection(
     for ( CurrentPage = 0; CurrentPage < PageLength; CurrentPage++ ) {
 
         PageTable = MmAddressPageTable( PageAddress + ( CurrentPage << 12 ) );
-        PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Long = 0;
+
+        if ( View->ViewOfSection.Copied ) {
+
+            MmFreePhysical( PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].PageFrameNumber << 12 );
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Long = 0;
+        }
+        else {
+
+            PageTable[ MiIndexLevel1( PageAddress + ( CurrentPage << 12 ) ) ].Long = 0;
+        }
     }
 
     if ( PageAddress > 0x800000000000 ) {
@@ -1075,14 +1096,16 @@ ZwCreateSection(
                                                     SEC_WRITE |
                                                     SEC_WRITECOMBINE |
                                                     SEC_IMAGE |
-                                                    SEC_IMAGE_NO_EXECUTE );
+                                                    SEC_IMAGE_NO_EXECUTE |
+                                                    SEC_NO_SHARE );
 
     if ( ARGUMENT_PRESENT( FileHandle ) ) {
 
         AllocationAttributes |= SEC_UNINITIALIZED_FO;
     }
 
-    if ( FileObject != NULL && FileObject->SectionObject != NULL ) {
+    if ( FileObject != NULL && FileObject->SectionObject != NULL &&
+        ( AllocationAttributes & SEC_NO_SHARE ) == 0 ) {
 
         SectionObject = FileObject->SectionObject;
         ObReferenceObject( SectionObject );

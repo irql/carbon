@@ -257,6 +257,10 @@ KiExceptionDispatch(
     ExceptMode = ( TrapFrame->SegCs & 1 ) == 1 ? UserMode : KernelMode;
     ExceptInterrupt = KeQueryCurrentProcessor( )->InService;
 
+    RtlDebugPrint( L"excpt: %d rip=%ull rsp=%ull cr2=%ull err=%ull\n",
+                   TrapFrame->Interrupt, TrapFrame->Rip, TrapFrame->Rsp,
+                   __readcr2( ), TrapFrame->Error );
+
     if ( ExceptInterrupt ) {
 
         Record = ( PEXCEPTION_RECORD )_alloca( sizeof( EXCEPTION_RECORD ) );
@@ -273,6 +277,15 @@ KiExceptionDispatch(
         RtlTrapFrameToContext( TrapFrame, &Record->ExceptionContext );
 
         KiBugCheckFromRecord( Record );
+    }
+
+    if ( TrapFrame->Interrupt == 14 ) {
+
+        RtlDebugPrint( L"page fault.\n" );
+        if ( NT_SUCCESS( MiPageFaultHandle( TrapFrame, __readcr2( ) ) ) ) {
+
+            return;
+        }
     }
 
     if ( ExceptMode == KernelMode ) {
@@ -313,38 +326,6 @@ KiExceptionDispatch(
         HandleStack = TrapFrame->Rsp - sizeof( EXCEPTION_RECORD ) - 0x30;
         HandleCapable = TRUE;
     }
-
-    RtlDebugPrint( L"excpt: %d rip=%ull rsp=%ull cr2=%ull err=%ull\n",
-                   TrapFrame->Interrupt, TrapFrame->Rip, TrapFrame->Rsp,
-                   __readcr2( ), TrapFrame->Error );
-
-#if 0
-    InterruptingService = KeQueryCurrentProcessor( )->InService;
-    if ( InterruptingService ) {
-
-        PreviousService = KeQueryCurrentProcessor( )->PreviousService;
-
-        if ( PreviousService < 32 ) {
-
-            //
-            // Has there been an exception inside KiExceptionDispatch?
-            //
-            // This could raise a double fault.
-            //
-
-            KeRaiseIrql( DISPATCH_LEVEL, &PreviousIrql );
-
-            RtlDebugPrint( L"KiExceptionDispatch double fault. %ull\n", TrapFrame->Rip );
-
-            KiProcessorShutdown( );
-
-            while ( 1 ) {
-
-                __halt( );
-            }
-        }
-    }
-#endif
 
     //
     // Re-write a lot of these functions to process an exception_record instead

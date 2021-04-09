@@ -140,7 +140,7 @@ PspCreateUserProcess(
     ntStatus = ZwCreateSection( &SectionHandle,
                                 SECTION_ALL_ACCESS,
                                 &SectionAttributes,
-                                SEC_EXECUTE | SEC_WRITE | SEC_IMAGE,
+                                SEC_EXECUTE | SEC_WRITE | SEC_IMAGE | SEC_NO_SHARE,
                                 FileHandle );
     if ( !NT_SUCCESS( ntStatus ) ) {
 

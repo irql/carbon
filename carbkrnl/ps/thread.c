@@ -92,7 +92,7 @@ PspCreateStack(
     }
     else {
 
-        Base = MmAllocatePoolWithTag( NonPagedPoolZeroedExecute,
+        Base = MmAllocatePoolWithTag( NonPagedPool,
                                       Length,
                                       PS_TAG );
 

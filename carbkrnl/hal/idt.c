@@ -38,6 +38,7 @@ HalCreateInterrupt(
 
         if ( i == 0x20 ) {
 
+            Table[ i ].Type = SYSTEM_SEGMENT_TYPE_TRAP_GATE;
             Table[ i ].Ist = 1;
         }
         else if ( i == 0x8 ) {

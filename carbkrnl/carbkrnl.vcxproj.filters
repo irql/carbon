@@ -76,6 +76,7 @@
     <ClCompile Include="ke\clock.c" />
     <ClCompile Include="hal\bios.c" />
     <ClCompile Include="mm\dma.c" />
+    <ClCompile Include="mm\pf.c" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shared">

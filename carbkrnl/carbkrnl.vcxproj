@@ -43,6 +43,7 @@
     <ClCompile Include="mm\cache.c" />
     <ClCompile Include="mm\dma.c" />
     <ClCompile Include="mm\mminit.c" />
+    <ClCompile Include="mm\pf.c" />
     <ClCompile Include="mm\pfndb.c" />
     <ClCompile Include="mm\physical.c" />
     <ClCompile Include="mm\pool.c" />

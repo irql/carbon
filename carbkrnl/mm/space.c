@@ -161,8 +161,8 @@ ZwAllocateVirtualMemory(
             RtlZeroMemory( ( PVOID )( PageAddress + ( CurrentPage << 12 ) ), 0x1000 );
         }
 
-        Physical.TypeMappedPhysical.Address = PageAddress + ( CurrentPage << 12 );
-        Physical.TypeMappedPhysical.IndexPfn = ( ( PUCHAR )Pfn - ( PUCHAR )MmPfnDatabase ) / sizeof( MM_PFN );
+        Physical.Logical.Address = PageAddress + ( CurrentPage << 12 );
+        Physical.Logical.IndexPfn = ( ( PUCHAR )Pfn - ( PUCHAR )MmPfnDatabase ) / sizeof( MM_PFN );
         MmInsertWorkingSet( &Physical );
     }
 
@@ -225,14 +225,14 @@ ZwFreeVirtualMemory(
             return CurrentPage == 0 ? STATUS_INVALID_ADDRESS : STATUS_PARTIALLY_COMPLETE;
         }
 
-        PageTable = MmAddressPageTable( Physical->TypeMappedPhysical.Address );
-        PageTable[ MiIndexLevel1( Physical->TypeMappedPhysical.Address ) ].Long = 0;
-        MmFlushAddress( ( PVOID )Physical->TypeMappedPhysical.Address );
+        PageTable = MmAddressPageTable( Physical->Logical.Address );
+        PageTable[ MiIndexLevel1( Physical->Logical.Address ) ].Long = 0;
+        MmFlushAddress( ( PVOID )Physical->Logical.Address );
 
         MmPfnDatabase->LockBit = TRUE;
-        MmPfnDatabase[ Physical->TypeMappedPhysical.IndexPfn ].ReferenceCount--;
-        if ( MmPfnDatabase[ Physical->TypeMappedPhysical.IndexPfn ].ReferenceCount == 0 ) {
-            MmChangePfnVaType( &MmPfnDatabase[ Physical->TypeMappedPhysical.IndexPfn ], MmTypeModified );
+        MmPfnDatabase[ Physical->Logical.IndexPfn ].ReferenceCount--;
+        if ( MmPfnDatabase[ Physical->Logical.IndexPfn ].ReferenceCount == 0 ) {
+            MmChangePfnVaType( &MmPfnDatabase[ Physical->Logical.IndexPfn ], MmTypeModified );
         }
         MmPfnDatabase->LockBit = FALSE;
 

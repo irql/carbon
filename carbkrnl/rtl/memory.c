@@ -79,11 +79,14 @@ RtlCopyMemory(
         ( ( unsigned char* )u1 )++, ( ( unsigned char* )u2 )++;
     }
 #endif
+#if 0
     PUCHAR dst = Destination;
     PUCHAR src = Source;
     while ( Length-- ) {
         *dst++ = *src++;
     }
+#endif
+    __movsb( Destination, Source, Length );
 }
 
 VOID

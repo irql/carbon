@@ -72,12 +72,18 @@ MmFindWorkingSetByAddress(
 
                 switch ( Usage ) {
                 case MmMappedPhysical:
-                    if ( CurrentWsl->WorkingSetList[ CurrentWsle ].TypeMappedPhysical.Address == Address ) {
+                    //if ( CurrentWsl->WorkingSetList[ CurrentWsle ].TypeMappedPhysical.Address == Address ) {
+                    if ( Address >= CurrentWsl->WorkingSetList[ CurrentWsle ].Logical.Address &&
+                         Address <= CurrentWsl->WorkingSetList[ CurrentWsle ].Logical.Address + 0xFFF ) {
                         return &CurrentWsl->WorkingSetList[ CurrentWsle ];
                     }
                     break;
                 case MmMappedViewOfSection:
-                    if ( ( CurrentWsl->WorkingSetList[ CurrentWsle ].TypeMappedViewOfSection.Address << 12 ) == ( Address & 0xFFFFFFFFFFFF ) ) {
+                    //if ( ( CurrentWsl->WorkingSetList[ CurrentWsle ].TypeMappedViewOfSection.Address << 12 ) == ( Address & 0xFFFFFFFFFFFF ) ) {
+                    if ( ( Address & 0xFFFFFFFFFFFF ) >= CurrentWsl->WorkingSetList[ CurrentWsle ].ViewOfSection.Address << 12 &&
+                        ( Address & 0xFFFFFFFFFFFF ) < ( ( CurrentWsl->WorkingSetList[ CurrentWsle ].ViewOfSection.Address +
+                                                           CurrentWsl->WorkingSetList[ CurrentWsle ].ViewOfSection.Length ) << 12 ) ) {
+
                         return &CurrentWsl->WorkingSetList[ CurrentWsle ];
                     }
                     break;

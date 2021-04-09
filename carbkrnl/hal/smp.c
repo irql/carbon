@@ -55,6 +55,7 @@ HalInitializeCpu0(
     TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->Ist[ 2 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->Ist[ 3 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
+    TaskState->Rsp[ 0 ] = 0x414141414141;
     TaskState->IopbOffset = sizeof( KTASK_STATE );
     Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
                                                            TaskState,
@@ -97,6 +98,7 @@ HalProcessorStartupPrepare(
     TaskState->Ist[ 1 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->Ist[ 2 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
     TaskState->Ist[ 3 ] = ( ULONG64 )PspCreateStack( 0, 0x8000 ) + 0x8000;
+    TaskState->Rsp[ 0 ] = 0x414141414141;
     TaskState->IopbOffset = sizeof( KTASK_STATE );
     Processor->TaskStateDescriptor = HalInsertTaskSegment( &Processor->Global,
                                                            TaskState,

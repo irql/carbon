@@ -185,15 +185,17 @@ typedef struct _MM_WSLE {
             ULONG64 Usage : 8;
             ULONG64 IndexPfn : 56;
             ULONG64 Address;
-        } TypeMappedPhysical;
+        } Logical;
 
         struct {
             ULONG64 Usage : 8;
             ULONG64 SectionObject : 48; // x | 0xFFFF000000000000 (we could save 6 more bits.)
-            ULONG64 LengthLower : 8;
-            ULONG64 LengthUpper : 28; // LengthLower | (LengthUpper << 8) << 12
+            ULONG64 Reserved : 6;
+            ULONG64 NoCopy : 1;
+            ULONG64 Copied : 1;
+            ULONG64 Length : 28; // Length << 12
             ULONG64 Address : 36; // x << 12 (upper 16 are 0)
-        } TypeMappedViewOfSection;
+        } ViewOfSection;
 
         struct {
             ULONG64 Upper;
@@ -676,3 +678,9 @@ typedef struct _MM_DMA_ADAPTER {
     ULONG64        LogicalAddress;
 
 } MM_DMA_ADAPTER, *PMM_DMA_ADAPTER;
+
+NTSTATUS
+MiPageFaultHandle(
+    _In_ PKTRAP_FRAME TrapFrame,
+    _In_ ULONG64      Address
+);

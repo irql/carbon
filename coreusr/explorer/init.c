@@ -301,6 +301,8 @@ NtProcessStartup(
 
     LdrInitializeProcess( );
 
+    *( UCHAR* )NtInitializeUser = 0xC3;
+
     Class.WndProc = ExMessageProcedure;
     wcscpy( Class.ClassName, L"ClassExplorer" );
 
