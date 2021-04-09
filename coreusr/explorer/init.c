@@ -191,6 +191,22 @@ ExpGetSelectedId(
 }
 
 VOID
+ExpSetSelectedId(
+    _In_ HANDLE  List,
+    _In_ ULONG64 Id
+)
+{
+    WND_PROC Procedure;
+
+    NtGetWindowProc( List, &Procedure );
+
+    Procedure( List,
+               LV_SETSELECTED,
+               Id,
+               0 );
+}
+
+VOID
 ExpUpDirectory(
     _In_ PWSTR Buffer
 )
@@ -222,6 +238,7 @@ ExMessageProcedure(
     _In_ ULONG64 Param2
 )
 {
+    STATIC ULONG64 LastSel = 0;
     ULONG64 IdSel;
     WCHAR Buffer[ 256 ];
 
@@ -236,7 +253,14 @@ ExMessageProcedure(
 
                 if ( IdSel != -1 ) {
 
-                    ExpSetCurrentDirectory( ExpGetList( ExpListObject, IdSel )->Name );
+                    if ( !NT_SUCCESS( ExpSetCurrentDirectory(
+                        ExpGetList( ExpListObject, IdSel )->Name ) ) ) {
+
+                        IdSel = LastSel;
+                        ExpSetSelectedId( ExpListObject, IdSel );
+                    }
+
+                    LastSel = IdSel;
                 }
             }
 
@@ -317,7 +341,7 @@ NtProcessStartup(
                     0 );
     NtCreateWindow( &ExpButtonUp,
                     ExpMainWindow,
-                    L"^",
+                    L"up",
                     L"BUTTON",
                     5,
                     25,
