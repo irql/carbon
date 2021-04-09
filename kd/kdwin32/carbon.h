@@ -28,7 +28,7 @@ typedef enum _MM_WSLE_USE {
     MmMappedUnused,
     MmMappedPhysical,
     MmMappedViewOfSection,
-    MmWslUseMaximum
+    MmMappedMaximum
 } MM_WSLE_USE;
 
 typedef struct _MM_WSLE {

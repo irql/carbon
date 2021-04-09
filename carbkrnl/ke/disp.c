@@ -217,9 +217,14 @@ KiSwapContext(
     HalSetCodeSegmentBase(
         ( PKGDT_CODE_SEGMENT )( Processor->Global.Base + Processor->SegGs ),
         Thread->Process->Peb );
-    Processor->TaskState.Rsp[ 0 ] = Thread->KernelStackBase + Thread->KernelStackLength;
-    ( ( PKGDT_SYSTEM_SEGMENT )( Processor->Global.Base + Processor->TaskStateDescriptor ) )->Type = SYSTEM_SEGMENT_TYPE_TSS;
-    KiLoadTask( ( USHORT )Processor->TaskStateDescriptor );
+    //
+    // TODO BUG: issue with rsp0.
+    //
+
+    //Processor->TaskState.Rsp[ 0 ] = Thread->KernelStackBase + Thread->KernelStackLength;
+    //( ( PKGDT_SYSTEM_SEGMENT )( Processor->Global.Base + Processor->TaskStateDescriptor ) )->Type = SYSTEM_SEGMENT_TYPE_TSS;
+    //KiLoadTask( ( USHORT )Processor->TaskStateDescriptor );
+    //KiLoadGlobal( &Processor->Global );
 
     KeLowerIrql( PreviousIrql );
     return;

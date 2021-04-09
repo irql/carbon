@@ -67,20 +67,19 @@ MmFindWorkingSetByAddress(
             for ( CurrentWsle = 0; CurrentWsle < 255; CurrentWsle++ ) {
 
                 if ( CurrentWsl->WorkingSetList[ CurrentWsle ].Usage != Usage ) {
+
                     continue;
                 }
 
                 switch ( Usage ) {
                 case MmMappedPhysical:
-                    //if ( CurrentWsl->WorkingSetList[ CurrentWsle ].TypeMappedPhysical.Address == Address ) {
                     if ( Address >= CurrentWsl->WorkingSetList[ CurrentWsle ].Logical.Address &&
                          Address <= CurrentWsl->WorkingSetList[ CurrentWsle ].Logical.Address + 0xFFF ) {
                         return &CurrentWsl->WorkingSetList[ CurrentWsle ];
                     }
                     break;
                 case MmMappedViewOfSection:
-                    //if ( ( CurrentWsl->WorkingSetList[ CurrentWsle ].TypeMappedViewOfSection.Address << 12 ) == ( Address & 0xFFFFFFFFFFFF ) ) {
-                    if ( ( Address & 0xFFFFFFFFFFFF ) >= CurrentWsl->WorkingSetList[ CurrentWsle ].ViewOfSection.Address << 12 &&
+                    if ( ( Address & 0xFFFFFFFFFFFF ) >= ( CurrentWsl->WorkingSetList[ CurrentWsle ].ViewOfSection.Address << 12 ) &&
                         ( Address & 0xFFFFFFFFFFFF ) < ( ( CurrentWsl->WorkingSetList[ CurrentWsle ].ViewOfSection.Address +
                                                            CurrentWsl->WorkingSetList[ CurrentWsle ].ViewOfSection.Length ) << 12 ) ) {
 
@@ -93,7 +92,7 @@ MmFindWorkingSetByAddress(
             }
         }
 
-        CurrentWsl = ( PMM_WSL )( ( PUCHAR )CurrentWsl + 0x1000 );
+        CurrentWsl = ( PMM_WSL )( ( ULONG64 )CurrentWsl + 0x1000 );
         CurrentWslPageTable = MmAddressPageTable( ( ULONG64 )CurrentWsl );
     }
 

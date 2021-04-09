@@ -20,7 +20,7 @@ MiPageFaultHandle(
     PVOID PageIntermediate;
     PPMLE PageIntermedateLevel2;
 
-    AddressList = MmFindWorkingSetByAddress( MmTypeSectionObject,
+    AddressList = MmFindWorkingSetByAddress( MmMappedViewOfSection,
                                              Address );
 
     if ( AddressList == NULL ) {
@@ -67,6 +67,8 @@ MiPageFaultHandle(
                            PageIntermediate,
                            0x1000 );
         }
+
+        MmUnmapIoSpace( PageIntermediate );
 
         RtlDebugPrint( L"Performed a copy-on-write for %s\n",
             ( ( PMM_SECTION_OBJECT )( AddressList->ViewOfSection.SectionObject | 0xFFFF000000000000 ) )->FileObject->FileName.Buffer );

@@ -29,6 +29,9 @@ HalCreateInterrupt(
         Table[ i ].OffsetMid = KxIntHandlerTable[ i ] >> 16;
         Table[ i ].OffsetHigh = KxIntHandlerTable[ i ] >> 32;
         Table[ i ].Type = SYSTEM_SEGMENT_TYPE_INTERRUPT_GATE;
+        Table[ i ].SegmentSelector = GDT_KERNEL_CODE64;
+        Table[ i ].PrivilegeLevel = 0;
+        Table[ i ].Present = 1;
 
         //
         // wipet — Today at 15:51
@@ -54,10 +57,6 @@ HalCreateInterrupt(
             Table[ i ].Type = SYSTEM_SEGMENT_TYPE_TRAP_GATE;
             Table[ i ].Ist = 0;
         }
-
-        Table[ i ].SegmentSelector = GDT_KERNEL_CODE64;
-        Table[ i ].PrivilegeLevel = 0;
-        Table[ i ].Present = 1;
     }
 
     Table[ 0x29 ].PrivilegeLevel = 3; // fast fail
