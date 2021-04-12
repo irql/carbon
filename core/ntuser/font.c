@@ -1,7 +1,6 @@
 ﻿
 
 
-#define NTUSER_INTERNAL
 #include <carbsup.h>
 #include "usersup.h"
 #include "ntuser.h"

@@ -322,6 +322,7 @@ NtProcessStartup(
     WND_CLASS Class;
     WND_PROC Procedure;
     KUSER_MESSAGE Message;
+    PNT_MENU_HANDLE MenuHandle;
 
     LdrInitializeProcess( );
 
@@ -341,10 +342,10 @@ NtProcessStartup(
                     0 );
     NtCreateWindow( &ExpButtonUp,
                     ExpMainWindow,
-                    L"up",
+                    L"^",
                     L"BUTTON",
                     5,
-                    25,
+                    25 + 14,
                     23,
                     23,
                     ID_BTN_UP );
@@ -353,7 +354,7 @@ NtProcessStartup(
                     L"C:\\",
                     L"EDIT",
                     5 + 23 + 5,
-                    25,
+                    25 + 14,
                     650 - 5 - 5 - 23 - 5,
                     23,
                     ID_EDIT_ADDRESS_BAR );
@@ -362,18 +363,18 @@ NtProcessStartup(
                     L"ExpListObject",
                     L"LISTVIEW",
                     5,
-                    25 + 23 + 5,
+                    25 + 23 + 5 + 14,
                     150,
-                    400 - 25 - 5 - 23 - 5,
+                    400 - 25 - 5 - 23 - 5 - 14,
                     ID_LIST_OBJECT );
     NtCreateWindow( &ExpListDirectory,
                     ExpMainWindow,
                     L"ExpListDiectory",
                     L"LISTVIEW",
                     5 + 150 + 5,
-                    25 + 23 + 5,
+                    25 + 23 + 5 + 14,
                     500 - 5 - 5 - 5,
-                    400 - 25 - 5 - 23 - 5,
+                    400 - 25 - 5 - 23 - 5 - 14,
                     ID_LIST_DIRECTORY );
 
     while ( TRUE ) {
@@ -391,8 +392,7 @@ NtProcessStartup(
             if ( Message.MessageId == WM_ACTIVATE ) {
 
                 ExpInsertList( ExpListObject, L"C:\\" );
-                ExpInsertList( ExpListObject, L"D:\\" );
-                ExpInsertList( ExpListObject, L"BootDevice\\" );
+                ExpInsertList( ExpListObject, L"C:\\SYSTEM\\" );
                 Procedure( ExpListObject,
                            LV_SETSELECTED,
                            0,
@@ -439,6 +439,17 @@ NtProcessStartup(
                        Message.MessageId,
                        Message.Param1,
                        Message.Param2 );
+            if ( Message.MessageId == WM_ACTIVATE ) {
+                NtCreateMenu( &MenuHandle );
+                NtInsertMenu( MenuHandle, NULL, L"File" );
+                NtInsertMenu( MenuHandle, L"File", L"Michael" );
+                NtInsertMenu( MenuHandle, L"File", L"Close" );
+
+                NtInsertMenu( MenuHandle, NULL, L"Edit" );
+                NtInsertMenu( MenuHandle, NULL, L"View" );
+                NtInsertMenu( MenuHandle, NULL, L"Moe" );
+                NtSetMenu( ExpMainWindow, MenuHandle );
+            }
         }
     }
 

@@ -43,6 +43,7 @@ typedef unsigned long long uint64_t;
 #define NTSYSAPI DLLIMPORT
 #endif
 
+#undef NTUSRAPI
 #ifdef USER_INTERNAL
 #define NTUSRAPI DLLEXPORT
 #else
@@ -197,7 +198,8 @@ NTSYSAPI NORETURN void __cdecl longjmp(
     _In_ int     _Value
 );
 
-#ifndef NTDLL_INTERNAL
+#ifndef NTSYSAPI 
+//NTDLL_INTERNAL
 //
 // intrins
 //
@@ -503,4 +505,65 @@ NtWriteFile(
     _Out_   PVOID            Buffer,
     _In_    ULONG64          Length,
     _In_    ULONG64          Offset
+);
+
+typedef struct _LV_ITEM {
+    ULONG32          Id;
+    PWSTR            Name;
+
+    struct _LV_ITEM* Link;
+
+} LV_ITEM, *PLV_ITEM;
+
+#define LV_INSERTITEM   0xF0
+#define LV_GETSELECTED  0xF1
+#define LV_SETSELECTED  0xF2
+#define LV_GETITEMCOUNT 0xF3
+#define LV_GETITEM      0xF4
+#define LV_REMOVEITEM   0xF5
+
+#define LV_SELECT       0xE0
+#define LV_PRESS        0xE1
+
+#define ED_ENTER        0xF0
+
+#define BT_PRESS        0xF0
+
+FORCEINLINE
+ULONG64
+CLAMP(
+    _In_ ULONG64 Val,
+    _In_ ULONG64 Min,
+    _In_ ULONG64 Max
+)
+{
+    return Val < Min ? Min : ( Val > Max ? Max : Val );
+}
+
+typedef struct _NT_MENU_HANDLE *PNT_MENU_HANDLE;
+
+typedef struct _WB_DATA {
+    PNT_MENU_HANDLE MenuHandle;
+    PNT_FONT_HANDLE MenuFontHandle;
+} WB_DATA, *PWB_DATA;
+
+NTUSRAPI
+NTSTATUS
+NtCreateMenu(
+    _Out_ PNT_MENU_HANDLE* MenuHandle
+);
+
+NTUSRAPI
+NTSTATUS
+NtInsertMenu(
+    _In_ PNT_MENU_HANDLE MenuHandle,
+    _In_ PWSTR           ParentName,
+    _In_ PWSTR           MenuName
+);
+
+NTUSRAPI
+NTSTATUS
+NtSetMenu(
+    _In_ HANDLE          WindowHandle,
+    _In_ PNT_MENU_HANDLE MenuHandle
 );

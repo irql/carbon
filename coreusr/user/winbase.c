@@ -1,9 +1,11 @@
 ﻿
 
 
-#define USER_INTERNAL
 #include <carbusr.h>
 #include "user.h"
+
+//make width shit more dynamic and not hardcoded to 36.
+#define WB_MENU_ITEM_WIDTH  36
 
 NTSTATUS
 NtClassWinBaseProc(
@@ -22,6 +24,11 @@ NtClassWinBaseProc(
     ULONG32 Height;
     WND_INFO Info;
     PNT_FONT_HANDLE FontHandle;
+    PWB_DATA WindowBaseData;
+    PMENU_ITEM MenuItem;
+    PMENU_ITEM ChildItem;
+    LONG32 LastLeft;
+    ULONG32 MenuHeight;
 
     NtGetWindowInfo( WindowHandle, &Info );
 
@@ -36,7 +43,7 @@ NtClassWinBaseProc(
     switch ( MessageId ) {
     case WM_ACTIVATE:;
         NtCreateFont( &FontHandle,
-                      13,
+                      12,
                       0,
                       L"MICROSS.TTF" );
 
@@ -47,6 +54,21 @@ NtClassWinBaseProc(
         // hook WM_SETFONT and free this if a program
         // sets the font, don't worry about the address
         // space, only the creator should touch this.
+
+        WindowBaseData = RtlAllocateHeap( RtlGetCurrentHeap( ),
+                                          sizeof( WB_DATA ) );
+        WindowBaseData->MenuHandle = NULL;
+
+        NtCreateFont( &WindowBaseData->MenuFontHandle,
+                      11,
+                      0,
+                      L"MICROSS.TTF" );
+
+        NtDefaultWindowProc( WindowHandle,
+                             WM_SETUPTR,
+                             ( ULONG64 )WindowBaseData,
+                             0 );
+
         break;
     case WM_PAINT:;
         NtBeginPaint( &ContextHandle,
@@ -56,6 +78,10 @@ NtClassWinBaseProc(
                                                              WM_GETFONT,
                                                              0,
                                                              0 );
+        WindowBaseData = ( PWB_DATA )NtDefaultWindowProc( WindowHandle,
+                                                          WM_GETUPTR,
+                                                          0,
+                                                          0 );
 #if 0
         NtClearDC( ContextHandle, 0, 0, Width, Height, 0xFFC3C3C3 );
 
@@ -106,7 +132,136 @@ NtClassWinBaseProc(
                     0,
                     0xFFFFFFFF );
 
+        if ( WindowBaseData->MenuHandle != NULL ) {
+
+            FontClip.Left = 6;
+            FontClip.Top = 20 + 14;
+            FontClip.Bottom = 20 + 14 + 14;
+            FontClip.Right = Width - 12;
+
+            if ( WindowBaseData->MenuHandle->MenuItem != NULL ) {
+
+                MenuItem = WindowBaseData->MenuHandle->MenuItem;
+                do {
+                    LastLeft = FontClip.Left;
+
+                    NtDrawText( ContextHandle,
+                                WindowBaseData->MenuFontHandle,
+                                MenuItem->Name,
+                                &FontClip,
+                                0,
+                                0xFF000000 );
+                    FontClip.Left = LastLeft + WB_MENU_ITEM_WIDTH;
+
+                    MenuItem = MenuItem->Link;
+                } while ( MenuItem != NULL );
+
+                MenuItem = WindowBaseData->MenuHandle->MenuItem;
+                do {
+
+
+                    if ( MenuItem->Open ) {
+                        FontClip.Top += 14;
+                        LastLeft = FontClip.Left;
+                        MenuHeight = 0;
+                        ChildItem = MenuItem->Child;
+
+                        if ( ChildItem == NULL ) {
+                            RtlDebugPrint( L"zero list\n" );
+                            break;
+                        }
+
+                        do {
+
+                            MenuHeight += 14;
+                            ChildItem = ChildItem->Child;
+                        } while ( ChildItem != NULL );
+
+                        NtClearDC( ContextHandle,
+                                   FontClip.Left,
+                                   FontClip.Top,
+                                   WB_MENU_ITEM_WIDTH,
+                                   MenuHeight,
+                                   0xFFC3C3C3 );
+
+                        ChildItem = MenuItem->Child;
+                        do {
+                            NtDrawText( ContextHandle,
+                                        WindowBaseData->MenuFontHandle,
+                                        MenuItem->Name,
+                                        &FontClip,
+                                        0,
+                                        0xFF000000 );
+                            FontClip.Top += 14;
+                            FontClip.Left = LastLeft;
+                            ChildItem = ChildItem->Child;
+                        } while ( ChildItem != NULL );
+                        break;
+                    }
+
+                    FontClip.Left += WB_MENU_ITEM_WIDTH;
+                    MenuItem = MenuItem->Link;
+                } while ( MenuItem != NULL );
+            }
+        }
+
         NtEndPaint( WindowHandle );
+        break;
+    case WM_LMOUSEDOWN:
+
+        WindowBaseData = ( PWB_DATA )NtDefaultWindowProc( WindowHandle,
+                                                          WM_GETUPTR,
+                                                          0,
+                                                          0 );
+
+        if ( WindowBaseData->MenuHandle->MenuItem != NULL ) {
+
+            MenuItem = WindowBaseData->MenuHandle->MenuItem;
+            do {
+
+                MenuItem->Open = FALSE;
+                MenuItem = MenuItem->Link;
+            } while ( MenuItem != NULL );
+        }
+
+        if ( Param1 >= 6 &&
+             Param1 < Width - 12 &&
+             Param2 >= 20 &&
+             Param2 < 20 + 14 ) {
+
+            Param1 -= 6;
+
+            Param1 /= WB_MENU_ITEM_WIDTH;
+            LastLeft = 0;
+
+            WindowBaseData = ( PWB_DATA )NtDefaultWindowProc( WindowHandle,
+                                                              WM_GETUPTR,
+                                                              0,
+                                                              0 );
+            if ( WindowBaseData->MenuHandle->MenuItem != NULL ) {
+
+                MenuItem = WindowBaseData->MenuHandle->MenuItem;
+                do {
+
+                    if ( Param1 == LastLeft ) {
+                        MenuItem->Open = TRUE;
+                        //RtlDebugPrint( L"selected: %s\n", MenuItem->Name );
+                        break;
+                    }
+
+                    LastLeft++;
+                    MenuItem = MenuItem->Link;
+                } while ( MenuItem != NULL );
+            }
+        }
+        else {
+
+            return NtDefaultWindowProc( WindowHandle,
+                                        MessageId,
+                                        Param1,
+                                        Param2 );
+        }
+
         break;
     default:
         return NtDefaultWindowProc( WindowHandle,

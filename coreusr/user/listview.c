@@ -1,7 +1,6 @@
 ﻿
 
 
-#define USER_INTERNAL
 #include <carbusr.h>
 #include "user.h"
 
@@ -130,6 +129,7 @@ NtClassListViewBaseProc(
                             &FontClip,
                             0,
                             CurrentItem->Id == ListView->SelectedItem ? 0xFFFF0000 : 0xFF000000 );
+                FontClip.Left = 4 + 0;
                 FontClip.Top += 14;
             }
             CurrentItem = CurrentItem->Link;

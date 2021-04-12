@@ -8,11 +8,11 @@
 //
 
 #ifndef USER_INTERNAL
-#define NTUSERAPI DLLEXPORT
+#define NTUSRAPI DLLEXPORT
 #elif !defined( NTUSER_INTERNAL ) 
-#define NTUSERAPI DLLIMPORT
+#define NTUSRAPI DLLIMPORT
 #else
-#define NTUSERAPI
+#define NTUSRAPI
 #endif
 
 #ifdef NTUSER_INTERNAL
@@ -126,7 +126,7 @@ NtSendSystemMessage(
 #define VK_F11      0xEA
 #define VK_F12      0xEB
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtSendMessage(
     _In_ HANDLE  WindowHandle,
@@ -135,7 +135,7 @@ NtSendMessage(
     _In_ ULONG64 Param2
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtSendParentMessage(
     _In_ HANDLE  WindowHandle,
@@ -144,20 +144,20 @@ NtSendParentMessage(
     _In_ ULONG64 Param2
 );
 
-NTUSERAPI
+NTUSRAPI
 BOOLEAN
 NtReceiveMessage(
     _In_  HANDLE         WindowHandle,
     _Out_ PKUSER_MESSAGE Message
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtWaitMessage(
     _In_ HANDLE WindowHandle
 );
 
-NTUSERAPI
+NTUSRAPI
 NTSTATUS
 NtCreateWindow(
     _Out_    PHANDLE WindowHandle,
@@ -178,14 +178,14 @@ typedef struct _WND_INFO {
 
 } WND_INFO, *PWND_INFO;
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtGetWindowInfo(
     _In_  HANDLE    WindowHandle,
     _Out_ PWND_INFO WindowInfo
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtSetWindowInfo(
     _In_ HANDLE    WindowHandle,
@@ -213,13 +213,13 @@ typedef struct _WND_CLASS {
 } WND_CLASS, *PWND_CLASS;
 #endif
 
-NTUSERAPI
+NTUSRAPI
 NTSTATUS
 NtRegisterClass(
     _In_ PWND_CLASS Class
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtUnregisterClass(
     _In_ PWND_CLASS Class
@@ -233,7 +233,7 @@ NtSendDirectMessage(
     _In_ ULONG64 Param2
 );
 
-NTUSERAPI
+NTUSRAPI
 NTSTATUS
 NtDefaultWindowProc(
     _In_ HANDLE  WindowHandle,
@@ -242,27 +242,27 @@ NtDefaultWindowProc(
     _In_ ULONG64 Param2
 );
 
-NTUSERAPI
+NTUSRAPI
 NTSTATUS
 NtGetWindowProc(
     _In_  HANDLE    WindowHandle,
     _Out_ WND_PROC* WndProc
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtBeginPaint(
     _Out_ PHANDLE ContextHandle,
     _In_  HANDLE  WindowHandle
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtEndPaint(
     _In_ HANDLE WindowHandle
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtBlt(
     _In_ HANDLE  SourceContext,
@@ -275,7 +275,7 @@ NtBlt(
     _In_ ULONG32 dsty
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtBltBits(
     _In_ PVOID   srcbits,
@@ -288,7 +288,7 @@ NtBltBits(
     _In_ ULONG32 dsty
 );
 
-NTUSERAPI
+NTUSRAPI
 NTSTATUS
 NtGetDC(
     _Out_ PHANDLE ContextHandle,
@@ -309,13 +309,13 @@ NtGetCursorPosition(
     _Out_ ULONG32* posy
 );
 
-NTUSERAPI
+NTUSRAPI
 ULONG64
 NtGetTickCount(
 
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtClearDC(
     _In_ HANDLE  ContextHandle,
@@ -326,7 +326,7 @@ NtClearDC(
     _In_ ULONG32 Color
 );
 
-NTUSERAPI
+NTUSRAPI
 VOID
 NtSetPixel(
     _In_ HANDLE  ContextHandle,
@@ -350,36 +350,3 @@ NtSetMode(
     _In_ ULONG32 Height,
     _In_ ULONG32 BitDepth
 );
-
-typedef struct _LV_ITEM {
-    ULONG32          Id;
-    PWSTR            Name;
-
-    struct _LV_ITEM* Link;
-
-} LV_ITEM, *PLV_ITEM;
-
-#define LV_INSERTITEM   0xF0
-#define LV_GETSELECTED  0xF1
-#define LV_SETSELECTED  0xF2
-#define LV_GETITEMCOUNT 0xF3
-#define LV_GETITEM      0xF4
-#define LV_REMOVEITEM   0xF5
-
-#define LV_SELECT       0xE0
-#define LV_PRESS        0xE1
-
-#define ED_ENTER        0xF0
-
-#define BT_PRESS        0xF0
-
-FORCEINLINE
-ULONG64
-CLAMP(
-    _In_ ULONG64 Val,
-    _In_ ULONG64 Min,
-    _In_ ULONG64 Max
-)
-{
-    return Val < Min ? Min : ( Val > Max ? Max : Val );
-}

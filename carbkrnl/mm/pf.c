@@ -12,6 +12,10 @@ MiPageFaultHandle(
 {
     TrapFrame;
 
+    //
+    // change this to COW only a single page at a time
+    //
+
     PMM_WSLE AddressList;
     ULONG64 PageLength;
     ULONG64 PageCurrent;

@@ -1,7 +1,6 @@
 ﻿
 
 
-#define USER_INTERNAL
 #include <carbusr.h>
 #include "user.h"
 

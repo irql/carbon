@@ -15,6 +15,7 @@
     <ClCompile Include="driver.c" />
     <ClCompile Include="font.c" />
     <ClCompile Include="listview.c" />
+    <ClCompile Include="menu.c" />
     <ClCompile Include="static.c" />
     <ClCompile Include="textedit.c" />
     <ClCompile Include="winbase.c" />
@@ -109,6 +110,7 @@
       <CompileAs>CompileAsC</CompileAs>
       <UseFullPaths>false</UseFullPaths>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PreprocessorDefinitions>USER_INTERNAL;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

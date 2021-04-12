@@ -1,7 +1,6 @@
 ﻿
 
 
-#define USER_INTERNAL
 #include <carbusr.h>
 
 #include <ft2build.h>
@@ -272,6 +271,8 @@ NtDrawText(
         Top += sl->advance.y / 64;
         DrawText++;
     }
+
+    Rect->Left = Left;
 
     return STATUS_SUCCESS;
 }

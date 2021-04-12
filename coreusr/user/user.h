@@ -34,3 +34,14 @@ NtClassListViewBaseProc(
     _In_ ULONG64 Param1,
     _In_ ULONG64 Param2
 );
+
+typedef struct _MENU_ITEM {
+    PWSTR              Name;
+    BOOLEAN            Open;
+    struct _MENU_ITEM* Link;
+    struct _MENU_ITEM* Child;
+} MENU_ITEM, *PMENU_ITEM;
+
+typedef struct _NT_MENU_HANDLE {
+    PMENU_ITEM MenuItem;
+} NT_MENU_HANDLE, *PNT_MENU_HANDLE;
