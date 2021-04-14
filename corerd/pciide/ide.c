@@ -279,8 +279,7 @@ IdeAccessInternal(
         return STATUS_INVALID_ADDRESS;
     }
 
-    NT_ASSERT( ( __readeflags( ) & 0x200 ) == 0x200 );
-
+    //NT_ASSERT( ( __readeflags( ) & 0x200 ) == 0x200 );
     //RtlDebugPrint( L"Read_%d_%d\n", BlockAddress, Length );
 
     if ( Ide->Flags & IDE_LBA48 ) {
@@ -381,6 +380,11 @@ IdeAccessInternal(
 
     if ( Ide->Flags & IDE_DMA ) {
 
+        if ( Write ) {
+
+            RtlCopyMemory( ( PVOID )PrdtVirtual, Buffer, Length << 9 );
+        }
+
         BmWrite( Ide->Channel, BM_REG_COMMAND, BM_CMD_START | ( Write ? 0 : BM_CMD_WRITE ) );
 
         do {
@@ -426,15 +430,46 @@ IdeAccessInternal(
             return STATUS_UNSUCCESSFUL;
         }
 
-        RtlCopyMemory( Buffer, ( PVOID )PrdtVirtual, Length << 9 );
+        if ( !Write ) {
 
+            RtlCopyMemory( Buffer, ( PVOID )PrdtVirtual, Length << 9 );
+        }
     }
     else {
         if ( Write ) {
 
-            NT_ASSERT( FALSE );
+            while ( Length-- ) {
+
+                while ( IdeRead( Ide->Channel, ATA_REG_STATUS ) & ATA_SR_BSY )
+                    ;
+
+                Status = IdeRead( Ide->Channel, ATA_REG_STATUS );
+
+                if ( Status & ATA_SR_ERR ) {
+
+                    KeReleaseMutex( &Ide->Lock );
+                    return STATUS_UNSUCCESSFUL;
+                }
+
+                if ( Status & ATA_SR_DF ) {
+
+                    KeReleaseMutex( &Ide->Lock );
+                    return STATUS_UNSUCCESSFUL;
+                }
+
+                if ( ( Status & ATA_SR_DRQ ) == 0 ) {
+
+                    KeReleaseMutex( &Ide->Lock );
+                    return STATUS_UNSUCCESSFUL;
+                }
+
+                __outwordstring( Ide->Channel->Base + ATA_REG_DATA, Buffer, 256 );
+
+                Buffer = ( PUCHAR )Buffer + 512;
+            }
         }
         else {
+
             while ( Length-- ) {
 
                 while ( IdeRead( Ide->Channel, ATA_REG_STATUS ) & ATA_SR_BSY )
