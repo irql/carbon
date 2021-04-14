@@ -4,9 +4,6 @@
 #include <carbusr.h>
 #include "user.h"
 
-//make width shit more dynamic and not hardcoded to 36.
-#define WB_MENU_ITEM_WIDTH  36
-
 NTSTATUS
 NtClassWinBaseProc(
     _In_ HANDLE  WindowHandle,
@@ -167,7 +164,7 @@ NtClassWinBaseProc(
                         ChildItem = MenuItem->Child;
 
                         if ( ChildItem == NULL ) {
-                            RtlDebugPrint( L"zero list\n" );
+
                             break;
                         }
 
@@ -244,8 +241,26 @@ NtClassWinBaseProc(
                 do {
 
                     if ( Param1 == LastLeft ) {
-                        MenuItem->Open = TRUE;
+                        //MenuItem->Open = TRUE;
                         //RtlDebugPrint( L"selected: %s\n", MenuItem->Name );
+#if 0
+                        HANDLE wnd = NtGetContextMenu( );
+                        WND_INFO ctx_info;
+                        PNT_MENU_HANDLE MenuHandle1 = ( PNT_MENU_HANDLE )RtlAllocateHeap( RtlGetCurrentHeap( ),
+                                                                                          sizeof( NT_MENU_HANDLE ) );
+
+                        NtGetWindowInfo( wnd, &ctx_info );
+                        ctx_info.Rect.Right -= ctx_info.Rect.Left;
+                        ctx_info.Rect.Bottom -= ctx_info.Rect.Top;
+                        ctx_info.Rect.Left = Info.Rect.Left + ( LONG32 )Param1 * WB_MENU_ITEM_WIDTH + 6;
+                        ctx_info.Rect.Top = Info.Rect.Top + 20 + 14;
+                        ctx_info.Rect.Right += ctx_info.Rect.Left;
+                        ctx_info.Rect.Bottom += ctx_info.Rect.Top;
+                        NtSetWindowInfo( wnd, &ctx_info );
+                        NtSetParent( WindowHandle, wnd );
+                        MenuHandle1->MenuItem = MenuItem->Child;
+                        NtSetMenu( wnd, MenuHandle1 );
+#endif
                         break;
                     }
 
@@ -262,6 +277,13 @@ NtClassWinBaseProc(
                                         Param2 );
         }
 
+        break;
+    case WM_SETMENU:
+        WindowBaseData = ( PWB_DATA )NtDefaultWindowProc( WindowHandle,
+                                                          WM_GETUPTR,
+                                                          0,
+                                                          0 );
+        WindowBaseData->MenuHandle = ( PNT_MENU_HANDLE )Param1;
         break;
     default:
         return NtDefaultWindowProc( WindowHandle,

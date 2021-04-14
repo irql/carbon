@@ -37,9 +37,11 @@ KiFastSystemCall PROC FRAME
     shl     r11, 32
     mov     eax, eax
     or      rax, r11
+    cli
     swapgs
     mov     r11, qword ptr gs:[ThreadQueue]     ; Thread pointer.
     swapgs
+    sti
     mov     qword ptr [r11+ServiceNumber], rax  ; Save EFlags and service code
     mov     qword ptr [r11+PreviousIp], rcx     ; Save user return address
     mov     qword ptr [r11+PreviousStack], rsp  ; Save user stack
@@ -116,9 +118,11 @@ KiCallService:
     call    qword ptr [rax]
     
 KiProcedureFinished:
+    cli
     swapgs 
     mov     r11, qword ptr gs:[ThreadQueue]
     swapgs
+    sti
     mov     byte ptr [r11+SyscallActive], 0
     mov     rcx, qword ptr [r11+PreviousIp]
     mov     rsp, qword ptr [r11+PreviousStack]

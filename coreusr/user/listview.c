@@ -4,6 +4,16 @@
 #include <carbusr.h>
 #include "user.h"
 
+// add columns of set width, when you care
+#if 0
+typedef struct _LV_COLUMN {
+    ULONG32 Width;
+    ULONG32 Count;
+    PLV_ITEM
+
+} LV_COLUMN, *PLV_COLUMN;
+#endif
+
 typedef struct _LV_DATA {
 
     ULONG64  SelectedItem;
@@ -269,7 +279,7 @@ NtClassListViewBaseProc(
                                  Info.MenuId,
                                  LV_SELECT );
         }
-        else if ( ListView->LastTickCount + 1200 >= NtGetTickCount( ) ) {
+        else if ( ListView->LastTickCount + 600 >= NtGetTickCount( ) ) {
 
             NtSendParentMessage( WindowHandle,
                                  WM_COMMAND,

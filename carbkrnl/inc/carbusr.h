@@ -567,3 +567,9 @@ NtSetMenu(
     _In_ HANDLE          WindowHandle,
     _In_ PNT_MENU_HANDLE MenuHandle
 );
+
+NTUSRAPI
+HANDLE
+NtGetContextMenu(
+
+);

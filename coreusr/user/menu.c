@@ -89,7 +89,7 @@ NtInsertMenu(
         }
     }
     else {
-        RtlDebugPrint( L"ParentItem: %s\n", ParentItem->Name );
+
         if ( ParentItem->Child == NULL ) {
 
             ParentItem->Child = NewMenu;
@@ -114,15 +114,21 @@ NtSetMenu(
     _In_ PNT_MENU_HANDLE MenuHandle
 )
 {
-    WND_PROC Procedure;
-    PWB_DATA WindowBaseData;
-
-    NtGetWindowProc( WindowHandle, &Procedure );
-
-    WindowBaseData = ( PWB_DATA )Procedure( WindowHandle,
-                                            WM_GETUPTR,
-                                            0,
-                                            0 );
-    WindowBaseData->MenuHandle = MenuHandle;
+    NtSendMessage( WindowHandle, WM_SETMENU, ( ULONG64 )MenuHandle, 0 );
+    NtSendMessage( WindowHandle, WM_PAINT, 0, 0 );
     return STATUS_SUCCESS;
+}
+
+HANDLE
+NtGetContextMenu(
+
+)
+{
+    //
+    // just implement global handles lol?
+    //
+
+    HANDLE WindowHandle;
+    NtGetWindowByName( &WindowHandle, L"ContextMenu", L"CONTEXT" );
+    return WindowHandle;
 }

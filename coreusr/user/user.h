@@ -38,6 +38,7 @@ NtClassListViewBaseProc(
 typedef struct _MENU_ITEM {
     PWSTR              Name;
     BOOLEAN            Open;
+    ULONG32            MenuId;
     struct _MENU_ITEM* Link;
     struct _MENU_ITEM* Child;
 } MENU_ITEM, *PMENU_ITEM;
@@ -45,3 +46,7 @@ typedef struct _MENU_ITEM {
 typedef struct _NT_MENU_HANDLE {
     PMENU_ITEM MenuItem;
 } NT_MENU_HANDLE, *PNT_MENU_HANDLE;
+
+//make width shit more dynamic and not hardcoded to 36.
+#define WB_MENU_ITEM_WIDTH  36
+#define WB_MENU_ITEM_HEIGHT 16

@@ -96,6 +96,8 @@ NtSendSystemMessage(
 
 #define WM_COMMAND          0x17
 
+#define WM_SETMENU          0x18
+#define WM_GETMENU          0x19
 
 #define VK_ENTER    '\n'
 #define VK_BACK     '\b'
@@ -349,4 +351,19 @@ NtSetMode(
     _In_ ULONG32 Width,
     _In_ ULONG32 Height,
     _In_ ULONG32 BitDepth
+);
+
+NTUSRAPI
+NTSTATUS
+NtGetWindowByName(
+    _Out_ PHANDLE WindowHandle,
+    _In_  PWSTR   WindowName,
+    _In_  PWSTR   ClassName
+);
+
+NTUSRAPI
+NTSTATUS
+NtSetParent(
+    _In_ HANDLE ParentHandle,
+    _In_ HANDLE WindowHandle
 );

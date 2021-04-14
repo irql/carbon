@@ -2,6 +2,7 @@
 
 
 #include <carbsup.h>
+#include "../hal/halp.h"
 #include "mi.h"
 
 NTSTATUS
@@ -23,6 +24,11 @@ MiPageFaultHandle(
     PPMLE PageTable;
     PVOID PageIntermediate;
     PPMLE PageIntermedateLevel2;
+
+    if ( TrapFrame->Error != 0x2 ) {
+
+        return STATUS_UNSUCCESSFUL;
+    }
 
     AddressList = MmFindWorkingSetByAddress( MmMappedViewOfSection,
                                              Address );
